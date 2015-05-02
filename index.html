@@ -49,6 +49,8 @@
     <ul class="sidebar-nav">
       <li><a href="/">Home</a> </li>
       
+        <li><a href="/post/dummy-api/"> Dummy API </a></li>
+      
         <li><a href="/post">Posts</a></li>
     </ul>
   </div>
@@ -56,6 +58,103 @@
 
     <div class="content container">
       <div class="posts">
+        
+        <div class="post">
+          <h1 class="post-title">
+            <a href="/post/dummy-api/">
+              Dummy API
+            </a>
+          </h1>
+          <span class="post-date">Sat, May 2, 2015</span>
+          <p>The purpose of Dummy API to act as a performant, simple and flexible API to use when testing API gateway performance. The Dummy API will read the request headers and query parameters and generate the responses accordingly. Some examples are custom cache-control header, response status and response delays.</p>
+
+<p>Some examples are:</p>
+
+<pre><code>GET http://dummy-api.varnish-software.com/?random-content=10&amp;predictable-content=20&amp;response-status=418&amp;body-delay=2&amp;max-age=2&amp;s-maxage=3
+
+HTTP/1.1 418 
+Cache-control: max-age=2, s-maxage=3
+Connection: close
+Content-Type: application/json
+Date: Sat, 02 May 2015 19:56:44 GMT
+Server: Dummy API
+Transfer-Encoding: chunked
+
+{
+    &quot;body-delay&quot;: 2, 
+    &quot;host&quot;: &quot;dummy-api.varnish-software.com&quot;, 
+    &quot;max-age&quot;: 2, 
+    &quot;method&quot;: &quot;GET&quot;, 
+    &quot;predictable-content&quot;: &quot;fu4D0qBoQnap3NVA4PWy&quot;, 
+    &quot;random-content&quot;: &quot;mqYA4IXTNG&quot;, 
+    &quot;response-status&quot;: 418, 
+    &quot;s-maxage&quot;: 3, 
+    &quot;uri&quot;: &quot;/&quot;
+}
+
+POST http://dummy-api.varnish-software.com/someurl?must-revalidate&amp;response-status=201
+
+HTTP/1.1 201 Created
+Cache-control: must-revalidate
+Connection: close
+Content-Type: application/json
+Content-length: 135
+Date: Sat, 02 May 2015 19:58:04 GMT
+Server: Dummy API
+
+{
+    &quot;content-length&quot;: true, 
+    &quot;host&quot;: &quot;dummy-api.varnish-software.com&quot;, 
+    &quot;method&quot;: &quot;POST&quot;, 
+    &quot;must-revalidate&quot;: true, 
+    &quot;response-status&quot;: 201, 
+    &quot;uri&quot;: &quot;/someurl&quot;
+}
+</code></pre>
+
+<p>The buit in help text is available with the <code>help</code> request header or query parameter:</p>
+
+<pre><code>GET http://dummy-api.varnish-software.com/?help
+
+HTTP/1.1 200 OK
+Connection: close
+Content-Type: text/plain
+Date: Sat, 02 May 2015 19:59:39 GMT
+Server: openresty
+Transfer-Encoding: chunked
+
+Dummy API
+=========
+
+The following request headers and query parameters will make an impact on the response.
+
+Delay
+-----
+header-delay = {float}           Delay to first header byte
+body-delay = {float}             Delay to first body byte
+
+Cache-control
+-------------
+max-age = {int}                  Set the response max-age value
+s-maxage = {int}                 Set the response s-maxage value
+must-revalidate                  Set must-revalidate
+public                           Set public
+private                          Set private
+no-store                         Set no-store
+no-cache                         Set no-cache
+no-transform                     Set no-transform
+
+Misc
+----
+content-length                   Set the content-length header, otherwise chunked transfer encoding is used
+random-content = {int}           Add random string to the response of given length
+predictable-content = {int}      Add predictable string to the response of given length
+response-status = {int}          Set the response status
+</code></pre>
+
+<p>The Dummy API is written in Lua and is available for download at <a href="https://github.com/espebra/dummy-api">Github</a>. It will run on the <a href="http://openresty.org/">Openresty</a> web application server.</p>
+
+        </div>
         
         <div class="post">
           <h1 class="post-title">

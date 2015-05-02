@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Dummy API</title>
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/hyde.css">
+  <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+  
+  <link rel="stylesheet" href="/highlightjs/default.min.css">
+  <script src="/highlightjs/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/favicon.ico">
+
+  
+  <link href="" rel="alternate" type="application/rss+xml" title="Espen Braastad" />
+
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  
+    ga('create', 'UA-59220530-1', 'auto');
+    ga('send', 'pageview');
+  
+  </script>
+</head>
+
+  <body>
+
+    <div class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <h1>Espen Braastad</h1>
+    </div>
+
+    <ul class="sidebar-nav">
+      <li><a href="/">Home</a> </li>
+      
+        <li><a href="/post/dummy-api/"> Dummy API </a></li>
+      
+        <li><a href="/post">Posts</a></li>
+    </ul>
+  </div>
+</div>
+
+
+    <div class="content container">
+      <div class="post">
+        <h1>Dummy API</h1>
+        <span class="post-date">Sat, May 2, 2015</span>
+        <p>The purpose of Dummy API to act as a performant, simple and flexible API to use when testing API gateway performance. The Dummy API will read the request headers and query parameters and generate the responses accordingly. Some examples are custom cache-control header, response status and response delays.</p>
+
+<p>Some examples are:</p>
+
+<pre><code>GET http://dummy-api.varnish-software.com/?random-content=10&amp;predictable-content=20&amp;response-status=418&amp;body-delay=2&amp;max-age=2&amp;s-maxage=3
+
+HTTP/1.1 418 
+Cache-control: max-age=2, s-maxage=3
+Connection: close
+Content-Type: application/json
+Date: Sat, 02 May 2015 19:56:44 GMT
+Server: Dummy API
+Transfer-Encoding: chunked
+
+{
+    &quot;body-delay&quot;: 2, 
+    &quot;host&quot;: &quot;dummy-api.varnish-software.com&quot;, 
+    &quot;max-age&quot;: 2, 
+    &quot;method&quot;: &quot;GET&quot;, 
+    &quot;predictable-content&quot;: &quot;fu4D0qBoQnap3NVA4PWy&quot;, 
+    &quot;random-content&quot;: &quot;mqYA4IXTNG&quot;, 
+    &quot;response-status&quot;: 418, 
+    &quot;s-maxage&quot;: 3, 
+    &quot;uri&quot;: &quot;/&quot;
+}
+
+POST http://dummy-api.varnish-software.com/someurl?must-revalidate&amp;response-status=201
+
+HTTP/1.1 201 Created
+Cache-control: must-revalidate
+Connection: close
+Content-Type: application/json
+Content-length: 135
+Date: Sat, 02 May 2015 19:58:04 GMT
+Server: Dummy API
+
+{
+    &quot;content-length&quot;: true, 
+    &quot;host&quot;: &quot;dummy-api.varnish-software.com&quot;, 
+    &quot;method&quot;: &quot;POST&quot;, 
+    &quot;must-revalidate&quot;: true, 
+    &quot;response-status&quot;: 201, 
+    &quot;uri&quot;: &quot;/someurl&quot;
+}
+</code></pre>
+
+<p>The buit in help text is available with the <code>help</code> request header or query parameter:</p>
+
+<pre><code>GET http://dummy-api.varnish-software.com/?help
+
+HTTP/1.1 200 OK
+Connection: close
+Content-Type: text/plain
+Date: Sat, 02 May 2015 19:59:39 GMT
+Server: openresty
+Transfer-Encoding: chunked
+
+Dummy API
+=========
+
+The following request headers and query parameters will make an impact on the response.
+
+Delay
+-----
+header-delay = {float}           Delay to first header byte
+body-delay = {float}             Delay to first body byte
+
+Cache-control
+-------------
+max-age = {int}                  Set the response max-age value
+s-maxage = {int}                 Set the response s-maxage value
+must-revalidate                  Set must-revalidate
+public                           Set public
+private                          Set private
+no-store                         Set no-store
+no-cache                         Set no-cache
+no-transform                     Set no-transform
+
+Misc
+----
+content-length                   Set the content-length header, otherwise chunked transfer encoding is used
+random-content = {int}           Add random string to the response of given length
+predictable-content = {int}      Add predictable string to the response of given length
+response-status = {int}          Set the response status
+</code></pre>
+
+<p>The Dummy API is written in Lua and is available for download at <a href="https://github.com/espebra/dummy-api">Github</a>. It will run on the <a href="http://openresty.org/">Openresty</a> web application server.</p>
+
+        <div id="disqus_thread"></div>
+<script type="text/javascript">
+     
+    var disqus_shortname = 'espenbraastad';
+    var disqus_identifier = 'Dummy API';
+
+     
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+      </div>
+    </div>
+  </body>
+</html>

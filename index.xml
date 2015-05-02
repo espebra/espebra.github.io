@@ -8,8 +8,104 @@
     <language>en-us</language>
     <author>Espen Braastad</author>
     
-    <lastBuildDate>Sat, 30 Aug 2014 20:48:00 &#43;0100</lastBuildDate>
+    <lastBuildDate>Sat, 02 May 2015 21:42:21 CEST</lastBuildDate>
     <atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Dummy API</title>
+      <link>/post/dummy-api/</link>
+      <pubDate>Sat, 02 May 2015 21:42:21 CEST</pubDate>
+      <author>Espen Braastad</author>
+      <guid>/post/dummy-api/</guid>
+      <description>&lt;p&gt;The purpose of Dummy API to act as a performant, simple and flexible API to use when testing API gateway performance. The Dummy API will read the request headers and query parameters and generate the responses accordingly. Some examples are custom cache-control header, response status and response delays.&lt;/p&gt;
+
+&lt;p&gt;Some examples are:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;GET http://dummy-api.varnish-software.com/?random-content=10&amp;amp;predictable-content=20&amp;amp;response-status=418&amp;amp;body-delay=2&amp;amp;max-age=2&amp;amp;s-maxage=3
+
+HTTP/1.1 418 
+Cache-control: max-age=2, s-maxage=3
+Connection: close
+Content-Type: application/json
+Date: Sat, 02 May 2015 19:56:44 GMT
+Server: Dummy API
+Transfer-Encoding: chunked
+
+{
+    &amp;quot;body-delay&amp;quot;: 2, 
+    &amp;quot;host&amp;quot;: &amp;quot;dummy-api.varnish-software.com&amp;quot;, 
+    &amp;quot;max-age&amp;quot;: 2, 
+    &amp;quot;method&amp;quot;: &amp;quot;GET&amp;quot;, 
+    &amp;quot;predictable-content&amp;quot;: &amp;quot;fu4D0qBoQnap3NVA4PWy&amp;quot;, 
+    &amp;quot;random-content&amp;quot;: &amp;quot;mqYA4IXTNG&amp;quot;, 
+    &amp;quot;response-status&amp;quot;: 418, 
+    &amp;quot;s-maxage&amp;quot;: 3, 
+    &amp;quot;uri&amp;quot;: &amp;quot;/&amp;quot;
+}
+
+POST http://dummy-api.varnish-software.com/someurl?must-revalidate&amp;amp;response-status=201
+
+HTTP/1.1 201 Created
+Cache-control: must-revalidate
+Connection: close
+Content-Type: application/json
+Content-length: 135
+Date: Sat, 02 May 2015 19:58:04 GMT
+Server: Dummy API
+
+{
+    &amp;quot;content-length&amp;quot;: true, 
+    &amp;quot;host&amp;quot;: &amp;quot;dummy-api.varnish-software.com&amp;quot;, 
+    &amp;quot;method&amp;quot;: &amp;quot;POST&amp;quot;, 
+    &amp;quot;must-revalidate&amp;quot;: true, 
+    &amp;quot;response-status&amp;quot;: 201, 
+    &amp;quot;uri&amp;quot;: &amp;quot;/someurl&amp;quot;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The buit in help text is available with the &lt;code&gt;help&lt;/code&gt; request header or query parameter:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;GET http://dummy-api.varnish-software.com/?help
+
+HTTP/1.1 200 OK
+Connection: close
+Content-Type: text/plain
+Date: Sat, 02 May 2015 19:59:39 GMT
+Server: openresty
+Transfer-Encoding: chunked
+
+Dummy API
+=========
+
+The following request headers and query parameters will make an impact on the response.
+
+Delay
+-----
+header-delay = {float}           Delay to first header byte
+body-delay = {float}             Delay to first body byte
+
+Cache-control
+-------------
+max-age = {int}                  Set the response max-age value
+s-maxage = {int}                 Set the response s-maxage value
+must-revalidate                  Set must-revalidate
+public                           Set public
+private                          Set private
+no-store                         Set no-store
+no-cache                         Set no-cache
+no-transform                     Set no-transform
+
+Misc
+----
+content-length                   Set the content-length header, otherwise chunked transfer encoding is used
+random-content = {int}           Add random string to the response of given length
+predictable-content = {int}      Add predictable string to the response of given length
+response-status = {int}          Set the response status
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The Dummy API is written in Lua and is available for download at &lt;a href=&#34;https://github.com/espebra/dummy-api&#34;&gt;Github&lt;/a&gt;. It will run on the &lt;a href=&#34;http://openresty.org/&#34;&gt;Openresty&lt;/a&gt; web application server.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Remote console on HP ProLiant MicroServer G7 N54L</title>
