@@ -17,7 +17,7 @@
       <pubDate>Sat, 02 May 2015 21:42:21 CEST</pubDate>
       <author>Espen Braastad</author>
       <guid>/post/dummy-api/</guid>
-      <description>&lt;p&gt;The purpose of Dummy API to act as a performant, simple and flexible HTTP API to use when testing API gateway performance. The Dummy API will read the request headers and query parameters and generate the responses accordingly. Some examples are custom cache-control header, response status and response delays.&lt;/p&gt;
+      <description>&lt;p&gt;The purpose of Dummy API to act as a performant, simple and flexible HTTP API to use when testing API gateway performance. Put it behing a API gateway and generate responses to it from a set of consumers/clients. The Dummy API will read the request headers and query parameters and generate the responses accordingly. Some examples are custom cache-control header, response status and response delays.&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&#34;/img/dummy-api.png&#34; alt=&#34;Dummy API&#34; /&gt;
 &lt;/p&gt;
