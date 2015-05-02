@@ -17,11 +17,11 @@
       <pubDate>Sat, 02 May 2015 21:42:21 CEST</pubDate>
       <author>Espen Braastad</author>
       <guid>/post/dummy-api/</guid>
-      <description>&lt;p&gt;The purpose of Dummy API to act as a performant, simple and flexible API to use when testing API gateway performance. The Dummy API will read the request headers and query parameters and generate the responses accordingly. Some examples are custom cache-control header, response status and response delays.&lt;/p&gt;
+      <description>&lt;p&gt;The purpose of Dummy API to act as a performant, simple and flexible HTTP API to use when testing API gateway performance. The Dummy API will read the request headers and query parameters and generate the responses accordingly. Some examples are custom cache-control header, response status and response delays.o&lt;/p&gt;
 
-&lt;p&gt;Some examples are:&lt;/p&gt;
+&lt;p&gt;The following is a&lt;code&gt;GET&lt;/code&gt; request to host &lt;code&gt;dummy-api.varnish-software.com&lt;/code&gt; and path &lt;code&gt;/foo&lt;/code&gt;, where the response should contain a 10 characters random string, 20 characters predictable random string, response status &lt;code&gt;418&lt;/code&gt; and a &lt;code&gt;cache-control&lt;/code&gt; header with the value &lt;code&gt;max-age=2, s-maxage=3&lt;/code&gt;. The response will be delivered with a 2 seconds delay before the first byte of the body, to mimic a slow web application:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;GET http://dummy-api.varnish-software.com/?random-content=10&amp;amp;predictable-content=20&amp;amp;response-status=418&amp;amp;body-delay=2&amp;amp;max-age=2&amp;amp;s-maxage=3
+&lt;pre&gt;&lt;code&gt;GET http://dummy-api.varnish-software.com/foo?random-content=10&amp;amp;predictable-content=20&amp;amp;response-status=418&amp;amp;body-delay=2&amp;amp;max-age=2&amp;amp;s-maxage=3
 
 HTTP/1.1 418 
 Cache-control: max-age=2, s-maxage=3
@@ -40,10 +40,13 @@ Transfer-Encoding: chunked
     &amp;quot;random-content&amp;quot;: &amp;quot;mqYA4IXTNG&amp;quot;, 
     &amp;quot;response-status&amp;quot;: 418, 
     &amp;quot;s-maxage&amp;quot;: 3, 
-    &amp;quot;uri&amp;quot;: &amp;quot;/&amp;quot;
+    &amp;quot;uri&amp;quot;: &amp;quot;/foo&amp;quot;
 }
+&lt;/code&gt;&lt;/pre&gt;
 
-POST http://dummy-api.varnish-software.com/someurl?must-revalidate&amp;amp;response-status=201
+&lt;p&gt;The following is a &lt;code&gt;POST&lt;/code&gt; request to &lt;code&gt;dummy-api.varnish-software.com&lt;/code&gt; and path &lt;code&gt;/someurl&lt;/code&gt;, where the response status should be &lt;code&gt;201&lt;/code&gt; and the &lt;code&gt;cache-control&lt;/code&gt; header should be set to &lt;code&gt;must-revalidate&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;POST http://dummy-api.varnish-software.com/someurl?must-revalidate&amp;amp;response-status=201
 
 HTTP/1.1 201 Created
 Cache-control: must-revalidate
