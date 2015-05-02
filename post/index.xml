@@ -106,7 +106,7 @@ predictable-content = {int}      Add predictable string to the response of given
 response-status = {int}          Set the response status
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;The Dummy API is written in Lua and is available for download at &lt;a href=&#34;https://github.com/espebra/dummy-api&#34;&gt;Github&lt;/a&gt;. It will run on the &lt;a href=&#34;http://openresty.org/&#34;&gt;Openresty&lt;/a&gt; web application server.&lt;/p&gt;
+&lt;p&gt;The Dummy API is written in Lua and is available for download at &lt;a href=&#34;https://github.com/espebra/dummy-api&#34;&gt;Github&lt;/a&gt;. It will run on the &lt;a href=&#34;http://openresty.org/&#34;&gt;OpenResty&lt;/a&gt; web application server.&lt;/p&gt;
 </description>
     </item>
     
