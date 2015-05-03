@@ -90,9 +90,9 @@ Transfer-Encoding: chunked
 }
 </code></pre>
 
-<p>The following is a <code>POST</code> request to <code>dummy-api.varnish-software.com</code> and path <code>/someurl</code>, where the response status should be <code>201</code> and the <code>cache-control</code> header should be set to <code>must-revalidate</code>:</p>
+<p>The following is a <code>POST</code> request to <code>dummy-api.varnish-software.com</code> and path <code>/someurl</code>, where the response status should be <code>201</code>, the <code>cache-control</code> header should be set to <code>must-revalidate</code> and the <code>content-length</code> header should be set instead of using <code>chunked</code> <code>transfer-encoding</code>:</p>
 
-<pre><code>POST http://dummy-api.varnish-software.com/someurl?must-revalidate&amp;response-status=201
+<pre><code>POST http://dummy-api.varnish-software.com/someurl?must-revalidate&amp;response-status=201&amp;content-length
 
 HTTP/1.1 201 Created
 Cache-control: must-revalidate

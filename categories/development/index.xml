@@ -47,9 +47,9 @@ Transfer-Encoding: chunked
 }
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;The following is a &lt;code&gt;POST&lt;/code&gt; request to &lt;code&gt;dummy-api.varnish-software.com&lt;/code&gt; and path &lt;code&gt;/someurl&lt;/code&gt;, where the response status should be &lt;code&gt;201&lt;/code&gt; and the &lt;code&gt;cache-control&lt;/code&gt; header should be set to &lt;code&gt;must-revalidate&lt;/code&gt;:&lt;/p&gt;
+&lt;p&gt;The following is a &lt;code&gt;POST&lt;/code&gt; request to &lt;code&gt;dummy-api.varnish-software.com&lt;/code&gt; and path &lt;code&gt;/someurl&lt;/code&gt;, where the response status should be &lt;code&gt;201&lt;/code&gt;, the &lt;code&gt;cache-control&lt;/code&gt; header should be set to &lt;code&gt;must-revalidate&lt;/code&gt; and the &lt;code&gt;content-length&lt;/code&gt; header should be set instead of using &lt;code&gt;chunked&lt;/code&gt; &lt;code&gt;transfer-encoding&lt;/code&gt;:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;POST http://dummy-api.varnish-software.com/someurl?must-revalidate&amp;amp;response-status=201
+&lt;pre&gt;&lt;code&gt;POST http://dummy-api.varnish-software.com/someurl?must-revalidate&amp;amp;response-status=201&amp;amp;content-length
 
 HTTP/1.1 201 Created
 Cache-control: must-revalidate
