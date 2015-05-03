@@ -26,25 +26,39 @@
 
 &lt;pre&gt;&lt;code&gt;GET http://dummy-api.varnish-software.com/foo?random-content=10&amp;amp;predictable-content=20&amp;amp;response-status=418&amp;amp;body-delay=2&amp;amp;max-age=2&amp;amp;s-maxage=3
 
-HTTP/1.1 418 
+HTTP/1.1 418
 Cache-control: max-age=2, s-maxage=3
 Connection: close
 Content-Type: application/json
-Date: Sat, 02 May 2015 19:56:44 GMT
+Date: Sun, 03 May 2015 15:12:36 GMT
 Server: Dummy API
 Transfer-Encoding: chunked
 
 {
-    &amp;quot;body-delay&amp;quot;: 2, 
-    &amp;quot;host&amp;quot;: &amp;quot;dummy-api.varnish-software.com&amp;quot;, 
-    &amp;quot;max-age&amp;quot;: 2, 
-    &amp;quot;method&amp;quot;: &amp;quot;GET&amp;quot;, 
-    &amp;quot;predictable-content&amp;quot;: &amp;quot;fu4D0qBoQnap3NVA4PWy&amp;quot;, 
-    &amp;quot;random-content&amp;quot;: &amp;quot;mqYA4IXTNG&amp;quot;, 
-    &amp;quot;response-status&amp;quot;: 418, 
-    &amp;quot;s-maxage&amp;quot;: 3, 
+    &amp;quot;body-delay&amp;quot;: 2,
+    &amp;quot;host&amp;quot;: &amp;quot;dummy-api.varnish-software.com&amp;quot;,
+    &amp;quot;max-age&amp;quot;: 2,
+    &amp;quot;method&amp;quot;: &amp;quot;GET&amp;quot;,
+    &amp;quot;predictable-content&amp;quot;: &amp;quot;Q1qxI72mD3wFAGTtPlJx&amp;quot;,
+    &amp;quot;random-content&amp;quot;: &amp;quot;NlYhricCPZ&amp;quot;,
+    &amp;quot;request-headers&amp;quot;: {
+        &amp;quot;accept&amp;quot;: &amp;quot;*/*&amp;quot;,
+        &amp;quot;accept-encoding&amp;quot;: &amp;quot;gzip, deflate&amp;quot;,
+        &amp;quot;host&amp;quot;: &amp;quot;dummy-api.varnish-software.com&amp;quot;,
+        &amp;quot;user-agent&amp;quot;: &amp;quot;HTTPie/0.8.0&amp;quot;
+    },
+    &amp;quot;request-parameters&amp;quot;: {
+        &amp;quot;body-delay&amp;quot;: &amp;quot;2&amp;quot;,
+        &amp;quot;max-age&amp;quot;: &amp;quot;2&amp;quot;,
+        &amp;quot;predictable-content&amp;quot;: &amp;quot;20&amp;quot;,
+        &amp;quot;random-content&amp;quot;: &amp;quot;10&amp;quot;,
+        &amp;quot;response-status&amp;quot;: &amp;quot;418&amp;quot;,
+        &amp;quot;s-maxage&amp;quot;: &amp;quot;3\n&amp;quot;
+    },
+    &amp;quot;response-status&amp;quot;: 418,
+    &amp;quot;s-maxage&amp;quot;: 3,
     &amp;quot;uri&amp;quot;: &amp;quot;/foo&amp;quot;
-}
+}   
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;The following is a &lt;code&gt;POST&lt;/code&gt; request to &lt;code&gt;dummy-api.varnish-software.com&lt;/code&gt; and path &lt;code&gt;/someurl&lt;/code&gt;, where the response status should be &lt;code&gt;201&lt;/code&gt;, the &lt;code&gt;cache-control&lt;/code&gt; header should be set to &lt;code&gt;must-revalidate&lt;/code&gt; and the &lt;code&gt;content-length&lt;/code&gt; header should be set instead of using &lt;code&gt;chunked&lt;/code&gt; &lt;code&gt;transfer-encoding&lt;/code&gt;:&lt;/p&gt;
@@ -55,16 +69,29 @@ HTTP/1.1 201 Created
 Cache-control: must-revalidate
 Connection: close
 Content-Type: application/json
-Content-length: 135
-Date: Sat, 02 May 2015 19:58:04 GMT
+Content-length: 458
+Date: Sun, 03 May 2015 15:13:43 GMT
 Server: Dummy API
 
 {
-    &amp;quot;content-length&amp;quot;: true, 
-    &amp;quot;host&amp;quot;: &amp;quot;dummy-api.varnish-software.com&amp;quot;, 
-    &amp;quot;method&amp;quot;: &amp;quot;POST&amp;quot;, 
-    &amp;quot;must-revalidate&amp;quot;: true, 
-    &amp;quot;response-status&amp;quot;: 201, 
+    &amp;quot;content-length&amp;quot;: true,
+    &amp;quot;host&amp;quot;: &amp;quot;dummy-api.varnish-software.com&amp;quot;,
+    &amp;quot;method&amp;quot;: &amp;quot;POST&amp;quot;,
+    &amp;quot;must-revalidate&amp;quot;: true,
+    &amp;quot;request-headers&amp;quot;: {
+        &amp;quot;accept&amp;quot;: &amp;quot;application/json&amp;quot;,
+        &amp;quot;accept-encoding&amp;quot;: &amp;quot;gzip, deflate&amp;quot;,
+        &amp;quot;content-length&amp;quot;: &amp;quot;14&amp;quot;,
+        &amp;quot;content-type&amp;quot;: &amp;quot;application/json; charset=utf-8&amp;quot;,
+        &amp;quot;host&amp;quot;: &amp;quot;dummy-api.varnish-software.com&amp;quot;,
+        &amp;quot;user-agent&amp;quot;: &amp;quot;HTTPie/0.8.0&amp;quot;
+    },
+    &amp;quot;request-parameters&amp;quot;: {
+        &amp;quot;content-length&amp;quot;: true,
+        &amp;quot;must-revalidate&amp;quot;: true,
+        &amp;quot;response-status&amp;quot;: &amp;quot;201&amp;quot;
+    },
+    &amp;quot;response-status&amp;quot;: 201,
     &amp;quot;uri&amp;quot;: &amp;quot;/someurl&amp;quot;
 }
 &lt;/code&gt;&lt;/pre&gt;

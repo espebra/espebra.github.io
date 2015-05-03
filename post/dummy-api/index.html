@@ -69,25 +69,39 @@
 
 <pre><code>GET http://dummy-api.varnish-software.com/foo?random-content=10&amp;predictable-content=20&amp;response-status=418&amp;body-delay=2&amp;max-age=2&amp;s-maxage=3
 
-HTTP/1.1 418 
+HTTP/1.1 418
 Cache-control: max-age=2, s-maxage=3
 Connection: close
 Content-Type: application/json
-Date: Sat, 02 May 2015 19:56:44 GMT
+Date: Sun, 03 May 2015 15:12:36 GMT
 Server: Dummy API
 Transfer-Encoding: chunked
 
 {
-    &quot;body-delay&quot;: 2, 
-    &quot;host&quot;: &quot;dummy-api.varnish-software.com&quot;, 
-    &quot;max-age&quot;: 2, 
-    &quot;method&quot;: &quot;GET&quot;, 
-    &quot;predictable-content&quot;: &quot;fu4D0qBoQnap3NVA4PWy&quot;, 
-    &quot;random-content&quot;: &quot;mqYA4IXTNG&quot;, 
-    &quot;response-status&quot;: 418, 
-    &quot;s-maxage&quot;: 3, 
+    &quot;body-delay&quot;: 2,
+    &quot;host&quot;: &quot;dummy-api.varnish-software.com&quot;,
+    &quot;max-age&quot;: 2,
+    &quot;method&quot;: &quot;GET&quot;,
+    &quot;predictable-content&quot;: &quot;Q1qxI72mD3wFAGTtPlJx&quot;,
+    &quot;random-content&quot;: &quot;NlYhricCPZ&quot;,
+    &quot;request-headers&quot;: {
+        &quot;accept&quot;: &quot;*/*&quot;,
+        &quot;accept-encoding&quot;: &quot;gzip, deflate&quot;,
+        &quot;host&quot;: &quot;dummy-api.varnish-software.com&quot;,
+        &quot;user-agent&quot;: &quot;HTTPie/0.8.0&quot;
+    },
+    &quot;request-parameters&quot;: {
+        &quot;body-delay&quot;: &quot;2&quot;,
+        &quot;max-age&quot;: &quot;2&quot;,
+        &quot;predictable-content&quot;: &quot;20&quot;,
+        &quot;random-content&quot;: &quot;10&quot;,
+        &quot;response-status&quot;: &quot;418&quot;,
+        &quot;s-maxage&quot;: &quot;3\n&quot;
+    },
+    &quot;response-status&quot;: 418,
+    &quot;s-maxage&quot;: 3,
     &quot;uri&quot;: &quot;/foo&quot;
-}
+}   
 </code></pre>
 
 <p>The following is a <code>POST</code> request to <code>dummy-api.varnish-software.com</code> and path <code>/someurl</code>, where the response status should be <code>201</code>, the <code>cache-control</code> header should be set to <code>must-revalidate</code> and the <code>content-length</code> header should be set instead of using <code>chunked</code> <code>transfer-encoding</code>:</p>
@@ -98,16 +112,29 @@ HTTP/1.1 201 Created
 Cache-control: must-revalidate
 Connection: close
 Content-Type: application/json
-Content-length: 135
-Date: Sat, 02 May 2015 19:58:04 GMT
+Content-length: 458
+Date: Sun, 03 May 2015 15:13:43 GMT
 Server: Dummy API
 
 {
-    &quot;content-length&quot;: true, 
-    &quot;host&quot;: &quot;dummy-api.varnish-software.com&quot;, 
-    &quot;method&quot;: &quot;POST&quot;, 
-    &quot;must-revalidate&quot;: true, 
-    &quot;response-status&quot;: 201, 
+    &quot;content-length&quot;: true,
+    &quot;host&quot;: &quot;dummy-api.varnish-software.com&quot;,
+    &quot;method&quot;: &quot;POST&quot;,
+    &quot;must-revalidate&quot;: true,
+    &quot;request-headers&quot;: {
+        &quot;accept&quot;: &quot;application/json&quot;,
+        &quot;accept-encoding&quot;: &quot;gzip, deflate&quot;,
+        &quot;content-length&quot;: &quot;14&quot;,
+        &quot;content-type&quot;: &quot;application/json; charset=utf-8&quot;,
+        &quot;host&quot;: &quot;dummy-api.varnish-software.com&quot;,
+        &quot;user-agent&quot;: &quot;HTTPie/0.8.0&quot;
+    },
+    &quot;request-parameters&quot;: {
+        &quot;content-length&quot;: true,
+        &quot;must-revalidate&quot;: true,
+        &quot;response-status&quot;: &quot;201&quot;
+    },
+    &quot;response-status&quot;: 201,
     &quot;uri&quot;: &quot;/someurl&quot;
 }
 </code></pre>
