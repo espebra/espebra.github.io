@@ -164,7 +164,7 @@ $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r36
 
 &lt;p&gt;Check if the counter is higher than the limit set in the database. If it is, then abort the request here with a &lt;code&gt;429&lt;/code&gt; response code.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;            if (std.integer(req.http.counter, 0) &amp;amp;gt; std.integer(req.http.requests, 0)) {
+&lt;pre&gt;&lt;code&gt;            if (std.integer(req.http.counter, 0) &amp;gt; std.integer(req.http.requests, 0)) {
                  return (synth(429, &amp;quot;Too many requests&amp;quot;));
              }
         }
@@ -200,9 +200,9 @@ $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r36
     txreq -url &amp;quot;/&amp;quot;
     rxresp
     expect resp.status == 200
-    expect resp.http.X-RateLimit-Limit == &amp;amp;lt;undef&amp;amp;gt;
-    expect resp.http.X-RateLimit-Counter == &amp;amp;lt;undef&amp;amp;gt;
-    expect resp.http.X-RateLimit-Period == &amp;amp;lt;undef&amp;amp;gt;
+    expect resp.http.X-RateLimit-Limit == &amp;lt;undef&amp;gt;
+    expect resp.http.X-RateLimit-Counter == &amp;lt;undef&amp;gt;
+    expect resp.http.X-RateLimit-Period == &amp;lt;undef&amp;gt;
 } -run
 &lt;/code&gt;&lt;/pre&gt;
 
