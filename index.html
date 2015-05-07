@@ -215,7 +215,7 @@ $ sqlite3 /tmp/rules.db3 &quot;INSERT INTO t (rule, path) VALUES ('15r3600', '/l
 
 <pre><code>            if (std.integer(req.http.counter, 0) &gt; std.integer(req.http.requests, 0)) {
                  return (synth(429, &quot;Too many requests&quot;));
-             }
+            }
         }
     }
 </code></pre>
