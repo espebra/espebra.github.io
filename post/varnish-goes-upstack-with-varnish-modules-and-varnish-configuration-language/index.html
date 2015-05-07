@@ -125,7 +125,7 @@ $ sqlite3 /tmp/rules.db3 &quot;INSERT INTO t (rule, path) VALUES ('15r3600', '/l
 <p>We then expect 4 requests to /search to arrive according to our following expectations. Note that the query parameters are slightly different, making all of these unique requests.</p>
 
 <pre><code>    rxreq
-    expect req.url == &quot;/search?id=123&amp;amp;type=1&quot;
+    expect req.url == &quot;/search?id=123&amp;type=1&quot;
     expect req.http.path == &quot;/search&quot;
     expect req.http.rule == &quot;3r5&quot;
     expect req.http.requests == &quot;3&quot;
@@ -134,7 +134,7 @@ $ sqlite3 /tmp/rules.db3 &quot;INSERT INTO t (rule, path) VALUES ('15r3600', '/l
     txresp
 
     rxreq
-    expect req.url == &quot;/search?id=123&amp;amp;type=2&quot;
+    expect req.url == &quot;/search?id=123&amp;type=2&quot;
     expect req.http.path == &quot;/search&quot;
     expect req.http.rule == &quot;3r5&quot;
     expect req.http.requests == &quot;3&quot;
@@ -143,7 +143,7 @@ $ sqlite3 /tmp/rules.db3 &quot;INSERT INTO t (rule, path) VALUES ('15r3600', '/l
     txresp
 
     rxreq
-    expect req.url == &quot;/search?id=123&amp;amp;type=3&quot;
+    expect req.url == &quot;/search?id=123&amp;type=3&quot;
     expect req.http.path == &quot;/search&quot;
     expect req.http.rule == &quot;3r5&quot;
     expect req.http.requests == &quot;3&quot;
@@ -152,7 +152,7 @@ $ sqlite3 /tmp/rules.db3 &quot;INSERT INTO t (rule, path) VALUES ('15r3600', '/l
     txresp
 
     rxreq
-    expect req.url == &quot;/search?id=123&amp;amp;type=4&quot;
+    expect req.url == &quot;/search?id=123&amp;type=4&quot;
     expect req.http.path == &quot;/search&quot;
     expect req.http.rule == &quot;3r5&quot;
     expect req.http.requests == &quot;3&quot;
@@ -179,10 +179,10 @@ $ sqlite3 /tmp/rules.db3 &quot;INSERT INTO t (rule, path) VALUES ('15r3600', '/l
 }
 </code></pre>
 
-<p>In vcl_recv, the incoming HTTP requests are received. We start by extracting the request path without query parameters and potential dangerous characters. This is important since the path will be part of the SQL query later. The following regex will match the req.url from the beginning of the line up until any of the characters ? &amp; ;  “  ‘ or whitespace.</p>
+<p>In <code>vcl_recv</code>, the incoming HTTP requests are received. We start by extracting the request path without query parameters and potential dangerous characters. This is important since the path will be part of the SQL query later. The following regex will match the req.url from the beginning of the line up until any of the characters ? &amp; ;  “  ‘ or whitespace.</p>
 
 <pre><code>sub vcl_recv {
-    set req.http.path = regsub(req.url, {&quot;^([^?&amp;amp;;&quot;' ]+).*&quot;}, &quot;\1&quot;);
+    set req.http.path = regsub(req.url, {&quot;^([^?&amp;;&quot;' ]+).*&quot;}, &quot;\1&quot;);
 </code></pre>
 
 <p>The use of <code>{&quot; &quot;}</code> in the regular expression enables handling of the &ldquo; character in the regular expression rule. The path we just extracted is used when the rule is looked up in the database. The response, if any, is stored in <code>req.http.rule</code>.</p>
@@ -190,7 +190,7 @@ $ sqlite3 /tmp/rules.db3 &quot;INSERT INTO t (rule, path) VALUES ('15r3600', '/l
 <pre><code>    set req.http.rule = sqlite3.exec(&quot;SELECT rule FROM t WHERE path='&quot; + req.http.path + &quot;' LIMIT 1&quot;);
 </code></pre>
 
-<p>If we get a response, it will be on the format RnT, where R is the amount of requests allowed over a period of T seconds. Since this is a string, we need to apply more regex to separate those.</p>
+<p>If we get a response, it will be on the format <code>RnT</code>, where <code>R</code> is the amount of requests allowed over a period of <code>T</code> seconds. Since this is a string, we need to apply more regex to separate those.</p>
 
 <pre><code>    set req.http.requests = regsub(req.http.rule, &quot;^([0-9]+)r.*$&quot;, &quot;\1&quot;);
     set req.http.period = regsub(req.http.rule, &quot;^[0-9]+r([0-9]+)$&quot;, &quot;\1&quot;);
@@ -198,7 +198,7 @@ $ sqlite3 /tmp/rules.db3 &quot;INSERT INTO t (rule, path) VALUES ('15r3600', '/l
 
 <p>We do throttling on this request only if we got proper values from the previous regex filters.</p>
 
-<pre><code>    if (req.http.requests != &quot;&quot; &amp;amp;&amp;amp; req.http.period != &quot;&quot;) {
+<pre><code>    if (req.http.requests != &quot;&quot; &amp;&amp; req.http.period != &quot;&quot;) {
 </code></pre>
 
 <p>Increment or create a Memcached counter unique for this client.ip and path with the value 1. The expiry time we specify is equal to the period in the throttle rule set in the database. This way, the throttle rules can be flexible regarding time period. The return value is the new value of the counter, which corresponds to the amount of requests this client.ip has done this path in the current time period.</p>
@@ -207,7 +207,7 @@ $ sqlite3 /tmp/rules.db3 &quot;INSERT INTO t (rule, path) VALUES ('15r3600', '/l
             req.http.path + &quot;-&quot; + client.ip, 1, 1, std.integer(req.http.period, 0));
 </code></pre>
 
-<p>Check if the counter is higher than the limit set in the database. If it is, then abort the request here with a 429 response code.</p>
+<p>Check if the counter is higher than the limit set in the database. If it is, then abort the request here with a <code>429</code> response code.</p>
 
 <pre><code>        if (std.integer(req.http.counter, 0) &amp;gt; std.integer(req.http.requests, 0)) {
              return (synth(429, &quot;Too many requests&quot;));
@@ -216,10 +216,10 @@ $ sqlite3 /tmp/rules.db3 &quot;INSERT INTO t (rule, path) VALUES ('15r3600', '/l
 }
 </code></pre>
 
-<p>In vcl_deliver we set response headers showing the throttle limit and status for each request which might be helpful for the consumers.</p>
+<p>In <code>vcl_deliver</code> we set response headers showing the throttle limit and status for each request which might be helpful for the consumers.</p>
 
 <pre><code>sub vcl_deliver {
-    if (req.http.requests &amp;amp;&amp;amp; req.http.counter &amp;amp;&amp;amp; req.http.period) {
+    if (req.http.requests &amp;&amp; req.http.counter &amp;&amp; req.http.period) {
         set resp.http.X-RateLimit-Limit = req.http.requests;
         set resp.http.X-RateLimit-Counter = req.http.counter;
         set resp.http.X-RateLimit-Period = req.http.period;
@@ -227,10 +227,10 @@ $ sqlite3 /tmp/rules.db3 &quot;INSERT INTO t (rule, path) VALUES ('15r3600', '/l
 }
 </code></pre>
 
-<p>Errors will get the same headers set in vcl_synth.</p>
+<p>Errors will get the same headers set in <code>vcl_synth</code>.</p>
 
 <pre><code>sub vcl_synth {
-    if (req.http.requests &amp;amp;&amp;amp; req.http.counter &amp;amp;&amp;amp; req.http.period) {
+    if (req.http.requests &amp;&amp; req.http.counter &amp;&amp; req.http.period) {
         set resp.http.X-RateLimit-Limit = req.http.requests;
         set resp.http.X-RateLimit-Counter = req.http.counter;
         set resp.http.X-RateLimit-Period = req.http.period;
@@ -250,31 +250,31 @@ $ sqlite3 /tmp/rules.db3 &quot;INSERT INTO t (rule, path) VALUES ('15r3600', '/l
 } -run
 </code></pre>
 
-<p>The next client sends requests to a URL that we know is a match in the throttle database, and we expect the rate-limit headers to be set. The throttle rule for /search is 3r5, which means that the three first requests within a 5 second period should succeed (with return code 200) while the fourth request should be throttled (with return code 429).</p>
+<p>The next client sends requests to a URL that we know is a match in the throttle database, and we expect the rate-limit headers to be set. The throttle rule for <code>/search</code> is <code>3r5</code>, which means that the three first requests within a 5 second period should succeed (with return code <code>200</code>) while the fourth request should be throttled (with return code <code>429</code>).</p>
 
 <pre><code>client c2 {
-    txreq -url &quot;/search?id=123&amp;amp;type=1&quot;
+    txreq -url &quot;/search?id=123&amp;type=1&quot;
     rxresp
     expect resp.status == 200
     expect resp.http.X-RateLimit-Limit == &quot;3&quot;
     expect resp.http.X-RateLimit-Counter == &quot;1&quot;
     expect resp.http.X-RateLimit-Period == &quot;5&quot;
 
-    txreq -url &quot;/search?id=123&amp;amp;type=2&quot;
+    txreq -url &quot;/search?id=123&amp;type=2&quot;
     rxresp
     expect resp.status == 200
     expect resp.http.X-RateLimit-Limit == &quot;3&quot;
     expect resp.http.X-RateLimit-Counter == &quot;2&quot;
     expect resp.http.X-RateLimit-Period == &quot;5&quot;
 
-    txreq -url &quot;/search?id=123&amp;amp;type=3&quot;
+    txreq -url &quot;/search?id=123&amp;type=3&quot;
     rxresp
     expect resp.status == 200
     expect resp.http.X-RateLimit-Limit == &quot;3&quot;
     expect resp.http.X-RateLimit-Counter == &quot;3&quot;
     expect resp.http.X-RateLimit-Period == &quot;5&quot;
 
-    txreq -url &quot;/search?id=123&amp;amp;type=4&quot;
+    txreq -url &quot;/search?id=123&amp;type=4&quot;
     rxresp
     expect resp.status == 429
     expect resp.http.X-RateLimit-Limit == &quot;3&quot;
@@ -288,7 +288,7 @@ $ sqlite3 /tmp/rules.db3 &quot;INSERT INTO t (rule, path) VALUES ('15r3600', '/l
 <pre><code>delay 5;
 
 client c3 {
-   txreq -url &quot;/search?id=123&amp;amp;type=4&quot;
+   txreq -url &quot;/search?id=123&amp;type=4&quot;
    rxresp
    expect resp.status == 200
    expect resp.http.X-RateLimit-Limit == &quot;3&quot;
