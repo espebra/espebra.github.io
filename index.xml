@@ -128,69 +128,70 @@ $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r36
 
 &lt;p&gt;VMODs are usually configured in vcl_init, and this is true for sqlite3 and memcached as well. For sqlite3, we set the path to the database and the field delimiter to use on multi column results. The memcached VMOD can have a wide variety of configuration options supported by &lt;a href=&#34;http://docs.libmemcached.org/libmemcached_configuration.html&#34;&gt;libmemcached&lt;/a&gt;.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;sub vcl_init {
-    sqlite3.open(&amp;quot;/tmp/rules.db3&amp;quot;, &amp;quot;|;&amp;quot;);
-    memcached.servers(&amp;quot;--SERVER=localhost --BINARY-PROTOCOL&amp;quot;);
-}
+&lt;pre&gt;&lt;code&gt;    sub vcl_init {
+        sqlite3.open(&amp;quot;/tmp/rules.db3&amp;quot;, &amp;quot;|;&amp;quot;);
+        memcached.servers(&amp;quot;--SERVER=localhost --BINARY-PROTOCOL&amp;quot;);
+    }
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;In &lt;code&gt;vcl_recv&lt;/code&gt;, the incoming HTTP requests are received. We start by extracting the request path without query parameters and potential dangerous characters. This is important since the path will be part of the SQL query later. The following regex will match the req.url from the beginning of the line up until any of the characters ? &amp;amp; ;  “  ‘ or whitespace.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;sub vcl_recv {
-    set req.http.path = regsub(req.url, {&amp;quot;^([^?&amp;amp;;&amp;quot;&#39; ]+).*&amp;quot;}, &amp;quot;\1&amp;quot;);
+&lt;pre&gt;&lt;code&gt;    sub vcl_recv {
+        set req.http.path = regsub(req.url, {&amp;quot;^([^?&amp;amp;;&amp;quot;&#39; ]+).*&amp;quot;}, &amp;quot;\1&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;The use of &lt;code&gt;{&amp;quot; &amp;quot;}&lt;/code&gt; in the regular expression enables handling of the &amp;ldquo; character in the regular expression rule. The path we just extracted is used when the rule is looked up in the database. The response, if any, is stored in &lt;code&gt;req.http.rule&lt;/code&gt;.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;    set req.http.rule = sqlite3.exec(&amp;quot;SELECT rule FROM t WHERE path=&#39;&amp;quot; + req.http.path + &amp;quot;&#39; LIMIT 1&amp;quot;);
+&lt;pre&gt;&lt;code&gt;        set req.http.rule = sqlite3.exec(&amp;quot;SELECT rule FROM t WHERE path=&#39;&amp;quot; + req.http.path + &amp;quot;&#39; LIMIT 1&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;If we get a response, it will be on the format &lt;code&gt;RnT&lt;/code&gt;, where &lt;code&gt;R&lt;/code&gt; is the amount of requests allowed over a period of &lt;code&gt;T&lt;/code&gt; seconds. Since this is a string, we need to apply more regex to separate those.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;    set req.http.requests = regsub(req.http.rule, &amp;quot;^([0-9]+)r.*$&amp;quot;, &amp;quot;\1&amp;quot;);
-    set req.http.period = regsub(req.http.rule, &amp;quot;^[0-9]+r([0-9]+)$&amp;quot;, &amp;quot;\1&amp;quot;);
+&lt;pre&gt;&lt;code&gt;        set req.http.requests = regsub(req.http.rule, &amp;quot;^([0-9]+)r.*$&amp;quot;, &amp;quot;\1&amp;quot;);
+        set req.http.period = regsub(req.http.rule, &amp;quot;^[0-9]+r([0-9]+)$&amp;quot;, &amp;quot;\1&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;We do throttling on this request only if we got proper values from the previous regex filters.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;    if (req.http.requests != &amp;quot;&amp;quot; &amp;amp;&amp;amp; req.http.period != &amp;quot;&amp;quot;) {
+&lt;pre&gt;&lt;code&gt;        if (req.http.requests != &amp;quot;&amp;quot; &amp;amp;&amp;amp; req.http.period != &amp;quot;&amp;quot;) {
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Increment or create a Memcached counter unique for this client.ip and path with the value 1. The expiry time we specify is equal to the period in the throttle rule set in the database. This way, the throttle rules can be flexible regarding time period. The return value is the new value of the counter, which corresponds to the amount of requests this client.ip has done this path in the current time period.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;        set req.http.counter = memcached.incr_set(
-            req.http.path + &amp;quot;-&amp;quot; + client.ip, 1, 1, std.integer(req.http.period, 0));
+&lt;pre&gt;&lt;code&gt;            set req.http.counter = memcached.incr_set(
+                req.http.path + &amp;quot;-&amp;quot; + client.ip, 1, 1, std.integer(req.http.period, 0));
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Check if the counter is higher than the limit set in the database. If it is, then abort the request here with a &lt;code&gt;429&lt;/code&gt; response code.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;        if (std.integer(req.http.counter, 0) &amp;amp;gt; std.integer(req.http.requests, 0)) {
-             return (synth(429, &amp;quot;Too many requests&amp;quot;));
-         }
+&lt;pre&gt;&lt;code&gt;            if (std.integer(req.http.counter, 0) &amp;amp;gt; std.integer(req.http.requests, 0)) {
+                 return (synth(429, &amp;quot;Too many requests&amp;quot;));
+             }
+        }
     }
-}
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;In &lt;code&gt;vcl_deliver&lt;/code&gt; we set response headers showing the throttle limit and status for each request which might be helpful for the consumers.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;sub vcl_deliver {
-    if (req.http.requests &amp;amp;&amp;amp; req.http.counter &amp;amp;&amp;amp; req.http.period) {
-        set resp.http.X-RateLimit-Limit = req.http.requests;
-        set resp.http.X-RateLimit-Counter = req.http.counter;
-        set resp.http.X-RateLimit-Period = req.http.period;
+&lt;pre&gt;&lt;code&gt;    sub vcl_deliver {
+        if (req.http.requests &amp;amp;&amp;amp; req.http.counter &amp;amp;&amp;amp; req.http.period) {
+            set resp.http.X-RateLimit-Limit = req.http.requests;
+            set resp.http.X-RateLimit-Counter = req.http.counter;
+            set resp.http.X-RateLimit-Period = req.http.period;
+        }
     }
-}
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Errors will get the same headers set in &lt;code&gt;vcl_synth&lt;/code&gt;.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;sub vcl_synth {
-    if (req.http.requests &amp;amp;&amp;amp; req.http.counter &amp;amp;&amp;amp; req.http.period) {
-        set resp.http.X-RateLimit-Limit = req.http.requests;
-        set resp.http.X-RateLimit-Counter = req.http.counter;
-        set resp.http.X-RateLimit-Period = req.http.period;
+&lt;pre&gt;&lt;code&gt;    sub vcl_synth {
+        if (req.http.requests &amp;amp;&amp;amp; req.http.counter &amp;amp;&amp;amp; req.http.period) {
+            set resp.http.X-RateLimit-Limit = req.http.requests;
+            set resp.http.X-RateLimit-Counter = req.http.counter;
+            set resp.http.X-RateLimit-Period = req.http.period;
+        }
     }
-}
+} -start
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;The configuration is complete, and it is time to add some clients to verify that the configuration is correct. First we send a request that we expect to be unthrottled, meaning that there are no throttle rules in the database for this URL.&lt;/p&gt;

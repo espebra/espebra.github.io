@@ -173,69 +173,70 @@ $ sqlite3 /tmp/rules.db3 &quot;INSERT INTO t (rule, path) VALUES ('15r3600', '/l
 
 <p>VMODs are usually configured in vcl_init, and this is true for sqlite3 and memcached as well. For sqlite3, we set the path to the database and the field delimiter to use on multi column results. The memcached VMOD can have a wide variety of configuration options supported by <a href="http://docs.libmemcached.org/libmemcached_configuration.html">libmemcached</a>.</p>
 
-<pre><code>sub vcl_init {
-    sqlite3.open(&quot;/tmp/rules.db3&quot;, &quot;|;&quot;);
-    memcached.servers(&quot;--SERVER=localhost --BINARY-PROTOCOL&quot;);
-}
+<pre><code>    sub vcl_init {
+        sqlite3.open(&quot;/tmp/rules.db3&quot;, &quot;|;&quot;);
+        memcached.servers(&quot;--SERVER=localhost --BINARY-PROTOCOL&quot;);
+    }
 </code></pre>
 
 <p>In <code>vcl_recv</code>, the incoming HTTP requests are received. We start by extracting the request path without query parameters and potential dangerous characters. This is important since the path will be part of the SQL query later. The following regex will match the req.url from the beginning of the line up until any of the characters ? &amp; ;  “  ‘ or whitespace.</p>
 
-<pre><code>sub vcl_recv {
-    set req.http.path = regsub(req.url, {&quot;^([^?&amp;;&quot;' ]+).*&quot;}, &quot;\1&quot;);
+<pre><code>    sub vcl_recv {
+        set req.http.path = regsub(req.url, {&quot;^([^?&amp;;&quot;' ]+).*&quot;}, &quot;\1&quot;);
 </code></pre>
 
 <p>The use of <code>{&quot; &quot;}</code> in the regular expression enables handling of the &ldquo; character in the regular expression rule. The path we just extracted is used when the rule is looked up in the database. The response, if any, is stored in <code>req.http.rule</code>.</p>
 
-<pre><code>    set req.http.rule = sqlite3.exec(&quot;SELECT rule FROM t WHERE path='&quot; + req.http.path + &quot;' LIMIT 1&quot;);
+<pre><code>        set req.http.rule = sqlite3.exec(&quot;SELECT rule FROM t WHERE path='&quot; + req.http.path + &quot;' LIMIT 1&quot;);
 </code></pre>
 
 <p>If we get a response, it will be on the format <code>RnT</code>, where <code>R</code> is the amount of requests allowed over a period of <code>T</code> seconds. Since this is a string, we need to apply more regex to separate those.</p>
 
-<pre><code>    set req.http.requests = regsub(req.http.rule, &quot;^([0-9]+)r.*$&quot;, &quot;\1&quot;);
-    set req.http.period = regsub(req.http.rule, &quot;^[0-9]+r([0-9]+)$&quot;, &quot;\1&quot;);
+<pre><code>        set req.http.requests = regsub(req.http.rule, &quot;^([0-9]+)r.*$&quot;, &quot;\1&quot;);
+        set req.http.period = regsub(req.http.rule, &quot;^[0-9]+r([0-9]+)$&quot;, &quot;\1&quot;);
 </code></pre>
 
 <p>We do throttling on this request only if we got proper values from the previous regex filters.</p>
 
-<pre><code>    if (req.http.requests != &quot;&quot; &amp;&amp; req.http.period != &quot;&quot;) {
+<pre><code>        if (req.http.requests != &quot;&quot; &amp;&amp; req.http.period != &quot;&quot;) {
 </code></pre>
 
 <p>Increment or create a Memcached counter unique for this client.ip and path with the value 1. The expiry time we specify is equal to the period in the throttle rule set in the database. This way, the throttle rules can be flexible regarding time period. The return value is the new value of the counter, which corresponds to the amount of requests this client.ip has done this path in the current time period.</p>
 
-<pre><code>        set req.http.counter = memcached.incr_set(
-            req.http.path + &quot;-&quot; + client.ip, 1, 1, std.integer(req.http.period, 0));
+<pre><code>            set req.http.counter = memcached.incr_set(
+                req.http.path + &quot;-&quot; + client.ip, 1, 1, std.integer(req.http.period, 0));
 </code></pre>
 
 <p>Check if the counter is higher than the limit set in the database. If it is, then abort the request here with a <code>429</code> response code.</p>
 
-<pre><code>        if (std.integer(req.http.counter, 0) &amp;gt; std.integer(req.http.requests, 0)) {
-             return (synth(429, &quot;Too many requests&quot;));
-         }
+<pre><code>            if (std.integer(req.http.counter, 0) &amp;gt; std.integer(req.http.requests, 0)) {
+                 return (synth(429, &quot;Too many requests&quot;));
+             }
+        }
     }
-}
 </code></pre>
 
 <p>In <code>vcl_deliver</code> we set response headers showing the throttle limit and status for each request which might be helpful for the consumers.</p>
 
-<pre><code>sub vcl_deliver {
-    if (req.http.requests &amp;&amp; req.http.counter &amp;&amp; req.http.period) {
-        set resp.http.X-RateLimit-Limit = req.http.requests;
-        set resp.http.X-RateLimit-Counter = req.http.counter;
-        set resp.http.X-RateLimit-Period = req.http.period;
+<pre><code>    sub vcl_deliver {
+        if (req.http.requests &amp;&amp; req.http.counter &amp;&amp; req.http.period) {
+            set resp.http.X-RateLimit-Limit = req.http.requests;
+            set resp.http.X-RateLimit-Counter = req.http.counter;
+            set resp.http.X-RateLimit-Period = req.http.period;
+        }
     }
-}
 </code></pre>
 
 <p>Errors will get the same headers set in <code>vcl_synth</code>.</p>
 
-<pre><code>sub vcl_synth {
-    if (req.http.requests &amp;&amp; req.http.counter &amp;&amp; req.http.period) {
-        set resp.http.X-RateLimit-Limit = req.http.requests;
-        set resp.http.X-RateLimit-Counter = req.http.counter;
-        set resp.http.X-RateLimit-Period = req.http.period;
+<pre><code>    sub vcl_synth {
+        if (req.http.requests &amp;&amp; req.http.counter &amp;&amp; req.http.period) {
+            set resp.http.X-RateLimit-Limit = req.http.requests;
+            set resp.http.X-RateLimit-Counter = req.http.counter;
+            set resp.http.X-RateLimit-Period = req.http.period;
+        }
     }
-}
+} -start
 </code></pre>
 
 <p>The configuration is complete, and it is time to add some clients to verify that the configuration is correct. First we send a request that we expect to be unthrottled, meaning that there are no throttle rules in the database for this URL.</p>
