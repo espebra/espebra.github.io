@@ -259,7 +259,7 @@ client c3 {
 #     top  TEST example.vtc passed (6.533)
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;Add -v for verbose mode to get more information from the test run.&lt;/p&gt;
+&lt;p&gt;Add &lt;code&gt;-v&lt;/code&gt; for verbose mode to get more information from the test run.&lt;/p&gt;
 
 &lt;p&gt;Requests to our application in the example will receive the following response headers. The first is a request that has been allowed, and the second is a request that has been throttled.&lt;/p&gt;
 
