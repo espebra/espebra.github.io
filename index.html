@@ -98,18 +98,18 @@
 
 <p>The following example is a very simple version of some of the concepts used in the Varnish API Engine. We will create a small application written in VCL that will look up the requested URL in a database containing throttling rules and enforce them on a per IP basis.</p>
 
-<p>Since testing and maintainability is crucial when developing an application, we will use Varnish&rsquo;s integrated testing tool: varnishtest. Varnishtest is a powerful testing tool which is used to test all aspects of Varnish Cache. Varnishtest&rsquo;s simple interface means that developers and operation engineers can leverage it to test their VCL/VMOD configurations.</p>
+<p>Since testing and maintainability is crucial when developing an application, we will use Varnish&rsquo;s integrated testing tool: <code>varnishtest</code>. Varnishtest is a powerful testing tool which is used to test all aspects of Varnish Cache. Varnishtest&rsquo;s simple interface means that developers and operation engineers can leverage it to test their VCL/VMOD configurations.</p>
 
-<p>Varnishtest reads a file describing a set of mock servers, clients, and varnish instances. The clients perform requests that go via varnish, to the server. Expectations can be set on content, headers, HTTP response codes and more. With varnishtest we can quickly test our example application, and verify that our requests are passed or blocked as per the defined expectations.</p>
+<p>Varnishtest reads a file describing a set of mock servers, clients, and varnish instances. The clients perform requests that go via varnish, to the server. Expectations can be set on content, headers, HTTP response codes and more. With <code>varnishtest</code> we can quickly test our example application, and verify that our requests are passed or blocked as per the defined expectations.</p>
 
-<p>First we need a database with our throttle rules. Using the sqlite3 command, we create the database in /tmp/rules.db3 and add a couple of rules.</p>
+<p>First we need a database with our throttle rules. Using the sqlite3 command, we create the database in <code>/tmp/rules.db3</code> and add a couple of rules.</p>
 
 <pre><code>$ sqlite3 /tmp/rules.db3 &quot;CREATE TABLE t (rule text, path text);&quot;
 $ sqlite3 /tmp/rules.db3 &quot;INSERT INTO t (rule, path) VALUES ('3r5', '/search');&quot;
 $ sqlite3 /tmp/rules.db3 &quot;INSERT INTO t (rule, path) VALUES ('15r3600', '/login');&quot;
 </code></pre>
 
-<p>These rules will allow 3 requests per 5 seconds to /search and 15 requests per hour to /login. The idea is to enforce these rules on a per IP basis.</p>
+<p>These rules will allow 3 requests per 5 seconds to /search and 15 requests per hour to <code>/login</code>. The idea is to enforce these rules on a per IP basis.</p>
 
 <p>For the sake of simplicity, we’ll write the tests and VCL configuration in the same file, <a href="https://www.varnish-software.com/static/vcl/throttle.vtc">throttle.vtc</a>. It is, however, possible to include separate VCL configuration files using include statements in the test files, to separate VCL configuration and the different tests.</p>
 
