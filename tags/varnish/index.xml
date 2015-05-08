@@ -6,16 +6,14 @@
     <description>Recent content in Varnish on Espen Braastad</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <author>Espen Braastad</author>
-    
-    <lastBuildDate>Thu, 07 May 2015 10:55:56 CEST</lastBuildDate>
+    <lastBuildDate>Thu, 07 May 2015 10:55:56 +0200</lastBuildDate>
     <atom:link href="http://www.espenbraastad.no/tags/varnish/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Varnish goes upstack with varnish modules and varnish configuration language</title>
       <link>http://www.espenbraastad.no/post/varnish-goes-upstack-with-varnish-modules-and-varnish-configuration-language/</link>
-      <pubDate>Thu, 07 May 2015 10:55:56 CEST</pubDate>
-      <author>Espen Braastad</author>
+      <pubDate>Thu, 07 May 2015 10:55:56 +0200</pubDate>
+      
       <guid>http://www.espenbraastad.no/post/varnish-goes-upstack-with-varnish-modules-and-varnish-configuration-language/</guid>
       <description>
 

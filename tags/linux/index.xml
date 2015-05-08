@@ -6,16 +6,14 @@
     <description>Recent content in Linux on Espen Braastad</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <author>Espen Braastad</author>
-    
-    <lastBuildDate>Wed, 19 Feb 2014 23:32:00 CET</lastBuildDate>
+    <lastBuildDate>Wed, 19 Feb 2014 23:32:00 +0100</lastBuildDate>
     <atom:link href="http://www.espenbraastad.no/tags/linux/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Temperature trend monitoring at home</title>
       <link>http://www.espenbraastad.no/post/temperature-trend-monitoring-at-home/</link>
-      <pubDate>Wed, 19 Feb 2014 23:32:00 CET</pubDate>
-      <author>Espen Braastad</author>
+      <pubDate>Wed, 19 Feb 2014 23:32:00 +0100</pubDate>
+      
       <guid>http://www.espenbraastad.no/post/temperature-trend-monitoring-at-home/</guid>
       <description>
 
@@ -115,8 +113,8 @@ sudo apt-get install munin munin-node
     <item>
       <title>CentOS/RHEL/SL 6: root filesystem on tmpfs, UPDATE #2</title>
       <link>http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs-update2/</link>
-      <pubDate>Sun, 23 Jun 2013 21:44:19 &#43;0100</pubDate>
-      <author>Espen Braastad</author>
+      <pubDate>Sun, 23 Jun 2013 21:44:19 +0100</pubDate>
+      
       <guid>http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs-update2/</guid>
       <description>
 
@@ -223,8 +221,8 @@ sys 0m0.002s
     <item>
       <title>CentOS/RHEL/SL 6: root filesystem on tmpfs, UPDATE</title>
       <link>http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs-update/</link>
-      <pubDate>Thu, 21 Mar 2013 09:57:00 CET</pubDate>
-      <author>Espen Braastad</author>
+      <pubDate>Thu, 21 Mar 2013 09:57:00 +0100</pubDate>
+      
       <guid>http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs-update/</guid>
       <description>&lt;p&gt;In EL6.4, the file &lt;code&gt;/usr/share/dracut/modules.d/90dmsquash-live/dmsquash-live-root&lt;/code&gt; was updated so that the &lt;a href=&#34;http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs&#34;&gt;previous patch&lt;/a&gt; no longer works as it should. I’ve updated the patch, and here it is:&lt;/p&gt;
 
@@ -329,8 +327,8 @@ sys 0m0.002s
     <item>
       <title>CentOS/RHEL/SL 6: root filesystem on tmpfs</title>
       <link>http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs/</link>
-      <pubDate>Tue, 01 May 2012 21:44:19 &#43;0100</pubDate>
-      <author>Espen Braastad</author>
+      <pubDate>Tue, 01 May 2012 21:44:19 +0100</pubDate>
+      
       <guid>http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs/</guid>
       <description>&lt;p&gt;UPDATE: The patch below has been updated &lt;a href=&#34;http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs-update&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
 
