@@ -6,14 +6,16 @@
     <description>Recent content in Varnish on Espen Braastad</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 07 May 2015 10:55:56 +0200</lastBuildDate>
+    <author>Espen Braastad</author>
+    
+    <lastBuildDate>Thu, 07 May 2015 10:55:56 CEST</lastBuildDate>
     <atom:link href="http://www.espenbraastad.no/categories/varnish/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Varnish goes upstack with varnish modules and varnish configuration language</title>
       <link>http://www.espenbraastad.no/post/varnish-goes-upstack-with-varnish-modules-and-varnish-configuration-language/</link>
-      <pubDate>Thu, 07 May 2015 10:55:56 +0200</pubDate>
-      
+      <pubDate>Thu, 07 May 2015 10:55:56 CEST</pubDate>
+      <author>Espen Braastad</author>
       <guid>http://www.espenbraastad.no/post/varnish-goes-upstack-with-varnish-modules-and-varnish-configuration-language/</guid>
       <description>
 
@@ -126,7 +128,7 @@ $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r36
     import memcached;
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;VMODs are usually configured in vcl_init, and this is true for sqlite3 and memcached as well. For sqlite3, we set the path to the database and the field delimiter to use on multi column results. The memcached VMOD can have a wide variety of configuration options supported by &lt;a href=&#34;http://docs.libmemcached.org/libmemcached_configuration.html&#34;&gt;libmemcached&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;VMODs are usually configured in &lt;code&gt;vcl_init&lt;/code&gt;, and this is true for sqlite3 and memcached as well. For sqlite3, we set the path to the database and the field delimiter to use on multi column results. The memcached VMOD can have a wide variety of configuration options supported by &lt;a href=&#34;http://docs.libmemcached.org/libmemcached_configuration.html&#34;&gt;libmemcached&lt;/a&gt;.&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;    sub vcl_init {
         sqlite3.open(&amp;quot;/tmp/rules.db3&amp;quot;, &amp;quot;|;&amp;quot;);
@@ -134,7 +136,7 @@ $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r36
     }
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;In &lt;code&gt;vcl_recv&lt;/code&gt;, the incoming HTTP requests are received. We start by extracting the request path without query parameters and potential dangerous characters. This is important since the path will be part of the SQL query later. The following regex will match the req.url from the beginning of the line up until any of the characters ? &amp;amp; ;  “  ‘ or whitespace.&lt;/p&gt;
+&lt;p&gt;In &lt;code&gt;vcl_recv&lt;/code&gt;, the incoming HTTP requests are received. We start by extracting the request path without query parameters and potential dangerous characters. This is important since the path will be part of the SQL query later. The following regex will match &lt;code&gt;req.url&lt;/code&gt; from the beginning of the line up until any of the characters ? &amp;amp; ;  “  ‘ or whitespace.&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;    sub vcl_recv {
         set req.http.path = regsub(req.url, {&amp;quot;^([^?&amp;amp;;&amp;quot;&#39; ]+).*&amp;quot;}, &amp;quot;\1&amp;quot;);

@@ -10,9 +10,9 @@
   <title>Espen Braastad</title>
 
   
-  <link rel="stylesheet" href="http://www.espenbraastad.no//css/poole.css">
-  <link rel="stylesheet" href="http://www.espenbraastad.no//css/syntax.css">
-  <link rel="stylesheet" href="http://www.espenbraastad.no//css/hyde.css">
+  <link rel="stylesheet" href="http://www.espenbraastad.no/css/poole.css">
+  <link rel="stylesheet" href="http://www.espenbraastad.no/css/syntax.css">
+  <link rel="stylesheet" href="http://www.espenbraastad.no/css/hyde.css">
   <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
 
   
@@ -175,7 +175,7 @@ $ sqlite3 /tmp/rules.db3 &quot;INSERT INTO t (rule, path) VALUES ('15r3600', '/l
     import memcached;
 </code></pre>
 
-<p>VMODs are usually configured in vcl_init, and this is true for sqlite3 and memcached as well. For sqlite3, we set the path to the database and the field delimiter to use on multi column results. The memcached VMOD can have a wide variety of configuration options supported by <a href="http://docs.libmemcached.org/libmemcached_configuration.html">libmemcached</a>.</p>
+<p>VMODs are usually configured in <code>vcl_init</code>, and this is true for sqlite3 and memcached as well. For sqlite3, we set the path to the database and the field delimiter to use on multi column results. The memcached VMOD can have a wide variety of configuration options supported by <a href="http://docs.libmemcached.org/libmemcached_configuration.html">libmemcached</a>.</p>
 
 <pre><code>    sub vcl_init {
         sqlite3.open(&quot;/tmp/rules.db3&quot;, &quot;|;&quot;);
@@ -183,7 +183,7 @@ $ sqlite3 /tmp/rules.db3 &quot;INSERT INTO t (rule, path) VALUES ('15r3600', '/l
     }
 </code></pre>
 
-<p>In <code>vcl_recv</code>, the incoming HTTP requests are received. We start by extracting the request path without query parameters and potential dangerous characters. This is important since the path will be part of the SQL query later. The following regex will match the req.url from the beginning of the line up until any of the characters ? &amp; ;  “  ‘ or whitespace.</p>
+<p>In <code>vcl_recv</code>, the incoming HTTP requests are received. We start by extracting the request path without query parameters and potential dangerous characters. This is important since the path will be part of the SQL query later. The following regex will match <code>req.url</code> from the beginning of the line up until any of the characters ? &amp; ;  “  ‘ or whitespace.</p>
 
 <pre><code>    sub vcl_recv {
         set req.http.path = regsub(req.url, {&quot;^([^?&amp;;&quot;' ]+).*&quot;}, &quot;\1&quot;);

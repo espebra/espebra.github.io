@@ -6,14 +6,16 @@
     <description>Recent content in El6 on Espen Braastad</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 23 Jun 2013 21:44:19 +0100</lastBuildDate>
+    <author>Espen Braastad</author>
+    
+    <lastBuildDate>Sun, 23 Jun 2013 21:44:19 &#43;0100</lastBuildDate>
     <atom:link href="http://www.espenbraastad.no/tags/el6/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>CentOS/RHEL/SL 6: root filesystem on tmpfs, UPDATE #2</title>
       <link>http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs-update2/</link>
-      <pubDate>Sun, 23 Jun 2013 21:44:19 +0100</pubDate>
-      
+      <pubDate>Sun, 23 Jun 2013 21:44:19 &#43;0100</pubDate>
+      <author>Espen Braastad</author>
       <guid>http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs-update2/</guid>
       <description>
 
@@ -120,8 +122,8 @@ sys 0m0.002s
     <item>
       <title>CentOS/RHEL/SL 6: root filesystem on tmpfs, UPDATE</title>
       <link>http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs-update/</link>
-      <pubDate>Thu, 21 Mar 2013 09:57:00 +0100</pubDate>
-      
+      <pubDate>Thu, 21 Mar 2013 09:57:00 CET</pubDate>
+      <author>Espen Braastad</author>
       <guid>http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs-update/</guid>
       <description>&lt;p&gt;In EL6.4, the file &lt;code&gt;/usr/share/dracut/modules.d/90dmsquash-live/dmsquash-live-root&lt;/code&gt; was updated so that the &lt;a href=&#34;http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs&#34;&gt;previous patch&lt;/a&gt; no longer works as it should. I’ve updated the patch, and here it is:&lt;/p&gt;
 
@@ -226,8 +228,8 @@ sys 0m0.002s
     <item>
       <title>CentOS/RHEL/SL 6: root filesystem on tmpfs</title>
       <link>http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs/</link>
-      <pubDate>Tue, 01 May 2012 21:44:19 +0100</pubDate>
-      
+      <pubDate>Tue, 01 May 2012 21:44:19 &#43;0100</pubDate>
+      <author>Espen Braastad</author>
       <guid>http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs/</guid>
       <description>&lt;p&gt;UPDATE: The patch below has been updated &lt;a href=&#34;http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs-update&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
 

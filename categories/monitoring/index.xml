@@ -6,14 +6,16 @@
     <description>Recent content in Monitoring on Espen Braastad</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 16 Aug 2010 20:15:00 +0100</lastBuildDate>
+    <author>Espen Braastad</author>
+    
+    <lastBuildDate>Mon, 16 Aug 2010 20:15:00 &#43;0100</lastBuildDate>
     <atom:link href="http://www.espenbraastad.no/categories/monitoring/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>munincollector-ng</title>
       <link>http://www.espenbraastad.no/post/munincollector-ng/</link>
-      <pubDate>Mon, 16 Aug 2010 20:15:00 +0100</pubDate>
-      
+      <pubDate>Mon, 16 Aug 2010 20:15:00 &#43;0100</pubDate>
+      <author>Espen Braastad</author>
       <guid>http://www.espenbraastad.no/post/munincollector-ng/</guid>
       <description>&lt;p&gt;Munincollector-ng is a perl script that collects graphs from multiple &lt;a href=&#34;http://munin-monitoring.org&#34;&gt;munin&lt;/a&gt; installations to display them in one page. A scenario where this is helpful is when you have (too) many munin clients on (too) many munin masters, and you want to look through some of the graphs - i.e. the &lt;em&gt;Disk usage in percent&lt;/em&gt; (aka &lt;em&gt;df&lt;/em&gt;) plugin - without spending/wasting too much time browsing through the less important graphs.&lt;/p&gt;
 
