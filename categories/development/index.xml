@@ -158,7 +158,7 @@ $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r36
 &lt;pre&gt;&lt;code&gt;        if (req.http.requests != &amp;quot;&amp;quot; &amp;amp;&amp;amp; req.http.period != &amp;quot;&amp;quot;) {
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;Increment or create a Memcached counter unique for this client.ip and path with the value 1. The expiry time we specify is equal to the period in the throttle rule set in the database. This way, the throttle rules can be flexible regarding time period. The return value is the new value of the counter, which corresponds to the amount of requests this client.ip has done this path in the current time period.&lt;/p&gt;
+&lt;p&gt;Increment or create a Memcached counter unique for this &lt;code&gt;client.ip&lt;/code&gt; and path with the value 1. The expiry time we specify is equal to the period in the throttle rule set in the database. This way, the throttle rules can be flexible regarding time period. The return value is the new value of the counter, which corresponds to the amount of requests this &lt;code&gt;client.ip&lt;/code&gt; has done this path in the current time period.&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;            set req.http.counter = memcached.incr_set(
                 req.http.path + &amp;quot;-&amp;quot; + client.ip, 1, 1, std.integer(req.http.period, 0));
