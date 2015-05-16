@@ -64,11 +64,11 @@
             </a>
           </h1>
           <span class="post-date">Sat, May 16, 2015</span>
-          <p>Dummy API was <a href="http://www.espenbraastad.no/post/dummy-api/">originally</a> written in Lua for running on top of <a href="http://openresty.org/">OpenResty</a>. Reasons were high performance and simplicity.</p>
+          <p>Dummy API was <a href="http://www.espenbraastad.no/post/dummy-api/">originally</a> written in Lua for running on top of <a href="http://openresty.org/">OpenResty</a>. Reasons were high performance and simplicity. The most common Linux distributions do not provide packages for OpenResty in their repositories, which means that it has to be installed from source. This is straight forward, but it adds up - both in time required and extra build dependencies.</p>
 
-<p>The purpose of Dummy API is to be that web application that can be rapidly installed and started when it is necessary to test API managers and web caches with a proper web application. The most common Linux distributions do not provide packages for OpenResty in their repositories, which means that it has to be installed from source. This is straight forward, but it adds up - both in time required and extra build dependencies.</p>
+<p>The purpose of Dummy API is to be that web application that can be rapidly installed and started when it is necessary to test API managers and web caches with a proper web application. The installation should be as simple as quick as possible.</p>
 
-<p>To get rid of the installation steps, I turned to <a href="https://golang.org/">Go</a> and its <a href="http://golang.org/pkg/net/http/">http server</a>. I find it really appealing that it is possible to compile an entire web application including all dependencies into one binary file. For Dummy API it means that the web application and the web server can be compiled and distributed as one executable file. When building the binary, it is possible to cross compile to various architectures and platforms.</p>
+<p>To get make the installation simpler and quicker, I turned to <a href="https://golang.org/">Go</a> and its <a href="http://golang.org/pkg/net/http/">http server</a>. I find it really appealing that it is possible to compile an entire web application including all dependencies into one binary file. For Dummy API it means that the web application and the web server can be compiled and distributed as one executable file. When building the binary, it is possible to cross compile to various architectures and platforms.</p>
 
 <p>I have built and pushed the binary version built for Linux on x86_64 to the repository. The result is that the installation steps have been narrowed down to:</p>
 
