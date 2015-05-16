@@ -29,9 +29,9 @@ $ chmod +x dummy-api
 $ ./dummy-api -host=0.0.0.0 -port=8080
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;When building the binary, it is possible to cross compile to various architectures and platforms.&lt;/p&gt;
+&lt;p&gt;It is possible to cross compile to various architectures and platforms.&lt;/p&gt;
 
-&lt;p&gt;I have built and pushed the binary version built for &lt;code&gt;Linux&lt;/code&gt; on &lt;code&gt;x86_64&lt;/code&gt; to the repository. The result is that the installation steps have been narrowed down to:&lt;/p&gt;
+&lt;p&gt;I have compiled and pushed the binary version for &lt;code&gt;Linux&lt;/code&gt; on &lt;code&gt;x86_64&lt;/code&gt; to the repository. The result is that the installation steps have been narrowed down to:&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;$ wget https://github.com/espebra/dummy-api/raw/master/dummy-api
 $ chmod +x dummy-api
