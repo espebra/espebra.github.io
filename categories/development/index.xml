@@ -21,7 +21,15 @@
 
 &lt;p&gt;The purpose of Dummy API is to be that web application that can be rapidly installed and started when it is necessary to test API managers and web caches with a proper web application. The installation should be as simple and quick as possible.&lt;/p&gt;
 
-&lt;p&gt;I turned to &lt;a href=&#34;https://golang.org/&#34;&gt;Go&lt;/a&gt; and its &lt;a href=&#34;https://golang.org/pkg/net/http/&#34;&gt;http server&lt;/a&gt;, and reimplemented the Dummy API. I find it really appealing that it is possible to compile an entire web application including all dependencies into one binary file. It means that the web application and the web server can be compiled and distributed as one executable file. When building the binary, it is possible to cross compile to various architectures and platforms.&lt;/p&gt;
+&lt;p&gt;I turned to &lt;a href=&#34;https://golang.org/&#34;&gt;Go&lt;/a&gt; and its &lt;a href=&#34;https://golang.org/pkg/net/http/&#34;&gt;http server&lt;/a&gt;, and reimplemented the Dummy API. I find it really appealing that it is possible to compile an entire web application including all dependencies into one binary file. It means that the web application and the web server can be compiled and distributed as one executable file:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ sudo yum install golang
+$ go build dummy-api.go
+$ chmod +x dummy-api
+$ ./dummy-api -host=0.0.0.0 -port=8080
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;When building the binary, it is possible to cross compile to various architectures and platforms.&lt;/p&gt;
 
 &lt;p&gt;I have built and pushed the binary version built for &lt;code&gt;Linux&lt;/code&gt; on &lt;code&gt;x86_64&lt;/code&gt; to the repository. The result is that the installation steps have been narrowed down to:&lt;/p&gt;
 
