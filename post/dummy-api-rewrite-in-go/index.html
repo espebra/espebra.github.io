@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 
-  <title>Filebin available on http://filebin.net</title>
+  <title>Dummy API, Go rewrite</title>
 
   
   <link rel="stylesheet" href="http://www.espenbraastad.no/css/poole.css">
@@ -58,17 +58,43 @@
 
     <div class="content container">
       <div class="post">
-        <h1>Filebin available on http://filebin.net</h1>
-        <span class="post-date">Fri, Jul 27, 2012</span>
-        <p><a href="http://filebin.net">Filebin.net</a> was created to try out the new <a href="http://www.w3.org/TR/FileAPI/">File API</a> features in HTML5.</p>
+        <h1>Dummy API, Go rewrite</h1>
+        <span class="post-date">Sat, May 16, 2015</span>
+        <p>Dummy API was <a href="http://www.espenbraastad.no/post/dummy-api/">originally</a> written in Lua for running on top of <a href="http://openresty.org/">OpenResty</a>. Reasons were high performance and simplicity.</p>
 
-<p>Filebin is a web application that is somewhat similar to a pastebin, except that it&rsquo;s for files. It is written in Python, and the code is available on <a href="http://github.com/espebra/filebin">Github</a>.</p>
+<p>The purpose of Dummy API is to be that web application that can be rapidly installed and started when it is necessary to test API managers and web caches with a proper web application. The most common Linux distributions do not provide packages for OpenResty in their repositories, which means that it has to be installed from source. This is straight forward, but it adds up - both in time required and extra build dependencies.</p>
+
+<p>To get rid of the installation steps, I turned to <a href="https://golang.org/">Go</a> and its <a href="http://golang.org/pkg/net/http/">http server</a>. I find it really appealing that it is possible to compile an entire web application including all dependencies into one binary file. For Dummy API it means that the web application and the web server can be compiled and distributed as one executable file. When building the binary, it is possible to cross compile to various architectures and platforms.</p>
+
+<p>I have built and pushed the binary version built for Linux on x86_64 to the repository. The result is that the installation steps have been narrowed down to:</p>
+
+<pre><code>$ wget https://github.com/espebra/dummy-api/raw/master/dummy-api
+$ chmod +x dummy-api
+$ ./dummy-api
+</code></pre>
+
+<p>Dummy API should be executed as an unprivileged user. By default, it will bind to 127.0.0.1:1337. The usage guide for the daemon is shown with <code>./dummy-api -help</code>:</p>
+
+<pre><code>Usage of ./dummy-api:
+  -host=&quot;127.0.0.1&quot;: Listen host
+  -maxheaderbytes=1048576: Max header bytes.
+  -port=1337: Listen port
+  -readtimeout=10: Read timeout in seconds
+  -writetimeout=10: Write timeout in seconds
+</code></pre>
+
+<p>The usage guide for web clients is shown with the <code>help</code> query parameter:</p>
+
+<pre><code>GET http://host/?help
+</code></pre>
+
+<p>The Go version is available in <a href="https://github.com/espebra/dummy-api/">master</a>, while the Lua version is available in the <a href="https://github.com/espebra/dummy-api/tree/lua">Lua branch</a>.</p>
 
         <div id="disqus_thread"></div>
 <script type="text/javascript">
      
     var disqus_shortname = 'espenbraastad';
-    var disqus_identifier = 'Filebin available on http:\/\/filebin.net';
+    var disqus_identifier = 'Dummy API, Go rewrite';
 
      
     (function() {

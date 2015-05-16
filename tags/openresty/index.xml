@@ -1,53 +1,15 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Api on Espen Braastad</title>
-    <link>http://www.espenbraastad.no/tags/api/</link>
-    <description>Recent content in Api on Espen Braastad</description>
+    <title>Openresty on Espen Braastad</title>
+    <link>http://www.espenbraastad.no/tags/openresty/</link>
+    <description>Recent content in Openresty on Espen Braastad</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <author>Espen Braastad</author>
     
-    <lastBuildDate>Sat, 16 May 2015 19:48:47 CEST</lastBuildDate>
-    <atom:link href="http://www.espenbraastad.no/tags/api/index.xml" rel="self" type="application/rss+xml" />
-    
-    <item>
-      <title>Dummy API, Go rewrite</title>
-      <link>http://www.espenbraastad.no/post/dummy-api-rewrite-in-go/</link>
-      <pubDate>Sat, 16 May 2015 19:48:47 CEST</pubDate>
-      <author>Espen Braastad</author>
-      <guid>http://www.espenbraastad.no/post/dummy-api-rewrite-in-go/</guid>
-      <description>&lt;p&gt;Dummy API was &lt;a href=&#34;http://www.espenbraastad.no/post/dummy-api/&#34;&gt;originally&lt;/a&gt; written in Lua for running on top of &lt;a href=&#34;http://openresty.org/&#34;&gt;OpenResty&lt;/a&gt;. Reasons were high performance and simplicity.&lt;/p&gt;
-
-&lt;p&gt;The purpose of Dummy API is to be that web application that can be rapidly installed and started when it is necessary to test API managers and web caches with a proper web application. The most common Linux distributions do not provide packages for OpenResty in their repositories, which means that it has to be installed from source. This is straight forward, but it adds up - both in time required and extra build dependencies.&lt;/p&gt;
-
-&lt;p&gt;To get rid of the installation steps, I turned to &lt;a href=&#34;https://golang.org/&#34;&gt;Go&lt;/a&gt; and its &lt;a href=&#34;http://golang.org/pkg/net/http/&#34;&gt;http server&lt;/a&gt;. I find it really appealing that it is possible to compile an entire web application including all dependencies into one binary file. For Dummy API it means that the web application and the web server can be compiled and distributed as one executable file. When building the binary, it is possible to cross compile to various architectures and platforms.&lt;/p&gt;
-
-&lt;p&gt;I have built and pushed the binary version built for Linux on x86_64 to the repository. The result is that the installation steps have been narrowed down to:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ wget https://github.com/espebra/dummy-api/raw/master/dummy-api
-$ chmod +x dummy-api
-$ ./dummy-api
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Dummy API should be executed as an unprivileged user. By default, it will bind to 127.0.0.1:1337. The usage guide for the daemon is shown with &lt;code&gt;./dummy-api -help&lt;/code&gt;:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;Usage of ./dummy-api:
-  -host=&amp;quot;127.0.0.1&amp;quot;: Listen host
-  -maxheaderbytes=1048576: Max header bytes.
-  -port=1337: Listen port
-  -readtimeout=10: Read timeout in seconds
-  -writetimeout=10: Write timeout in seconds
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;The usage guide for web clients is shown with the &lt;code&gt;help&lt;/code&gt; query parameter:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;GET http://host/?help
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;The Go version is available in &lt;a href=&#34;https://github.com/espebra/dummy-api/&#34;&gt;master&lt;/a&gt;, while the Lua version is available in the &lt;a href=&#34;https://github.com/espebra/dummy-api/tree/lua&#34;&gt;Lua branch&lt;/a&gt;.&lt;/p&gt;
-</description>
-    </item>
+    <lastBuildDate>Sat, 02 May 2015 21:42:21 CEST</lastBuildDate>
+    <atom:link href="http://www.espenbraastad.no/tags/openresty/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Dummy API</title>

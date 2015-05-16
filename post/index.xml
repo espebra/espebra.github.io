@@ -6,14 +6,54 @@
     <description>Recent content in Posts on Espen Braastad</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 07 May 2015 10:55:56 +0200</lastBuildDate>
+    <author>Espen Braastad</author>
+    
+    <lastBuildDate>Sat, 16 May 2015 19:48:47 CEST</lastBuildDate>
     <atom:link href="http://www.espenbraastad.no/post/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Dummy API, Go rewrite</title>
+      <link>http://www.espenbraastad.no/post/dummy-api-rewrite-in-go/</link>
+      <pubDate>Sat, 16 May 2015 19:48:47 CEST</pubDate>
+      <author>Espen Braastad</author>
+      <guid>http://www.espenbraastad.no/post/dummy-api-rewrite-in-go/</guid>
+      <description>&lt;p&gt;Dummy API was &lt;a href=&#34;http://www.espenbraastad.no/post/dummy-api/&#34;&gt;originally&lt;/a&gt; written in Lua for running on top of &lt;a href=&#34;http://openresty.org/&#34;&gt;OpenResty&lt;/a&gt;. Reasons were high performance and simplicity.&lt;/p&gt;
+
+&lt;p&gt;The purpose of Dummy API is to be that web application that can be rapidly installed and started when it is necessary to test API managers and web caches with a proper web application. The most common Linux distributions do not provide packages for OpenResty in their repositories, which means that it has to be installed from source. This is straight forward, but it adds up - both in time required and extra build dependencies.&lt;/p&gt;
+
+&lt;p&gt;To get rid of the installation steps, I turned to &lt;a href=&#34;https://golang.org/&#34;&gt;Go&lt;/a&gt; and its &lt;a href=&#34;http://golang.org/pkg/net/http/&#34;&gt;http server&lt;/a&gt;. I find it really appealing that it is possible to compile an entire web application including all dependencies into one binary file. For Dummy API it means that the web application and the web server can be compiled and distributed as one executable file. When building the binary, it is possible to cross compile to various architectures and platforms.&lt;/p&gt;
+
+&lt;p&gt;I have built and pushed the binary version built for Linux on x86_64 to the repository. The result is that the installation steps have been narrowed down to:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ wget https://github.com/espebra/dummy-api/raw/master/dummy-api
+$ chmod +x dummy-api
+$ ./dummy-api
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Dummy API should be executed as an unprivileged user. By default, it will bind to 127.0.0.1:1337. The usage guide for the daemon is shown with &lt;code&gt;./dummy-api -help&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Usage of ./dummy-api:
+  -host=&amp;quot;127.0.0.1&amp;quot;: Listen host
+  -maxheaderbytes=1048576: Max header bytes.
+  -port=1337: Listen port
+  -readtimeout=10: Read timeout in seconds
+  -writetimeout=10: Write timeout in seconds
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The usage guide for web clients is shown with the &lt;code&gt;help&lt;/code&gt; query parameter:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;GET http://host/?help
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The Go version is available in &lt;a href=&#34;https://github.com/espebra/dummy-api/&#34;&gt;master&lt;/a&gt;, while the Lua version is available in the &lt;a href=&#34;https://github.com/espebra/dummy-api/tree/lua&#34;&gt;Lua branch&lt;/a&gt;.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Varnish goes upstack with varnish modules and varnish configuration language</title>
       <link>http://www.espenbraastad.no/post/varnish-goes-upstack-with-varnish-modules-and-varnish-configuration-language/</link>
-      <pubDate>Thu, 07 May 2015 10:55:56 +0200</pubDate>
-      
+      <pubDate>Thu, 07 May 2015 10:55:56 CEST</pubDate>
+      <author>Espen Braastad</author>
       <guid>http://www.espenbraastad.no/post/varnish-goes-upstack-with-varnish-modules-and-varnish-configuration-language/</guid>
       <description>
 
@@ -308,8 +348,8 @@ Via: 1.1 varnish-plus-v4
     <item>
       <title>Dummy API</title>
       <link>http://www.espenbraastad.no/post/dummy-api/</link>
-      <pubDate>Sat, 02 May 2015 21:42:21 +0200</pubDate>
-      
+      <pubDate>Sat, 02 May 2015 21:42:21 CEST</pubDate>
+      <author>Espen Braastad</author>
       <guid>http://www.espenbraastad.no/post/dummy-api/</guid>
       <description>&lt;p&gt;The purpose of Dummy API to act as a performant, simple and flexible HTTP API to use when testing API gateway performance. Put it behing a API gateway and generate responses to it from a set of consumers/clients. The Dummy API will read the request headers and query parameters and generate the responses accordingly. Some examples are custom cache-control header, response status and response delays.&lt;/p&gt;
 
@@ -437,8 +477,8 @@ response-status = {int}          Set the response status
     <item>
       <title>Remote console on HP ProLiant MicroServer G7 N54L</title>
       <link>http://www.espenbraastad.no/post/remote-console-on-hp-proliant-microserver-g7-n54l/</link>
-      <pubDate>Sat, 30 Aug 2014 20:48:00 +0100</pubDate>
-      
+      <pubDate>Sat, 30 Aug 2014 20:48:00 &#43;0100</pubDate>
+      <author>Espen Braastad</author>
       <guid>http://www.espenbraastad.no/post/remote-console-on-hp-proliant-microserver-g7-n54l/</guid>
       <description>&lt;p&gt;I bought the &lt;a href=&#34;http://www8.hp.com/us/en/products/proliant-servers/product-detail.html?oid=6280786&#34;&gt;HP ProLiant MicroServer G7 N54L&lt;/a&gt; a while ago. I threw in a &lt;a href=&#34;http://www8.hp.com/us/en/products/oas/product-detail.html?oid=4275612&#34;&gt;HP MicroServer Remote Access Card Kit&lt;/a&gt; to get remote console and power management. While the power management, web UI and CLI (over ssh) works fine out of the box, the remote console (KVM) does not. What happens is that the KVM client shows the following &lt;code&gt;Out of range&lt;/code&gt; message:&lt;/p&gt;
 
@@ -459,8 +499,8 @@ response-status = {int}          Set the response status
     <item>
       <title>Altibox, TV- og datatrafikk over samme nettverkskabel</title>
       <link>http://www.espenbraastad.no/post/altibox-tv-and-data-over-the-same-ethernet-cable/</link>
-      <pubDate>Thu, 22 May 2014 22:41:00 +0100</pubDate>
-      
+      <pubDate>Thu, 22 May 2014 22:41:00 &#43;0100</pubDate>
+      <author>Espen Braastad</author>
       <guid>http://www.espenbraastad.no/post/altibox-tv-and-data-over-the-same-ethernet-cable/</guid>
       <description>&lt;p&gt;Altibox leverer en hjemmesentral hvor man henter ut TV-signal og internettilgang fra to (eller flere) forskjellige RJ45-porter. Som trådløs router har hjemmesentralen kun et minimum av funksjonalitet, og man skal ikke være en veldig avansert bruker før man vil rekonfigurere hjemmesentralen som en bridge og heller ha en egen trådløs router på baksiden. Dette gir også mening dersom boligen har flere etasjer, og hjemmesentralen ikke er kraftig nok til å levere god nok trådløs dekning.&lt;/p&gt;
 
@@ -514,8 +554,8 @@ Port 5: TV ut
     <item>
       <title>Temperature trend monitoring at home</title>
       <link>http://www.espenbraastad.no/post/temperature-trend-monitoring-at-home/</link>
-      <pubDate>Wed, 19 Feb 2014 23:32:00 +0100</pubDate>
-      
+      <pubDate>Wed, 19 Feb 2014 23:32:00 CET</pubDate>
+      <author>Espen Braastad</author>
       <guid>http://www.espenbraastad.no/post/temperature-trend-monitoring-at-home/</guid>
       <description>
 
@@ -615,8 +655,8 @@ sudo apt-get install munin munin-node
     <item>
       <title>CentOS/RHEL/SL 6: root filesystem on tmpfs, UPDATE #2</title>
       <link>http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs-update2/</link>
-      <pubDate>Sun, 23 Jun 2013 21:44:19 +0100</pubDate>
-      
+      <pubDate>Sun, 23 Jun 2013 21:44:19 &#43;0100</pubDate>
+      <author>Espen Braastad</author>
       <guid>http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs-update2/</guid>
       <description>
 
@@ -723,8 +763,8 @@ sys 0m0.002s
     <item>
       <title>CentOS/RHEL/SL 6: root filesystem on tmpfs, UPDATE</title>
       <link>http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs-update/</link>
-      <pubDate>Thu, 21 Mar 2013 09:57:00 +0100</pubDate>
-      
+      <pubDate>Thu, 21 Mar 2013 09:57:00 CET</pubDate>
+      <author>Espen Braastad</author>
       <guid>http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs-update/</guid>
       <description>&lt;p&gt;In EL6.4, the file &lt;code&gt;/usr/share/dracut/modules.d/90dmsquash-live/dmsquash-live-root&lt;/code&gt; was updated so that the &lt;a href=&#34;http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs&#34;&gt;previous patch&lt;/a&gt; no longer works as it should. I’ve updated the patch, and here it is:&lt;/p&gt;
 
@@ -829,8 +869,8 @@ sys 0m0.002s
     <item>
       <title>KVM/Xen and libvirt: currentMemory, memory and ballooning. Where did my memory go?</title>
       <link>http://www.espenbraastad.no/post/memory-ballooning/</link>
-      <pubDate>Mon, 24 Sep 2012 16:58:32 +0100</pubDate>
-      
+      <pubDate>Mon, 24 Sep 2012 16:58:32 &#43;0100</pubDate>
+      <author>Espen Braastad</author>
       <guid>http://www.espenbraastad.no/post/memory-ballooning/</guid>
       <description>&lt;p&gt;KVM and Xen provide a method to change the amount of memory in use by guests at runtime. The method is called memory ballooning [&lt;a href=&#34;http://www.linux-kvm.org/page/FAQ#Is_dynamic_memory_management_for_guests_supported.3F&#34;&gt;1&lt;/a&gt;, &lt;a href=&#34;http://rwmj.wordpress.com/2010/07/17/virtio-balloon&#34;&gt;2&lt;/a&gt;], and it must be supported by the guest operating system to work.&lt;/p&gt;
 
@@ -890,8 +930,8 @@ Managed save:   no
     <item>
       <title>Filebin available on http://filebin.net</title>
       <link>http://www.espenbraastad.no/post/filebin-available/</link>
-      <pubDate>Fri, 27 Jul 2012 22:10:29 +0100</pubDate>
-      
+      <pubDate>Fri, 27 Jul 2012 22:10:29 &#43;0100</pubDate>
+      <author>Espen Braastad</author>
       <guid>http://www.espenbraastad.no/post/filebin-available/</guid>
       <description>&lt;p&gt;&lt;a href=&#34;http://filebin.net&#34;&gt;Filebin.net&lt;/a&gt; was created to try out the new &lt;a href=&#34;http://www.w3.org/TR/FileAPI/&#34;&gt;File API&lt;/a&gt; features in HTML5.&lt;/p&gt;
 
@@ -902,8 +942,8 @@ Managed save:   no
     <item>
       <title>CentOS/RHEL/SL 6: root filesystem on tmpfs</title>
       <link>http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs/</link>
-      <pubDate>Tue, 01 May 2012 21:44:19 +0100</pubDate>
-      
+      <pubDate>Tue, 01 May 2012 21:44:19 &#43;0100</pubDate>
+      <author>Espen Braastad</author>
       <guid>http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs/</guid>
       <description>&lt;p&gt;UPDATE: The patch below has been updated &lt;a href=&#34;http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs-update&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
 
@@ -1041,8 +1081,8 @@ $ sudo livecd-iso-to-pxeboot centos6.iso
     <item>
       <title>KVM with iPXE in RHEL6</title>
       <link>http://www.espenbraastad.no/post/kvm-with-ipxe-in-rhel6/</link>
-      <pubDate>Wed, 02 Nov 2011 22:29:50 +0100</pubDate>
-      
+      <pubDate>Wed, 02 Nov 2011 22:29:50 CET</pubDate>
+      <author>Espen Braastad</author>
       <guid>http://www.espenbraastad.no/post/kvm-with-ipxe-in-rhel6/</guid>
       <description>&lt;p&gt;A while ago I discovered the amazing &lt;a href=&#34;http://ipxe.org&#34;&gt;iPXE&lt;/a&gt; project. It is a complete PXE implementation with lots of nifty features, based on the &lt;a href=&#34;http://etherboot.org/&#34;&gt;gPXE&lt;/a&gt; project. Redhat ships the gPXE firmware for qemu and KVM, and you might want to use iPXE instead as the iPXE project currently seems to be more active. The major features (copied from &lt;a href=&#34;http://ipxe.org&#34;&gt;ipxe.org&lt;/a&gt;):&lt;/p&gt;
 
@@ -1129,8 +1169,8 @@ espen@luft:~/git/ipxe/src$
     <item>
       <title>munincollector-ng</title>
       <link>http://www.espenbraastad.no/post/munincollector-ng/</link>
-      <pubDate>Mon, 16 Aug 2010 20:15:00 +0100</pubDate>
-      
+      <pubDate>Mon, 16 Aug 2010 20:15:00 &#43;0100</pubDate>
+      <author>Espen Braastad</author>
       <guid>http://www.espenbraastad.no/post/munincollector-ng/</guid>
       <description>&lt;p&gt;Munincollector-ng is a perl script that collects graphs from multiple &lt;a href=&#34;http://munin-monitoring.org&#34;&gt;munin&lt;/a&gt; installations to display them in one page. A scenario where this is helpful is when you have (too) many munin clients on (too) many munin masters, and you want to look through some of the graphs - i.e. the &lt;em&gt;Disk usage in percent&lt;/em&gt; (aka &lt;em&gt;df&lt;/em&gt;) plugin - without spending/wasting too much time browsing through the less important graphs.&lt;/p&gt;
 
