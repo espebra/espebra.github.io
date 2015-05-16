@@ -38,7 +38,7 @@ $ chmod +x dummy-api
 $ ./dummy-api
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;By default, it will bind to &lt;code&gt;127.0.0.1:1337&lt;/code&gt;. The usage guide for the daemon is shown with &lt;code&gt;./dummy-api -help&lt;/code&gt;:&lt;/p&gt;
+&lt;p&gt;By default, it will bind to &lt;code&gt;127.0.0.1:1337&lt;/code&gt;. &lt;code&gt;./dummy-api -help&lt;/code&gt; shows the usage guide:&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;Usage of ./dummy-api:
   -host=&amp;quot;127.0.0.1&amp;quot;: Listen host
