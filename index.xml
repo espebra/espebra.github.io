@@ -8,8 +8,80 @@
     <language>en-us</language>
     <author>Espen Braastad</author>
     
-    <lastBuildDate>Sat, 16 May 2015 19:48:47 CEST</lastBuildDate>
+    <lastBuildDate>Wed, 16 Sep 2015 22:56:54 CEST</lastBuildDate>
     <atom:link href="http://www.espenbraastad.no/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Monitor stand / tabletop table IKEA hack</title>
+      <link>http://www.espenbraastad.no/post/monitor-stand-ikea-hack/</link>
+      <pubDate>Wed, 16 Sep 2015 22:56:54 CEST</pubDate>
+      <author>Espen Braastad</author>
+      <guid>http://www.espenbraastad.no/post/monitor-stand-ikea-hack/</guid>
+      <description>
+
+&lt;h2 id=&#34;background:b1c2d237bbeaf6f9d5d5c13938c2ce05&#34;&gt;Background&lt;/h2&gt;
+
+&lt;p&gt;I needed something that would put my desktop monitors at the proper height on my desk. Instead of simply placing the monitors on some cardboards boxes, I decided to pick up something from IKEA to make a custom tabletop table / monitor stand.&lt;/p&gt;
+
+&lt;h2 id=&#34;hardware:b1c2d237bbeaf6f9d5d5c13938c2ce05&#34;&gt;Hardware&lt;/h2&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Article #&lt;/th&gt;
+&lt;th&gt;Item&lt;/th&gt;
+&lt;th&gt;Price&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;102.678.95&lt;/td&gt;
+&lt;td&gt;&lt;a href=&#34;http://www.ikea.com/no/no/catalog/products/10267895/&#34;&gt;CAPITA&lt;/a&gt; 4 pack of stainless steel legs, with a length of 16 cm&lt;/td&gt;
+&lt;td&gt;NOK 95,-&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;301.798.74&lt;/td&gt;
+&lt;td&gt;&lt;a href=&#34;http://www.ikea.com/no/no/catalog/products/30179874/&#34;&gt;EKBY HEMNES&lt;/a&gt; solid wood shelf, with an area of 119x28 cm&lt;/td&gt;
+&lt;td&gt;NOK 135,-&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;802.918.73&lt;/td&gt;
+&lt;td&gt;&lt;a href=&#34;http://www.ikea.com/no/no/catalog/products/80291873/&#34;&gt;JYSSEN&lt;/a&gt; wireless charger for mobile phones&lt;/td&gt;
+&lt;td&gt;NOK 200,-&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h2 id=&#34;software:b1c2d237bbeaf6f9d5d5c13938c2ce05&#34;&gt;Software&lt;/h2&gt;
+
+&lt;p&gt;Eh, none.&lt;/p&gt;
+
+&lt;h2 id=&#34;setup:b1c2d237bbeaf6f9d5d5c13938c2ce05&#34;&gt;Setup&lt;/h2&gt;
+
+&lt;p&gt;This is straight forward. I used a &lt;a href=&#34;https://en.wikipedia.org/wiki/Router_(woodworking)&#34;&gt;router&lt;/a&gt; to hollow out some space for the legs&amp;rsquo; mounting plates, in an attempt to make the mounting plates invisible when the table is in upright position. I just happend to have a lot of glue, so I obviously applied a lot of it when fastening the mouning plates. This thing will never fall apart!&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/ikea-hack-1.jpg&#34; alt=&#34;WIP-1&#34; /&gt;
+&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/ikea-hack-2.jpg&#34; alt=&#34;WIP-2&#34; /&gt;
+&lt;/p&gt;
+
+&lt;p&gt;One leg fastened. Repeat, repeat and repeat - and the tabletop table to be suddenly has four legs.&lt;/p&gt;
+
+&lt;p&gt;The wireless charger is designed to be built into furniture, so it should be a good fit for my mini project. However, it is probably a better fit when the back of the charger can be hidden inside something. Since my tabletop table is relatively thin, the back of the charger will be clearly visible. That will not look good, but I rate wireless charging higher than the looks any time of day. It was simple to mount.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/ikea-hack-3.jpg&#34; alt=&#34;WIP-3&#34; /&gt;
+&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/ikea-hack-4.jpg&#34; alt=&#34;WIP-4&#34; /&gt;
+&lt;/p&gt;
+
+&lt;p&gt;Mini project complete. The charger even works!&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Dummy API, Go rewrite</title>
