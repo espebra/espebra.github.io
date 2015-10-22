@@ -10,9 +10,9 @@
   <title>Varnish goes upstack with varnish modules and varnish configuration language</title>
 
   
-  <link rel="stylesheet" href="http://www.espenbraastad.no/css/poole.css">
-  <link rel="stylesheet" href="http://www.espenbraastad.no/css/syntax.css">
-  <link rel="stylesheet" href="http://www.espenbraastad.no/css/hyde.css">
+  <link rel="stylesheet" href="http://www.espenbraastad.no//css/poole.css">
+  <link rel="stylesheet" href="http://www.espenbraastad.no//css/syntax.css">
+  <link rel="stylesheet" href="http://www.espenbraastad.no//css/hyde.css">
   <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
 
   
@@ -107,7 +107,7 @@ $ sqlite3 /tmp/rules.db3 &quot;INSERT INTO t (rule, path) VALUES ('15r3600', '/l
 
 <p>These rules will allow 3 requests per 5 seconds to <code>/search</code> and 15 requests per hour to <code>/login</code>. The idea is to enforce these rules on a per IP basis.</p>
 
-<p>For the sake of simplicity, we’ll write the tests and VCL configuration in the same file, <a href="https://www.varnish-software.com/static/vcl/throttle.vtc">throttle.vtc</a>. It is, however, possible to include separate VCL configuration files using include statements in the test files, to separate VCL configuration and the different tests.</p>
+<p>For the sake of simplicity, we’ll write the tests and VCL configuration in the same file, <a href="/files/throttle.vtc">throttle.vtc</a>. It is, however, possible to include separate VCL configuration files using include statements in the test files, to separate VCL configuration and the different tests.</p>
 
 <p>The first line in the file is optionally used to set the name or the title of the test.</p>
 
@@ -328,7 +328,7 @@ X-Varnish: 32774
 Via: 1.1 varnish-plus-v4
 </code></pre>
 
-<p>The complete <a href="https://www.varnish-software.com/static/vcl/throttle.vtc">throttle.vtc</a> file outputs timestamp information before and after VMOD processing, to give us some data on the overhead introduced by the Memcached and SQLite queries. Running 60 requests in varnishtest on a local vm with Memcached running locally returned the following timings pr operation (in ms):</p>
+<p>The complete <a href="/files/throttle.vtc">throttle.vtc</a> file outputs timestamp information before and after VMOD processing, to give us some data on the overhead introduced by the Memcached and SQLite queries. Running 60 requests in varnishtest on a local vm with Memcached running locally returned the following timings pr operation (in ms):</p>
 
 <ul>
 <li>SQLite SELECT, max: 0.32, median: 0.08, average: 0.115</li>

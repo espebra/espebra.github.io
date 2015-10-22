@@ -6,16 +6,14 @@
     <description>Recent content in Api on Espen Braastad</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <author>Espen Braastad</author>
-    
-    <lastBuildDate>Sat, 16 May 2015 19:48:47 CEST</lastBuildDate>
+    <lastBuildDate>Sat, 16 May 2015 19:48:47 +0200</lastBuildDate>
     <atom:link href="http://www.espenbraastad.no/tags/api/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Dummy API, Go rewrite</title>
       <link>http://www.espenbraastad.no/post/dummy-api-rewrite-in-go/</link>
-      <pubDate>Sat, 16 May 2015 19:48:47 CEST</pubDate>
-      <author>Espen Braastad</author>
+      <pubDate>Sat, 16 May 2015 19:48:47 +0200</pubDate>
+      
       <guid>http://www.espenbraastad.no/post/dummy-api-rewrite-in-go/</guid>
       <description>&lt;p&gt;Dummy API was &lt;a href=&#34;http://www.espenbraastad.no/post/dummy-api/&#34;&gt;originally&lt;/a&gt; written in Lua for running on top of &lt;a href=&#34;https://www.openresty.org/&#34;&gt;OpenResty&lt;/a&gt;. Reasons were high performance and simplicity. The most common Linux distributions do not provide packages for OpenResty in their repositories, which means that it has to be installed from source. This is straight forward, but it adds up - both in time required and extra build dependencies.&lt;/p&gt;
 
@@ -92,8 +90,8 @@ response-status = {int}      Set the response status.
     <item>
       <title>Dummy API</title>
       <link>http://www.espenbraastad.no/post/dummy-api/</link>
-      <pubDate>Sat, 02 May 2015 21:42:21 CEST</pubDate>
-      <author>Espen Braastad</author>
+      <pubDate>Sat, 02 May 2015 21:42:21 +0200</pubDate>
+      
       <guid>http://www.espenbraastad.no/post/dummy-api/</guid>
       <description>&lt;p&gt;&lt;em&gt;Update: Dummy API has been &lt;a href=&#34;http://www.espenbraastad.no/post/dummy-api-rewrite-in-go/&#34;&gt;rewritten in Go&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
 

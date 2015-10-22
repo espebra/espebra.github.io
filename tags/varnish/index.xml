@@ -6,16 +6,14 @@
     <description>Recent content in Varnish on Espen Braastad</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <author>Espen Braastad</author>
-    
-    <lastBuildDate>Thu, 07 May 2015 10:55:56 CEST</lastBuildDate>
+    <lastBuildDate>Thu, 07 May 2015 10:55:56 +0200</lastBuildDate>
     <atom:link href="http://www.espenbraastad.no/tags/varnish/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Varnish goes upstack with varnish modules and varnish configuration language</title>
       <link>http://www.espenbraastad.no/post/varnish-goes-upstack-with-varnish-modules-and-varnish-configuration-language/</link>
-      <pubDate>Thu, 07 May 2015 10:55:56 CEST</pubDate>
-      <author>Espen Braastad</author>
+      <pubDate>Thu, 07 May 2015 10:55:56 +0200</pubDate>
+      
       <guid>http://www.espenbraastad.no/post/varnish-goes-upstack-with-varnish-modules-and-varnish-configuration-language/</guid>
       <description>
 
@@ -64,7 +62,7 @@ $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r36
 
 &lt;p&gt;These rules will allow 3 requests per 5 seconds to &lt;code&gt;/search&lt;/code&gt; and 15 requests per hour to &lt;code&gt;/login&lt;/code&gt;. The idea is to enforce these rules on a per IP basis.&lt;/p&gt;
 
-&lt;p&gt;For the sake of simplicity, we’ll write the tests and VCL configuration in the same file, &lt;a href=&#34;https://www.varnish-software.com/static/vcl/throttle.vtc&#34;&gt;throttle.vtc&lt;/a&gt;. It is, however, possible to include separate VCL configuration files using include statements in the test files, to separate VCL configuration and the different tests.&lt;/p&gt;
+&lt;p&gt;For the sake of simplicity, we’ll write the tests and VCL configuration in the same file, &lt;a href=&#34;http://www.espenbraastad.no/files/throttle.vtc&#34;&gt;throttle.vtc&lt;/a&gt;. It is, however, possible to include separate VCL configuration files using include statements in the test files, to separate VCL configuration and the different tests.&lt;/p&gt;
 
 &lt;p&gt;The first line in the file is optionally used to set the name or the title of the test.&lt;/p&gt;
 
@@ -285,7 +283,7 @@ X-Varnish: 32774
 Via: 1.1 varnish-plus-v4
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;The complete &lt;a href=&#34;https://www.varnish-software.com/static/vcl/throttle.vtc&#34;&gt;throttle.vtc&lt;/a&gt; file outputs timestamp information before and after VMOD processing, to give us some data on the overhead introduced by the Memcached and SQLite queries. Running 60 requests in varnishtest on a local vm with Memcached running locally returned the following timings pr operation (in ms):&lt;/p&gt;
+&lt;p&gt;The complete &lt;a href=&#34;http://www.espenbraastad.no/files/throttle.vtc&#34;&gt;throttle.vtc&lt;/a&gt; file outputs timestamp information before and after VMOD processing, to give us some data on the overhead introduced by the Memcached and SQLite queries. Running 60 requests in varnishtest on a local vm with Memcached running locally returned the following timings pr operation (in ms):&lt;/p&gt;
 
 &lt;ul&gt;
 &lt;li&gt;SQLite SELECT, max: 0.32, median: 0.08, average: 0.115&lt;/li&gt;

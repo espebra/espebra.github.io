@@ -6,16 +6,14 @@
     <description>Recent content in Lua on Espen Braastad</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <author>Espen Braastad</author>
-    
-    <lastBuildDate>Sat, 02 May 2015 21:42:21 CEST</lastBuildDate>
+    <lastBuildDate>Sat, 02 May 2015 21:42:21 +0200</lastBuildDate>
     <atom:link href="http://www.espenbraastad.no/tags/lua/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Dummy API</title>
       <link>http://www.espenbraastad.no/post/dummy-api/</link>
-      <pubDate>Sat, 02 May 2015 21:42:21 CEST</pubDate>
-      <author>Espen Braastad</author>
+      <pubDate>Sat, 02 May 2015 21:42:21 +0200</pubDate>
+      
       <guid>http://www.espenbraastad.no/post/dummy-api/</guid>
       <description>&lt;p&gt;&lt;em&gt;Update: Dummy API has been &lt;a href=&#34;http://www.espenbraastad.no/post/dummy-api-rewrite-in-go/&#34;&gt;rewritten in Go&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
 
