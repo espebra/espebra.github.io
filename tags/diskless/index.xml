@@ -248,8 +248,7 @@ sys 0m0.002s
 &lt;/ul&gt;
 
 &lt;p&gt;This is a screenshot from an ongoing boot process:
-&lt;img src=&#34;http://www.espenbraastad.no/img/centos6-from-tmpfs1.png&#34; alt=&#34;Boot process&#34; /&gt;
-&lt;/p&gt;
+&lt;img src=&#34;http://www.espenbraastad.no/img/centos6-from-tmpfs1.png&#34; alt=&#34;Boot process&#34; /&gt;&lt;/p&gt;
 
 &lt;p&gt;Now to the procedure:&lt;/p&gt;
 
@@ -355,8 +354,7 @@ $ sudo livecd-iso-to-pxeboot centos6.iso
 &lt;p&gt;Now you are ready to boot one or multiple CentOS 6 in-memory instances over the network!&lt;/p&gt;
 
 &lt;p&gt;Another screenshot:
-&lt;img src=&#34;http://www.espenbraastad.no/img/centos6-from-tmpfs-details.png&#34; alt=&#34;losetup&#34; /&gt;
-&lt;/p&gt;
+&lt;img src=&#34;http://www.espenbraastad.no/img/centos6-from-tmpfs-details.png&#34; alt=&#34;losetup&#34; /&gt;&lt;/p&gt;
 
 &lt;p&gt;Feature request &lt;a href=&#34;http://article.gmane.org/gmane.linux.kernel.initramfs/2588&#34;&gt;upstream&lt;/a&gt;.&lt;/p&gt;
 </description>

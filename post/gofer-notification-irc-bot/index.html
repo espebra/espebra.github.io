@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 
-  <title>Filebin available on http://filebin.net</title>
+  <title>Gofer - Simple notification IRC bot</title>
 
   
   <link rel="stylesheet" href="http://www.espenbraastad.no//css/poole.css">
@@ -60,17 +60,35 @@
 
     <div class="content container">
       <div class="post">
-        <h1>Filebin available on http://filebin.net</h1>
-        <span class="post-date">Fri, Jul 27, 2012</span>
-        <p><a href="http://filebin.net">Filebin.net</a> was created to try out the new <a href="http://www.w3.org/TR/FileAPI/">File API</a> features in HTML5.</p>
+        <h1>Gofer - Simple notification IRC bot</h1>
+        <span class="post-date">Fri, Jan 8, 2016</span>
+        <p><a href="https://github.com/espebra/gofer/">Gofer</a> is an notification type of IRC bot which is simple to deploy and super easy to integrate with existing services. It serves two main purposes:</p>
 
-<p>Filebin is a web application that is somewhat similar to a pastebin, except that it&rsquo;s for files. It is written in Python, and the code is available on <a href="http://github.com/espebra/filebin">Github</a>.</p>
+<ol>
+<li><p>Process messages in IRC channels and <a href="https://github.com/espebra/gofer#command-execution">execute commands</a> to trigger actions based on pre-defined patterns. A good use case is to look for messages matching <code>#\d+</code> (for example <code>#1337</code>), look up the <em>title</em> and <em>status</em> in a issue tracker and print the information back in the IRC channel:</p>
+
+<pre><code>user | So I just pushed a fix for #123.
+bot  | #123 [Open]: Server crash when foo (https://issue.tracker/tickets/123)
+</code></pre></li>
+
+<li><p>Relay notifications from other services onto IRC via the built in <a href="https://github.com/espebra/gofer#http-api-interface">HTTP API</a>. Good use cases for this are to let monitoring systems notify an IRC channel whenever some service status changes, and notify an IRC channel whenever a new ticket is created in the ticket system. Consider the following cURL command:</p>
+
+<pre><code>$ curl -d &quot;message=CRITICAL: http on somehost.example.com is unavailable - Socket timeout after 10 seconds&quot; https://bot.example.com/channel/ops/privmsg
+</code></pre>
+
+<p>It will produce the following privmsg (regular message) in the IRC channel <em>#ops</em>:</p>
+
+<pre><code>bot | CRITICAL: http on somehost.example.com is unavailable - Socket timeout after 10 seconds
+</code></pre></li>
+</ol>
+
+<p>Being written in Go, gofer may be built and distributed as a statically linked binary on most platforms without dependencies.</p>
 
         <div id="disqus_thread"></div>
 <script type="text/javascript">
      
     var disqus_shortname = 'espenbraastad';
-    var disqus_identifier = 'Filebin available on http:\/\/filebin.net';
+    var disqus_identifier = 'Gofer - Simple notification IRC bot';
 
      
     (function() {

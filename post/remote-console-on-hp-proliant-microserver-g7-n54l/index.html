@@ -50,6 +50,8 @@
     <ul class="sidebar-nav">
       <li><a href="/">Home</a> </li>
       
+        <li><a href="/post/gofer-notification-irc-bot/"> Gofer - Simple notification IRC bot </a></li>
+      
         <li><a href="/post">Posts</a></li>
     </ul>
   </div>
@@ -62,15 +64,12 @@
         <span class="post-date">Sat, Aug 30, 2014</span>
         <p>I bought the <a href="http://www8.hp.com/us/en/products/proliant-servers/product-detail.html?oid=6280786">HP ProLiant MicroServer G7 N54L</a> a while ago. I threw in a <a href="http://www8.hp.com/us/en/products/oas/product-detail.html?oid=4275612">HP MicroServer Remote Access Card Kit</a> to get remote console and power management. While the power management, web UI and CLI (over ssh) works fine out of the box, the remote console (KVM) does not. What happens is that the KVM client shows the following <code>Out of range</code> message:</p>
 
-<p><img src="/img/outofrange.png" alt="Out of range" />
-</p>
+<p><img src="/img/outofrange.png" alt="Out of range" /></p>
 
 <p>To fix this, go into the BIOS. Navigate to Advanced, PCI Express Configuration and Embedded VGA Control like this:</p>
 
 <p><img src="/img/bios1.png" alt="BIOS 1" />
-
-<img src="/img/bios2.png" alt="BIOS 2" />
-</p>
+<img src="/img/bios2.png" alt="BIOS 2" /></p>
 
 <p>Flip from &ldquo;Always enabled&rdquo; (default) to &ldquo;Auto Detect&rdquo;. Save and quit. Then, make sure that your monitor is connected to the VGA port on the RAC instead of the embedded VGA port.</p>
 

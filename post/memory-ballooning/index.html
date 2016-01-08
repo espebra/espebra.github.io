@@ -50,6 +50,8 @@
     <ul class="sidebar-nav">
       <li><a href="/">Home</a> </li>
       
+        <li><a href="/post/gofer-notification-irc-bot/"> Gofer - Simple notification IRC bot </a></li>
+      
         <li><a href="/post">Posts</a></li>
     </ul>
   </div>
@@ -99,17 +101,13 @@ Managed save:   no
 
 <p>The graphs below show different guests (RHEL6, SL6 and Ubuntu Precise) on KVM (SL6) and Xen (RHEL5). The Y-axis show the amount of memory visible inside the guest (as reported by <code>free -m</code>), while the X-axis show the value of memory. The value of currentMemory is 1024M in all plots – which means that the guests should use 1024M of memory and that the graphs should stay flat out at 1024M, given zero overhead. The graphs show that this is not the reality.</p>
 
-<p><img src="/img/kvm-precise-1024.png" alt="KVM, Ubuntu Precise, 1024 MB ram" />
-</p>
+<p><img src="/img/kvm-precise-1024.png" alt="KVM, Ubuntu Precise, 1024 MB ram" /></p>
 
-<p><img src="/img/kvm-rhel6-1024.png" alt="KVM, RHEL6, 1024 MB ram" />
-</p>
+<p><img src="/img/kvm-rhel6-1024.png" alt="KVM, RHEL6, 1024 MB ram" /></p>
 
-<p><img src="/img/xen-sl6-1024.png" alt="Xen, SL6, 1024 MB ram" />
-</p>
+<p><img src="/img/xen-sl6-1024.png" alt="Xen, SL6, 1024 MB ram" /></p>
 
-<p><img src="/img/xen-precise-1024.png" alt="Xen, Ubuntu Precise, 1024 MB ram" />
-</p>
+<p><img src="/img/xen-precise-1024.png" alt="Xen, Ubuntu Precise, 1024 MB ram" /></p>
 
 <p>The graphs with KVM do not have values for 32G memory because the guests went ballistic and OOM-ed.</p>
 

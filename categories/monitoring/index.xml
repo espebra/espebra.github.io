@@ -17,8 +17,7 @@
       <guid>http://www.espenbraastad.no/post/munincollector-ng/</guid>
       <description>&lt;p&gt;Munincollector-ng is a perl script that collects graphs from multiple &lt;a href=&#34;http://munin-monitoring.org&#34;&gt;munin&lt;/a&gt; installations to display them in one page. A scenario where this is helpful is when you have (too) many munin clients on (too) many munin masters, and you want to look through some of the graphs - i.e. the &lt;em&gt;Disk usage in percent&lt;/em&gt; (aka &lt;em&gt;df&lt;/em&gt;) plugin - without spending/wasting too much time browsing through the less important graphs.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/munincollector.png&#34; alt=&#34;Munincollector&#34; /&gt;
-&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/munincollector.png&#34; alt=&#34;Munincollector&#34; /&gt;&lt;/p&gt;
 
 &lt;p&gt;It consists of one perl script and one configuration file. It is being executed regularly by cron. At each run, it iterates through the configuration file; downloads the graphs to a local directory and generates an html file.&lt;/p&gt;
 

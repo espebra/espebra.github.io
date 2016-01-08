@@ -54,17 +54,13 @@ Managed save:   no
 
 &lt;p&gt;The graphs below show different guests (RHEL6, SL6 and Ubuntu Precise) on KVM (SL6) and Xen (RHEL5). The Y-axis show the amount of memory visible inside the guest (as reported by &lt;code&gt;free -m&lt;/code&gt;), while the X-axis show the value of memory. The value of currentMemory is 1024M in all plots – which means that the guests should use 1024M of memory and that the graphs should stay flat out at 1024M, given zero overhead. The graphs show that this is not the reality.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/kvm-precise-1024.png&#34; alt=&#34;KVM, Ubuntu Precise, 1024 MB ram&#34; /&gt;
-&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/kvm-precise-1024.png&#34; alt=&#34;KVM, Ubuntu Precise, 1024 MB ram&#34; /&gt;&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/kvm-rhel6-1024.png&#34; alt=&#34;KVM, RHEL6, 1024 MB ram&#34; /&gt;
-&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/kvm-rhel6-1024.png&#34; alt=&#34;KVM, RHEL6, 1024 MB ram&#34; /&gt;&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/xen-sl6-1024.png&#34; alt=&#34;Xen, SL6, 1024 MB ram&#34; /&gt;
-&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/xen-sl6-1024.png&#34; alt=&#34;Xen, SL6, 1024 MB ram&#34; /&gt;&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/xen-precise-1024.png&#34; alt=&#34;Xen, Ubuntu Precise, 1024 MB ram&#34; /&gt;
-&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/xen-precise-1024.png&#34; alt=&#34;Xen, Ubuntu Precise, 1024 MB ram&#34; /&gt;&lt;/p&gt;
 
 &lt;p&gt;The graphs with KVM do not have values for 32G memory because the guests went ballistic and OOM-ed.&lt;/p&gt;
 </description>

@@ -50,6 +50,8 @@
     <ul class="sidebar-nav">
       <li><a href="/">Home</a> </li>
       
+        <li><a href="/post/gofer-notification-irc-bot/"> Gofer - Simple notification IRC bot </a></li>
+      
         <li><a href="/post">Posts</a></li>
     </ul>
   </div>
@@ -76,8 +78,7 @@
 
 <p>The typical request flow in a stack containing Varnish Cache is:</p>
 
-<p><img src="/img/normal-workflow.png" alt="normal-workflow" />
-</p>
+<p><img src="/img/normal-workflow.png" alt="normal-workflow" /></p>
 
 <p>The client sends HTTP requests which are received and processed by Varnish Cache. Varnish Cache will decide to look up the requests in cache or not, and eventually it may fetch the content from the backend. This works very well, but we can do so much more.</p>
 
@@ -85,8 +86,7 @@
 
 <p>The API Engine design illustrates how the powerful combination of VCL and custom VMODs can be used to build new applications. In Varnish API Engine, the request flow is:</p>
 
-<p><img src="/img/vmod-workflow.png" alt="Fig showing workflow with sqlite and memcached VMODs" />
-</p>
+<p><img src="/img/vmod-workflow.png" alt="Fig showing workflow with sqlite and memcached VMODs" /></p>
 
 <p>Each request is matched against a ruleset using the SQLite VMOD and a set of Memcached counters using the memcached VMOD. The request is denied if one of the checks fail, for example if authentication failed or if one of the request limits have been exceeded.</p>
 
@@ -337,8 +337,7 @@ Via: 1.1 varnish-plus-v4
 
 <p>These are by no means scientific results, but hints to performance that should for most scenarios prove to be fast enough. Performance is also about the ability to scale horizontally. The simple example provided in this article will scale horizontally with global counters in a pool of Memcached instances if needed.</p>
 
-<p><img src="/img/horizontal-scaling.png" alt="Fig showing horizontally scaled setup" />
-</p>
+<p><img src="/img/horizontal-scaling.png" alt="Fig showing horizontally scaled setup" /></p>
 
 <h2 id="further-reading:33df5f3bd87ad7912ec64b8d7dcd9208">Further reading</h2>
 

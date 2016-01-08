@@ -31,8 +31,7 @@
 
 &lt;p&gt;The typical request flow in a stack containing Varnish Cache is:&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/normal-workflow.png&#34; alt=&#34;normal-workflow&#34; /&gt;
-&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/normal-workflow.png&#34; alt=&#34;normal-workflow&#34; /&gt;&lt;/p&gt;
 
 &lt;p&gt;The client sends HTTP requests which are received and processed by Varnish Cache. Varnish Cache will decide to look up the requests in cache or not, and eventually it may fetch the content from the backend. This works very well, but we can do so much more.&lt;/p&gt;
 
@@ -40,8 +39,7 @@
 
 &lt;p&gt;The API Engine design illustrates how the powerful combination of VCL and custom VMODs can be used to build new applications. In Varnish API Engine, the request flow is:&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/vmod-workflow.png&#34; alt=&#34;Fig showing workflow with sqlite and memcached VMODs&#34; /&gt;
-&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/vmod-workflow.png&#34; alt=&#34;Fig showing workflow with sqlite and memcached VMODs&#34; /&gt;&lt;/p&gt;
 
 &lt;p&gt;Each request is matched against a ruleset using the SQLite VMOD and a set of Memcached counters using the memcached VMOD. The request is denied if one of the checks fail, for example if authentication failed or if one of the request limits have been exceeded.&lt;/p&gt;
 
@@ -292,8 +290,7 @@ Via: 1.1 varnish-plus-v4
 
 &lt;p&gt;These are by no means scientific results, but hints to performance that should for most scenarios prove to be fast enough. Performance is also about the ability to scale horizontally. The simple example provided in this article will scale horizontally with global counters in a pool of Memcached instances if needed.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/horizontal-scaling.png&#34; alt=&#34;Fig showing horizontally scaled setup&#34; /&gt;
-&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/horizontal-scaling.png&#34; alt=&#34;Fig showing horizontally scaled setup&#34; /&gt;&lt;/p&gt;
 
 &lt;h2 id=&#34;further-reading:33df5f3bd87ad7912ec64b8d7dcd9208&#34;&gt;Further reading&lt;/h2&gt;
 

@@ -17,15 +17,12 @@
       <guid>http://www.espenbraastad.no/post/remote-console-on-hp-proliant-microserver-g7-n54l/</guid>
       <description>&lt;p&gt;I bought the &lt;a href=&#34;http://www8.hp.com/us/en/products/proliant-servers/product-detail.html?oid=6280786&#34;&gt;HP ProLiant MicroServer G7 N54L&lt;/a&gt; a while ago. I threw in a &lt;a href=&#34;http://www8.hp.com/us/en/products/oas/product-detail.html?oid=4275612&#34;&gt;HP MicroServer Remote Access Card Kit&lt;/a&gt; to get remote console and power management. While the power management, web UI and CLI (over ssh) works fine out of the box, the remote console (KVM) does not. What happens is that the KVM client shows the following &lt;code&gt;Out of range&lt;/code&gt; message:&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/outofrange.png&#34; alt=&#34;Out of range&#34; /&gt;
-&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/outofrange.png&#34; alt=&#34;Out of range&#34; /&gt;&lt;/p&gt;
 
 &lt;p&gt;To fix this, go into the BIOS. Navigate to Advanced, PCI Express Configuration and Embedded VGA Control like this:&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/bios1.png&#34; alt=&#34;BIOS 1&#34; /&gt;
-
-&lt;img src=&#34;http://www.espenbraastad.no/img/bios2.png&#34; alt=&#34;BIOS 2&#34; /&gt;
-&lt;/p&gt;
+&lt;img src=&#34;http://www.espenbraastad.no/img/bios2.png&#34; alt=&#34;BIOS 2&#34; /&gt;&lt;/p&gt;
 
 &lt;p&gt;Flip from &amp;ldquo;Always enabled&amp;rdquo; (default) to &amp;ldquo;Auto Detect&amp;rdquo;. Save and quit. Then, make sure that your monitor is connected to the VGA port on the RAC instead of the embedded VGA port.&lt;/p&gt;
 </description>
@@ -41,8 +38,7 @@
 
 &lt;p&gt;Denne posten viser hvordan TV og datatrafikk kan sendes via èn nettverkskabel til et annet sted i boligen ved hjelp av to stk Mikrotik 951G-2HnD. RB951G-2HnD er en fleksibel trådløs router (2,4 GHz) med 5 stk 1 Gbps-porter beregnet på hjemmebruk. Utstyret kobles som skjemaet under viser.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/mikrotik-altibox.png&#34; alt=&#34;Diagram&#34; /&gt;
-&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/mikrotik-altibox.png&#34; alt=&#34;Diagram&#34; /&gt;&lt;/p&gt;
 
 &lt;p&gt;Mikrotik A, konfigurasjon:&lt;/p&gt;
 

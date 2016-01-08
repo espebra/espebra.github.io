@@ -6,8 +6,38 @@
     <description>Recent content in Development on Espen Braastad</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 16 May 2015 19:48:47 +0200</lastBuildDate>
+    <lastBuildDate>Fri, 08 Jan 2016 21:11:44 +0100</lastBuildDate>
     <atom:link href="http://www.espenbraastad.no/tags/development/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Gofer - Simple notification IRC bot</title>
+      <link>http://www.espenbraastad.no/post/gofer-notification-irc-bot/</link>
+      <pubDate>Fri, 08 Jan 2016 21:11:44 +0100</pubDate>
+      
+      <guid>http://www.espenbraastad.no/post/gofer-notification-irc-bot/</guid>
+      <description>&lt;p&gt;&lt;a href=&#34;https://github.com/espebra/gofer/&#34;&gt;Gofer&lt;/a&gt; is an notification type of IRC bot which is simple to deploy and super easy to integrate with existing services. It serves two main purposes:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;Process messages in IRC channels and &lt;a href=&#34;https://github.com/espebra/gofer#command-execution&#34;&gt;execute commands&lt;/a&gt; to trigger actions based on pre-defined patterns. A good use case is to look for messages matching &lt;code&gt;#\d+&lt;/code&gt; (for example &lt;code&gt;#1337&lt;/code&gt;), look up the &lt;em&gt;title&lt;/em&gt; and &lt;em&gt;status&lt;/em&gt; in a issue tracker and print the information back in the IRC channel:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;user | So I just pushed a fix for #123.
+bot  | #123 [Open]: Server crash when foo (https://issue.tracker/tickets/123)
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Relay notifications from other services onto IRC via the built in &lt;a href=&#34;https://github.com/espebra/gofer#http-api-interface&#34;&gt;HTTP API&lt;/a&gt;. Good use cases for this are to let monitoring systems notify an IRC channel whenever some service status changes, and notify an IRC channel whenever a new ticket is created in the ticket system. Consider the following cURL command:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ curl -d &amp;quot;message=CRITICAL: http on somehost.example.com is unavailable - Socket timeout after 10 seconds&amp;quot; https://bot.example.com/channel/ops/privmsg
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;It will produce the following privmsg (regular message) in the IRC channel &lt;em&gt;#ops&lt;/em&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;bot | CRITICAL: http on somehost.example.com is unavailable - Socket timeout after 10 seconds
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Being written in Go, gofer may be built and distributed as a statically linked binary on most platforms without dependencies.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Dummy API, Go rewrite</title>
@@ -109,8 +139,7 @@ response-status = {int}      Set the response status.
 
 &lt;p&gt;The typical request flow in a stack containing Varnish Cache is:&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/normal-workflow.png&#34; alt=&#34;normal-workflow&#34; /&gt;
-&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/normal-workflow.png&#34; alt=&#34;normal-workflow&#34; /&gt;&lt;/p&gt;
 
 &lt;p&gt;The client sends HTTP requests which are received and processed by Varnish Cache. Varnish Cache will decide to look up the requests in cache or not, and eventually it may fetch the content from the backend. This works very well, but we can do so much more.&lt;/p&gt;
 
@@ -118,8 +147,7 @@ response-status = {int}      Set the response status.
 
 &lt;p&gt;The API Engine design illustrates how the powerful combination of VCL and custom VMODs can be used to build new applications. In Varnish API Engine, the request flow is:&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/vmod-workflow.png&#34; alt=&#34;Fig showing workflow with sqlite and memcached VMODs&#34; /&gt;
-&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/vmod-workflow.png&#34; alt=&#34;Fig showing workflow with sqlite and memcached VMODs&#34; /&gt;&lt;/p&gt;
 
 &lt;p&gt;Each request is matched against a ruleset using the SQLite VMOD and a set of Memcached counters using the memcached VMOD. The request is denied if one of the checks fail, for example if authentication failed or if one of the request limits have been exceeded.&lt;/p&gt;
 
@@ -370,8 +398,7 @@ Via: 1.1 varnish-plus-v4
 
 &lt;p&gt;These are by no means scientific results, but hints to performance that should for most scenarios prove to be fast enough. Performance is also about the ability to scale horizontally. The simple example provided in this article will scale horizontally with global counters in a pool of Memcached instances if needed.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/horizontal-scaling.png&#34; alt=&#34;Fig showing horizontally scaled setup&#34; /&gt;
-&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/horizontal-scaling.png&#34; alt=&#34;Fig showing horizontally scaled setup&#34; /&gt;&lt;/p&gt;
 
 &lt;h2 id=&#34;further-reading:33df5f3bd87ad7912ec64b8d7dcd9208&#34;&gt;Further reading&lt;/h2&gt;
 
@@ -393,8 +420,7 @@ Via: 1.1 varnish-plus-v4
 
 &lt;p&gt;The purpose of Dummy API to act as a performant, simple and flexible HTTP API to use when testing API gateway performance. Put it behing a API gateway and generate responses to it from a set of consumers/clients. The Dummy API will read the request headers and query parameters and generate the responses accordingly. Some examples are custom cache-control header, response status and response delays.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/dummy-api.png&#34; alt=&#34;Dummy API&#34; /&gt;
-&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/dummy-api.png&#34; alt=&#34;Dummy API&#34; /&gt;&lt;/p&gt;
 
 &lt;p&gt;The following is a &lt;code&gt;GET&lt;/code&gt; request to host &lt;code&gt;dummy-api.varnish-software.com&lt;/code&gt; and path &lt;code&gt;/foo&lt;/code&gt;, where the response should contain a 10 characters random string, 20 characters predictable random string, response status &lt;code&gt;418&lt;/code&gt; and a &lt;code&gt;cache-control&lt;/code&gt; header with the value &lt;code&gt;max-age=2, s-maxage=3&lt;/code&gt;. The response will be delivered with a 2 seconds delay before the first byte of the body, to mimic a slow web application:&lt;/p&gt;
 

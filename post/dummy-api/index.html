@@ -50,6 +50,8 @@
     <ul class="sidebar-nav">
       <li><a href="/">Home</a> </li>
       
+        <li><a href="/post/gofer-notification-irc-bot/"> Gofer - Simple notification IRC bot </a></li>
+      
         <li><a href="/post">Posts</a></li>
     </ul>
   </div>
@@ -64,8 +66,7 @@
 
 <p>The purpose of Dummy API to act as a performant, simple and flexible HTTP API to use when testing API gateway performance. Put it behing a API gateway and generate responses to it from a set of consumers/clients. The Dummy API will read the request headers and query parameters and generate the responses accordingly. Some examples are custom cache-control header, response status and response delays.</p>
 
-<p><img src="/img/dummy-api.png" alt="Dummy API" />
-</p>
+<p><img src="/img/dummy-api.png" alt="Dummy API" /></p>
 
 <p>The following is a <code>GET</code> request to host <code>dummy-api.varnish-software.com</code> and path <code>/foo</code>, where the response should contain a 10 characters random string, 20 characters predictable random string, response status <code>418</code> and a <code>cache-control</code> header with the value <code>max-age=2, s-maxage=3</code>. The response will be delivered with a 2 seconds delay before the first byte of the body, to mimic a slow web application:</p>
 
