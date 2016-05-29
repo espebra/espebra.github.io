@@ -6,8 +6,80 @@
     <description>Recent content in Development on Espen Braastad</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 08 Jan 2016 21:11:44 +0100</lastBuildDate>
+    <lastBuildDate>Sun, 29 May 2016 20:40:48 +0200</lastBuildDate>
     <atom:link href="http://www.espenbraastad.no/tags/development/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Filebin upgrade</title>
+      <link>http://www.espenbraastad.no/post/filebin-upgrade/</link>
+      <pubDate>Sun, 29 May 2016 20:40:48 +0200</pubDate>
+      
+      <guid>http://www.espenbraastad.no/post/filebin-upgrade/</guid>
+      <description>
+
+&lt;p&gt;&lt;a href=&#34;https://filebin.net&#34;&gt;https://filebin.net&lt;/a&gt; is a public and free file upload/sharing service. Its main design principle is to be incredibly simple to use.&lt;/p&gt;
+
+&lt;p&gt;It has been in production for several years, and has more or less been unmodified until now. Today it has been upgraded in several ways, and this post aims to elaborate on some of the changes.&lt;/p&gt;
+
+&lt;h2 id=&#34;complete-rewrite:c7a5b42c9efd5ea54af6a26be7afdd8c&#34;&gt;Complete rewrite&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://github.com/espebra/filebin/tree/python&#34;&gt;The previous version of Filebin&lt;/a&gt; was written in Python and kept meta data in &lt;a href=&#34;https://mongodb.com&#34;&gt;MongoDB&lt;/a&gt;. For a number of reasons, Filebin has been completely rewritten in Go. It does no longer depend on any database except the local filesystem.&lt;/p&gt;
+
+&lt;p&gt;Some of the most visible changes are:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Tags are now called bins&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;The concept of &lt;em&gt;tags&lt;/em&gt; was always difficult to explain and confusing for new users. Hopefully &lt;em&gt;bins&lt;/em&gt; will be easier to understand. At least it is related to the domain and application name.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Bins are private only&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Earlier, tags could (optionally) be promoted publicly by being shown in a public list, for example to be picked up by crawlers. To simplify and avoid abuse, this feature is removed. From now on, all bins are private and it is necessary to know the URL to get access. The URL has to be shared using some other mechanism outside Filebin, such as email or instant messaging.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;No moderation&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;The &lt;em&gt;report for moderation&lt;/em&gt; functionality is gone. As a replacement, files can be deleted by any user knowing the URL to the bin. This is potentially controversional and problematic. The idea is to let users themselves delete malicious or illegal files uploaded by other users instead of going through a moderation process.&lt;/p&gt;
+
+&lt;p&gt;The potential downside is obviously that bad internet citizens that know the URL to a perfectly valid bin have access to delete it, and may do so just for the fun of it.&lt;/p&gt;
+
+&lt;p&gt;This open permission model is a bit experimental, and will have to be reconsidered as time goes. Feedback and suggestions are appreciated.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Album view&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Bins with images now have an &lt;em&gt;album view&lt;/em&gt; with larger versions of the images. This makes it convenient to view multiple images.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Dynamic expiration of bins&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Bins are created with a default expiration time of two months. Whenever new files are uploaded to a bin, its expiration time is reset to two months again. This makes bins long lived if files are uploaded now and then.&lt;/p&gt;
+
+&lt;p&gt;The default expiration at the time of this writing is two months, but it can be adjusted.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Mobile friendly&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;The web interface is responsive and mobile friendly. Files uploaded from iOS devices are renamed appropriately to &lt;a href=&#34;http://apple.stackexchange.com/questions/118154/can-i-specify-the-file-name-of-an-ios-safari-image-upload&#34;&gt;avoid file name collision&lt;/a&gt;.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;new-software-stack:c7a5b42c9efd5ea54af6a26be7afdd8c&#34;&gt;New software stack&lt;/h2&gt;
+
+&lt;p&gt;The infrastructure, bandwidth and hardware needed to run &lt;a href=&#34;https://filebin.net&#34;&gt;filebin.net&lt;/a&gt; is sponsored by &lt;a href=&#34;http://redpill-linpro.com/&#34;&gt;Redpill Linpro&lt;/a&gt;, the leading provider of professional Open Source services and products in the Nordic region.&lt;/p&gt;
+
+&lt;p&gt;As part of todays upgrade, &lt;a href=&#34;https://filebin.net&#34;&gt;filebin.net&lt;/a&gt; has been migrated into their IaaS cloud which is based on &lt;a href=&#34;https://www.openstack.org/&#34;&gt;OpenStack&lt;/a&gt; and &lt;a href=&#34;http://ceph.com/&#34;&gt;Ceph&lt;/a&gt;, runs on modern hardware and spans multiple locations.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Encrypted communications&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Client-server communication is now encrypted using HTTPS/TLS with certificates from &lt;a href=&#34;https://letsencrypt.org/&#34;&gt;Let&amp;rsquo;s encrypt&lt;/a&gt;. The TLS proxy &lt;a href=&#34;https://hitch-tls.org&#34;&gt;Hitch&lt;/a&gt; is used to take care of the TLS handling.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;HTTP caching&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://varnish-cache.org&#34;&gt;Varnish Cache&lt;/a&gt; is now running in front of Filebin to boost performance.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;The source code of Filebin is available at &lt;a href=&#34;https://github.com/espebra/filebin&#34;&gt;Github&lt;/a&gt;. Bugs are reported and tracked in &lt;a href=&#34;https://github.com/espebra/filebin/issues&#34;&gt;Github issues&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Feel free to reach out for feedback and suggestions by email to espebra(a)ifi.uio.no, or by leaving a comment to this blog post.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Gofer - Simple notification IRC bot</title>
