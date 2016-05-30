@@ -56,28 +56,28 @@
 
 &lt;li&gt;&lt;p&gt;&lt;strong&gt;Mobile friendly&lt;/strong&gt;&lt;/p&gt;
 
-&lt;p&gt;The web interface is responsive and mobile friendly. Files uploaded from iOS devices are renamed appropriately to &lt;a href=&#34;http://apple.stackexchange.com/questions/118154/can-i-specify-the-file-name-of-an-ios-safari-image-upload&#34;&gt;avoid file name collision&lt;/a&gt;.&lt;/p&gt;&lt;/li&gt;
+&lt;p&gt;The web interface is responsive and mobile friendly. Files uploaded from iOS devices are handled properly to &lt;a href=&#34;http://apple.stackexchange.com/questions/118154/can-i-specify-the-file-name-of-an-ios-safari-image-upload&#34;&gt;avoid file name collision&lt;/a&gt;.&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h2 id=&#34;new-software-stack:c7a5b42c9efd5ea54af6a26be7afdd8c&#34;&gt;New software stack&lt;/h2&gt;
+&lt;h2 id=&#34;new-hardware-and-software-stack:c7a5b42c9efd5ea54af6a26be7afdd8c&#34;&gt;New hardware and software stack&lt;/h2&gt;
 
 &lt;p&gt;The infrastructure, bandwidth and hardware needed to run &lt;a href=&#34;https://filebin.net&#34;&gt;filebin.net&lt;/a&gt; is sponsored by &lt;a href=&#34;http://redpill-linpro.com/&#34;&gt;Redpill Linpro&lt;/a&gt;, the leading provider of professional Open Source services and products in the Nordic region.&lt;/p&gt;
 
-&lt;p&gt;As part of todays upgrade, &lt;a href=&#34;https://filebin.net&#34;&gt;filebin.net&lt;/a&gt; has been migrated into their IaaS cloud which is based on &lt;a href=&#34;https://www.openstack.org/&#34;&gt;OpenStack&lt;/a&gt; and &lt;a href=&#34;http://ceph.com/&#34;&gt;Ceph&lt;/a&gt;, runs on modern hardware and spans multiple locations.&lt;/p&gt;
+&lt;p&gt;As part of todays upgrade, &lt;a href=&#34;https://filebin.net&#34;&gt;filebin.net&lt;/a&gt; has been migrated into their awesome IaaS cloud which is based on &lt;a href=&#34;https://www.openstack.org/&#34;&gt;OpenStack&lt;/a&gt; and &lt;a href=&#34;http://ceph.com/&#34;&gt;Ceph&lt;/a&gt;, runs on modern hardware and spans multiple locations.&lt;/p&gt;
 
 &lt;ul&gt;
 &lt;li&gt;&lt;p&gt;&lt;strong&gt;Encrypted communications&lt;/strong&gt;&lt;/p&gt;
 
-&lt;p&gt;Client-server communication is now encrypted using HTTPS/TLS with certificates from &lt;a href=&#34;https://letsencrypt.org/&#34;&gt;Let&amp;rsquo;s encrypt&lt;/a&gt;. The TLS proxy &lt;a href=&#34;https://hitch-tls.org&#34;&gt;Hitch&lt;/a&gt; is used to take care of the TLS handling.&lt;/p&gt;&lt;/li&gt;
+&lt;p&gt;Client-server communication is now encrypted using HTTPS/TLS with certificates from &lt;a href=&#34;https://letsencrypt.org/&#34;&gt;Let&amp;rsquo;s Encrypt&lt;/a&gt;. The TLS proxy &lt;a href=&#34;https://hitch-tls.org&#34;&gt;Hitch&lt;/a&gt; is used to take care of the TLS handling.&lt;/p&gt;&lt;/li&gt;
 
 &lt;li&gt;&lt;p&gt;&lt;strong&gt;HTTP caching&lt;/strong&gt;&lt;/p&gt;
 
 &lt;p&gt;&lt;a href=&#34;https://varnish-cache.org&#34;&gt;Varnish Cache&lt;/a&gt; is now running in front of Filebin to boost performance.&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;The source code of Filebin is available at &lt;a href=&#34;https://github.com/espebra/filebin&#34;&gt;Github&lt;/a&gt;. Bugs are reported and tracked in &lt;a href=&#34;https://github.com/espebra/filebin/issues&#34;&gt;Github issues&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;The source code of Filebin is available in &lt;a href=&#34;https://github.com/espebra/filebin&#34;&gt;Github&lt;/a&gt;. Bugs are reported and tracked in &lt;a href=&#34;https://github.com/espebra/filebin/issues&#34;&gt;Github issues&lt;/a&gt;.&lt;/p&gt;
 
-&lt;p&gt;Feel free to reach out for feedback and suggestions by email to espebra(a)ifi.uio.no, or by leaving a comment to this blog post.&lt;/p&gt;
+&lt;p&gt;Feel free to reach out with feedback and suggestions by email to espebra(a)ifi.uio.no, or by leaving a comment to this blog post.&lt;/p&gt;
 </description>
     </item>
     
