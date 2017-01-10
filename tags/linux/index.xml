@@ -163,6 +163,8 @@ find . -print0 | cpio --null -ov --format=newc | gzip -9 &amp;gt; /work/result/i
 &lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;cp /work/newroot/boot/vmlinuz-*x86_64 /work/result/vmlinuz
 &lt;/code&gt;&lt;/pre&gt;
 
+&lt;h2 id=&#34;result&#34;&gt;Result&lt;/h2&gt;
+
 &lt;p&gt;The &lt;code&gt;/work/result&lt;/code&gt; directory now contains two files with file sizes similar to the following:&lt;/p&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;ls -lh /work/result/

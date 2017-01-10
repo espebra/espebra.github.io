@@ -217,6 +217,8 @@ find . -print0 | cpio --null -ov --format=newc | gzip -9 &gt; /work/result/initr
 <pre><code class="language-bash">cp /work/newroot/boot/vmlinuz-*x86_64 /work/result/vmlinuz
 </code></pre>
 
+<h2 id="result">Result</h2>
+
 <p>The <code>/work/result</code> directory now contains two files with file sizes similar to the following:</p>
 
 <pre><code class="language-bash">ls -lh /work/result/
