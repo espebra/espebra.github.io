@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+	<link href="http://gmpg.org/xfn/11" rel="profile">
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+	
+	<title>Filebin upgrade</title>
+	
+	
+	<link rel="stylesheet" href="http://www.espenbraastad.no//bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" href="http://www.espenbraastad.no//font-awesome/css/font-awesome.min.css">
+	<link rel="stylesheet" href="/custom.css">
+	
+	
+	<link rel="stylesheet" href="/prism/prism.css">
+	
+	
+	<link href="" rel="alternate" type="application/rss+xml" title="Espen Braastad" />
+	
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+		
+		ga('create', 'UA-59220530-1', 'auto');
+		ga('send', 'pageview');
+	</script>
+</head>
+<body>
+
+
+<div class="container">
+        <div class="row">
+                <div class="col-md-12">
+                        <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                                <li class="breadcrumb-item"><a href="/posts">Posts</a></li>
+                                <li class="breadcrumb-item active">Filebin upgrade</li>
+                        <ol>
+                </div>
+        </div>
+</div>
+
+<div class="container">
+        <div class="row">
+	<div class="col-md-12">
+		<h1>Filebin upgrade</h1>
+		<small class="text-muted">
+			Published Sunday, May 29, 2016 (600 words, 3 minutes to read).
+		</small>
+		
+		<p>
+			
+
+<p><a href="https://filebin.net">https://filebin.net</a> is a public and free file upload/sharing service. Its main design principle is to be incredibly simple to use.</p>
+
+<p>It has been in production for several years, and has more or less been unmodified until now. Today it has been upgraded in several ways, and this post aims to elaborate on some of the changes.</p>
+
+<h2 id="complete-rewrite">Complete rewrite</h2>
+
+<p><a href="https://github.com/espebra/filebin/tree/python">The previous version of Filebin</a> was written in Python and kept meta data in <a href="https://mongodb.com">MongoDB</a>. For a number of reasons, Filebin has been completely rewritten in Go. It does no longer depend on any database except the local filesystem.</p>
+
+<p>Some of the most visible changes are:</p>
+
+<ul>
+<li><p><strong>Tags are now called bins</strong></p>
+
+<p>The concept of <em>tags</em> was always difficult to explain and confusing for new users. Hopefully <em>bins</em> will be easier to understand. At least it is related to the domain and application name.</p></li>
+
+<li><p><strong>Bins are private only</strong></p>
+
+<p>Earlier, tags could (optionally) be promoted publicly by being shown in a public list, for example to be picked up by crawlers. To simplify and avoid abuse, this feature is removed. From now on, all bins are private and it is necessary to know the URL to get access. The URL has to be shared using some other mechanism outside Filebin, such as email or instant messaging.</p></li>
+
+<li><p><strong>No moderation</strong></p>
+
+<p>The <em>report for moderation</em> functionality is gone. As a replacement, files can be deleted by any user knowing the URL to the bin. This is potentially controversional and problematic. The idea is to let users themselves delete malicious or illegal files uploaded by other users instead of going through a moderation process.</p>
+
+<p>The potential downside is obviously that bad internet citizens that know the URL to a perfectly valid bin have access to delete it, and may do so just for the fun of it.</p>
+
+<p>This open permission model is a bit experimental, and will have to be reconsidered as time goes. Feedback and suggestions are appreciated.</p></li>
+
+<li><p><strong>Album view</strong></p>
+
+<p>Bins with images now have an <em>album view</em> with larger versions of the images. This makes it convenient to view multiple images.</p></li>
+
+<li><p><strong>Dynamic expiration of bins</strong></p>
+
+<p>Bins are created with a default expiration time of two months. Whenever new files are uploaded to a bin, its expiration time is reset to two months again. This makes bins long lived if files are uploaded now and then.</p>
+
+<p>The default expiration at the time of this writing is two months, but it can be adjusted.</p></li>
+
+<li><p><strong>Mobile friendly</strong></p>
+
+<p>The web interface is responsive and mobile friendly. Files uploaded from iOS devices are handled properly to <a href="http://apple.stackexchange.com/questions/118154/can-i-specify-the-file-name-of-an-ios-safari-image-upload">avoid file name collision</a>.</p></li>
+</ul>
+
+<h2 id="new-hardware-and-software-stack">New hardware and software stack</h2>
+
+<p>The infrastructure, bandwidth and hardware needed to run <a href="https://filebin.net">filebin.net</a> is sponsored by <a href="https://www.redpill-linpro.com/">Redpill Linpro</a>, the leading provider of professional Open Source services and products in the Nordic region.</p>
+
+<p>As part of todays upgrade, <a href="https://filebin.net">filebin.net</a> has been migrated into their awesome IaaS cloud which is based on <a href="https://www.openstack.org/">OpenStack</a> and <a href="http://ceph.com/">Ceph</a>, runs on modern hardware and spans multiple locations.</p>
+
+<ul>
+<li><p><strong>Encrypted communications</strong></p>
+
+<p>Client-server communication is now encrypted using HTTPS/TLS with certificates from <a href="https://letsencrypt.org/">Let&rsquo;s Encrypt</a>. The TLS proxy <a href="https://hitch-tls.org">Hitch</a> is used to take care of the TLS handling.</p></li>
+
+<li><p><strong>HTTP caching</strong></p>
+
+<p><a href="https://varnish-cache.org">Varnish Cache</a> is now running in front of Filebin to boost performance.</p></li>
+</ul>
+
+<p>The source code of Filebin is available in <a href="https://github.com/espebra/filebin">Github</a>. Bugs are reported and tracked in <a href="https://github.com/espebra/filebin/issues">Github issues</a>.</p>
+
+<p>Feel free to reach out with feedback and suggestions by email to espebra(a)ifi.uio.no, or by leaving a comment to this blog post.</p>
+
+		</p>
+        </div>
+
+	<div class="col-md-12">
+		<div id="disqus_thread"></div>
+<script type="text/javascript">
+	 
+	var disqus_shortname = 'espenbraastad';
+	var disqus_identifier = 'Filebin upgrade';
+
+     
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+	</div>
+</div>
+
+</div>
+
+</body>
+<script src="http://www.espenbraastad.no//prism/prism.js"></script>
+<script src="http://www.espenbraastad.no//jquery.min.js"></script>
+<script>
+	 
+	$(function() { $('table').addClass('table table-responsive'); })
+	$(function() { $('img').addClass('img-fluid'); })
+</script>
+</html>
+

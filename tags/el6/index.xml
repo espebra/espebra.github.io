@@ -2,26 +2,25 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>El6 on Espen Braastad</title>
-    <link>http://www.espenbraastad.no/tags/el6/</link>
+    <link>http://www.espenbraastad.no/tags/el6/index.xml</link>
     <description>Recent content in El6 on Espen Braastad</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 23 Jun 2013 21:44:19 +0100</lastBuildDate>
     <atom:link href="http://www.espenbraastad.no/tags/el6/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>CentOS/RHEL/SL 6: root filesystem on tmpfs, UPDATE #2</title>
-      <link>http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs-update2/</link>
+      <link>http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs-update2/</link>
       <pubDate>Sun, 23 Jun 2013 21:44:19 +0100</pubDate>
       
-      <guid>http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs-update2/</guid>
+      <guid>http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs-update2/</guid>
       <description>
 
-&lt;p&gt;In a &lt;a href=&#34;http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs&#34;&gt;previous post&lt;/a&gt;, I’ve explained how to boot EL6 from memory without having / needing a physical disk.&lt;/p&gt;
+&lt;p&gt;In a &lt;a href=&#34;http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs&#34;&gt;previous post&lt;/a&gt;, I’ve explained how to boot EL6 from memory without having / needing a physical disk.&lt;/p&gt;
 
 &lt;p&gt;A bright reader, Jeff, came up with an alternative method. This alternative method does not involve dd’ing the image into a loop device, but instead copying the contents of the disk image directly into tmpfs. The result is higher write/read performance and generally lower memory requirements. The latter because unused disk space does not consume memory, which is important to consider when choosing the method to use in production systems.&lt;/p&gt;
 
-&lt;h2 id=&#34;example:8b7afac85e4821a1da5a25923e910783&#34;&gt;Example&lt;/h2&gt;
+&lt;h2 id=&#34;example&#34;&gt;Example&lt;/h2&gt;
 
 &lt;p&gt;I got a lot of questions by e-mail on the previous posts regarding the subject and how to actually getting it to work, so this time I’ve created a complete set of files to get you going with Jeff’s method:&lt;/p&gt;
 
@@ -32,20 +31,20 @@
 &lt;li&gt;The complete example kickstart file. This is a rather default CentOS 6.4 x86_64. The root password is being set to ‘foobar’.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h2 id=&#34;build-the-disk-image:8b7afac85e4821a1da5a25923e910783&#34;&gt;Build the disk image&lt;/h2&gt;
+&lt;h2 id=&#34;build-the-disk-image&#34;&gt;Build the disk image&lt;/h2&gt;
 
-&lt;pre&gt;&lt;code&gt;$ sudo yum install livecd-tools
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ sudo yum install livecd-tools
 $ sudo livecd-creator --config=centos64-pxe.ks --fslabel=centos64-pxe
 $ sudo livecd-iso-to-pxeboot centos64-pxe.iso
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;The last command will output &lt;code&gt;vmlinuz0&lt;/code&gt; and &lt;code&gt;initrd0.img&lt;/code&gt;. Put these on your webserver, &lt;a href=&#34;http://example.com/&#34;&gt;http://example.com/&lt;/a&gt;.&lt;/p&gt;
 
-&lt;h2 id=&#34;boot-a-host-on-the-disk-image:8b7afac85e4821a1da5a25923e910783&#34;&gt;Boot a host on the disk image&lt;/h2&gt;
+&lt;h2 id=&#34;boot-a-host-on-the-disk-image&#34;&gt;Boot a host on the disk image&lt;/h2&gt;
 
 &lt;p&gt;Boot it using DHCP, iPXE and the following iPXE script:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;#!ipxe 
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;#!ipxe 
 initrd http://example.com/initrd0.img
 kernel http://example.com/vmlinuz0 initrd=/initrd0.img root=/centos64-pxe.iso rootfstype=auto rw liveimg toram size=4096
 boot
@@ -53,84 +52,84 @@ boot
 
 &lt;p&gt;Note the size boot parameter. The patch will set the tmpfs size (in MB) according to this parameter. If the parameter is not set, 2048 is used as a default. The size can be changed runtime using mount, for example:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;$ sudo mount -o remount,size=10G,rw /dev/root
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ sudo mount -o remount,size=10G,rw /dev/root
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h2 id=&#34;difference-in-memory-usage:8b7afac85e4821a1da5a25923e910783&#34;&gt;Difference in memory usage&lt;/h2&gt;
+&lt;h2 id=&#34;difference-in-memory-usage&#34;&gt;Difference in memory usage&lt;/h2&gt;
 
 &lt;p&gt;The files in the file system in our example will consume around 1 GB of disk space. When booting with a file system (tmpfs) size of 4 GB, the memory usage is quite different between the previous and this (Jeff’s) method:&lt;/p&gt;
 
-&lt;h3 id=&#34;previous-method:8b7afac85e4821a1da5a25923e910783&#34;&gt;Previous method&lt;/h3&gt;
+&lt;h3 id=&#34;previous-method&#34;&gt;Previous method&lt;/h3&gt;
 
 &lt;p&gt;The important thing to notice here is that the file system already have allocated 4 GB of memory. This is because the file system already is consuming the amount of memory equivalent to the given size of the file system, independently on the actual disk space being consumed by the files currently in the file system.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;[root@lab-e ~]# free -m
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;[root@lab-e ~]# free -m
              total       used       free     shared    buffers     cached
 Mem:          7956       4272       3683          0          6       4135
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;One can argue that this is a waste of memory. On the other (conservative) side, one can argue that it is safest to pre-allocate the memory to reserve / ensure enough available memory to the file system should the system need it later. It depend on the use case, I guess.&lt;/p&gt;
 
-&lt;h3 id=&#34;this-method:8b7afac85e4821a1da5a25923e910783&#34;&gt;This method&lt;/h3&gt;
+&lt;h3 id=&#34;this-method&#34;&gt;This method&lt;/h3&gt;
 
 &lt;p&gt;The memory footprint of the file system is equivalent of the size of the current files in the file system, which means that free disk space does not consume memory. In some scenarios, this may be a far better approach in terms of resource cost. You may however very well overbook too much, so be careful to leave sufficient memory available for new files to be added. If the file system tries to use more memory than what’s currently available, your system will crash.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;             total       used       free     shared    buffers     cached
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;             total       used       free     shared    buffers     cached
 Mem:          7956       1179       6777          0          0       1001
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h2 id=&#34;difference-in-performance:8b7afac85e4821a1da5a25923e910783&#34;&gt;Difference in performance&lt;/h2&gt;
+&lt;h2 id=&#34;difference-in-performance&#34;&gt;Difference in performance&lt;/h2&gt;
 
 &lt;p&gt;The following measurements are far from being scientifically valid.&lt;/p&gt;
 
-&lt;h3 id=&#34;previous-method-1:8b7afac85e4821a1da5a25923e910783&#34;&gt;Previous method&lt;/h3&gt;
+&lt;h3 id=&#34;previous-method-1&#34;&gt;Previous method&lt;/h3&gt;
 
-&lt;pre&gt;&lt;code&gt;[root@lab-a ~]# time dd if=/dev/zero of=/foobar bs=1M count=2000 ; time sync
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;[root@lab-a ~]# time dd if=/dev/zero of=/foobar bs=1M count=2000 ; time sync
 2000+0 records in
 2000+0 records out
 2097152000 bytes (2.1 GB) copied, 2.45832 s, 853 MB/s
 
-real    0m2.480s
-user    0m0.003s
-sys 0m2.002s
+real	0m2.480s
+user	0m0.003s
+sys	0m2.002s
 
-real    0m0.245s
-user    0m0.000s
-sys 0m0.037s
+real	0m0.245s
+user	0m0.000s
+sys	0m0.037s
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h3 id=&#34;this-method-1:8b7afac85e4821a1da5a25923e910783&#34;&gt;This method&lt;/h3&gt;
+&lt;h3 id=&#34;this-method-1&#34;&gt;This method&lt;/h3&gt;
 
-&lt;pre&gt;&lt;code&gt;[root@lab-e ~]# time dd if=/dev/zero of=/foobar bs=1M count=2000 ; time sync
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;[root@lab-e ~]# time dd if=/dev/zero of=/foobar bs=1M count=2000 ; time sync
 2000+0 records in
 2000+0 records out
 2097152000 bytes (2.1 GB) copied, 0.823305 s, 2.5 GB/s
 
-real    0m0.825s
-user    0m0.002s
-sys 0m0.821s
+real	0m0.825s
+user	0m0.002s
+sys	0m0.821s
 
-real    0m0.001s
-user    0m0.000s
-sys 0m0.002s
+real	0m0.001s
+user	0m0.000s
+sys	0m0.002s
 &lt;/code&gt;&lt;/pre&gt;
 </description>
     </item>
     
     <item>
       <title>CentOS/RHEL/SL 6: root filesystem on tmpfs, UPDATE</title>
-      <link>http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs-update/</link>
+      <link>http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs-update/</link>
       <pubDate>Thu, 21 Mar 2013 09:57:00 +0100</pubDate>
       
-      <guid>http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs-update/</guid>
+      <guid>http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs-update/</guid>
       <description>&lt;p&gt;In EL6.4, the file &lt;code&gt;/usr/share/dracut/modules.d/90dmsquash-live/dmsquash-live-root&lt;/code&gt; was updated so that the &lt;a href=&#34;http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs&#34;&gt;previous patch&lt;/a&gt; no longer works as it should. I’ve updated the patch, and here it is:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;--- original    2013-03-20 16:25:23.698846581 +0100
+&lt;pre&gt;&lt;code class=&#34;language-diff&#34;&gt;--- original    2013-03-20 16:25:23.698846581 +0100
 +++ new 2013-03-21 08:58:11.175339694 +0100
 @@ -24,6 +24,8 @@
  getarg readonly_overlay &amp;amp;&amp;amp; readonly_overlay=&amp;quot;--readonly&amp;quot; || readonly_overlay=&amp;quot;&amp;quot;
  overlay=$(getarg overlay)
-
+ 
 +getarg toram &amp;amp;&amp;amp; toram=&amp;quot;yes&amp;quot;
 +
  # FIXME: we need to be able to hide the plymouth splash for the check really
@@ -139,19 +138,19 @@ sys 0m0.002s
 @@ -132,7 +134,10 @@
      BASE_LOOPDEV=$( losetup -f )
      losetup -r $BASE_LOOPDEV $EXT3FS
-
+ 
 -    do_live_from_base_loop
 +    # Create overlay only if toram is not set
 +    if [ -z &amp;quot;$toram&amp;quot; ] ; then
 +        do_live_from_base_loop
 +    fi
  fi
-
+ 
  # we might have an embedded ext3 on squashfs to use as rootfs (compressed live)
 @@ -163,13 +168,66 @@
-
+ 
      umount -l /squashfs
-
+ 
 -    do_live_from_base_loop
 +    # Create overlay only if toram is not set
 +    if [ -z &amp;quot;$toram&amp;quot; ] ; then
@@ -206,7 +205,7 @@ sys 0m0.002s
 +    printf &#39;/bin/mount -o rw %s %s\n&#39; &amp;quot;$ROOTFS_LOOPDEV&amp;quot; &amp;quot;$NEWROOT&amp;quot; &amp;gt; /mount/01-$$-live.sh
 +    exit 0
  fi
-
+ 
  if [ -b &amp;quot;$OSMIN_LOOPDEV&amp;quot; ]; then
      # set up the devicemapper snapshot device, which will merge
      # the normal live fs image, and the delta, into a minimzied fs image
@@ -215,21 +214,21 @@ sys 0m0.002s
 +        echo &amp;quot;0 $( blockdev --getsz $BASE_LOOPDEV ) snapshot $BASE_LOOPDEV $OSMIN_LOOPDEV p 8&amp;quot; | dmsetup create --readonly live-osimg-min
 +    fi
  fi
-
+ 
  ROOTFLAGS=&amp;quot;$(getarg rootflags)&amp;quot;
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;It may be easier to download it from &lt;a href=&#34;http://www.espenbraastad.no/resources/patch.sl64.txt&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;It may be easier to download it from &lt;a href=&#34;http://www.espenbraastad.no/files/patch.sl64.txt&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
 </description>
     </item>
     
     <item>
       <title>CentOS/RHEL/SL 6: root filesystem on tmpfs</title>
-      <link>http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs/</link>
-      <pubDate>Tue, 01 May 2012 21:44:19 +0100</pubDate>
+      <link>http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs/</link>
+      <pubDate>Mon, 30 Apr 2012 21:44:19 +0100</pubDate>
       
-      <guid>http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs/</guid>
-      <description>&lt;p&gt;UPDATE: The patch below has been updated &lt;a href=&#34;http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs-update&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+      <guid>http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs/</guid>
+      <description>&lt;p&gt;UPDATE: The patch below has been updated &lt;a href=&#34;http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs-update&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
 
 &lt;p&gt;There are several scenarios where conventional hard drives are not really needed. Examples are HPC cluster nodes, virtualization nodes, home theater streaming PCs, silent desktops, internet cafés and embedded systems. Hard drives tend to fail, they are slow, they consume power, they generate heat and noise, and they are quite expensive if you need/want something faster and more reliable than SATA.&lt;/p&gt;
 
@@ -254,7 +253,7 @@ sys 0m0.002s
 
 &lt;p&gt;First, create a custom kickstart file. I&amp;rsquo;ve included the specialties below:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;bootloader --location=mbr --append=&amp;quot;toram&amp;quot;
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;bootloader --location=mbr --append=&amp;quot;toram&amp;quot;
 clearpart --all
 firstboot --disabled
 install
@@ -345,7 +344,7 @@ done
 
 &lt;p&gt;Second, use &lt;i&gt;livecd-creator&lt;/i&gt; and &lt;i&gt;livecd-iso-to-pxeboot&lt;/i&gt; from the &lt;i&gt;livecd-tools&lt;/i&gt; package to convert the kickstart file into a bootable vmlinuz and initrd:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;$ sudo livecd-creator --config=centos6.ks fslabel=centos6
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ sudo livecd-creator --config=centos6.ks fslabel=centos6
 $ sudo livecd-iso-to-pxeboot centos6.iso
 &lt;/code&gt;&lt;/pre&gt;
 

@@ -2,26 +2,25 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Filebin on Espen Braastad</title>
-    <link>http://www.espenbraastad.no/tags/filebin/</link>
+    <link>http://www.espenbraastad.no/tags/filebin/index.xml</link>
     <description>Recent content in Filebin on Espen Braastad</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 29 May 2016 20:40:48 +0200</lastBuildDate>
     <atom:link href="http://www.espenbraastad.no/tags/filebin/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Filebin upgrade</title>
-      <link>http://www.espenbraastad.no/post/filebin-upgrade/</link>
+      <link>http://www.espenbraastad.no/posts/filebin-upgrade/</link>
       <pubDate>Sun, 29 May 2016 20:40:48 +0200</pubDate>
       
-      <guid>http://www.espenbraastad.no/post/filebin-upgrade/</guid>
+      <guid>http://www.espenbraastad.no/posts/filebin-upgrade/</guid>
       <description>
 
 &lt;p&gt;&lt;a href=&#34;https://filebin.net&#34;&gt;https://filebin.net&lt;/a&gt; is a public and free file upload/sharing service. Its main design principle is to be incredibly simple to use.&lt;/p&gt;
 
 &lt;p&gt;It has been in production for several years, and has more or less been unmodified until now. Today it has been upgraded in several ways, and this post aims to elaborate on some of the changes.&lt;/p&gt;
 
-&lt;h2 id=&#34;complete-rewrite:c7a5b42c9efd5ea54af6a26be7afdd8c&#34;&gt;Complete rewrite&lt;/h2&gt;
+&lt;h2 id=&#34;complete-rewrite&#34;&gt;Complete rewrite&lt;/h2&gt;
 
 &lt;p&gt;&lt;a href=&#34;https://github.com/espebra/filebin/tree/python&#34;&gt;The previous version of Filebin&lt;/a&gt; was written in Python and kept meta data in &lt;a href=&#34;https://mongodb.com&#34;&gt;MongoDB&lt;/a&gt;. For a number of reasons, Filebin has been completely rewritten in Go. It does no longer depend on any database except the local filesystem.&lt;/p&gt;
 
@@ -59,9 +58,9 @@
 &lt;p&gt;The web interface is responsive and mobile friendly. Files uploaded from iOS devices are handled properly to &lt;a href=&#34;http://apple.stackexchange.com/questions/118154/can-i-specify-the-file-name-of-an-ios-safari-image-upload&#34;&gt;avoid file name collision&lt;/a&gt;.&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h2 id=&#34;new-hardware-and-software-stack:c7a5b42c9efd5ea54af6a26be7afdd8c&#34;&gt;New hardware and software stack&lt;/h2&gt;
+&lt;h2 id=&#34;new-hardware-and-software-stack&#34;&gt;New hardware and software stack&lt;/h2&gt;
 
-&lt;p&gt;The infrastructure, bandwidth and hardware needed to run &lt;a href=&#34;https://filebin.net&#34;&gt;filebin.net&lt;/a&gt; is sponsored by &lt;a href=&#34;http://redpill-linpro.com/&#34;&gt;Redpill Linpro&lt;/a&gt;, the leading provider of professional Open Source services and products in the Nordic region.&lt;/p&gt;
+&lt;p&gt;The infrastructure, bandwidth and hardware needed to run &lt;a href=&#34;https://filebin.net&#34;&gt;filebin.net&lt;/a&gt; is sponsored by &lt;a href=&#34;https://www.redpill-linpro.com/&#34;&gt;Redpill Linpro&lt;/a&gt;, the leading provider of professional Open Source services and products in the Nordic region.&lt;/p&gt;
 
 &lt;p&gt;As part of todays upgrade, &lt;a href=&#34;https://filebin.net&#34;&gt;filebin.net&lt;/a&gt; has been migrated into their awesome IaaS cloud which is based on &lt;a href=&#34;https://www.openstack.org/&#34;&gt;OpenStack&lt;/a&gt; and &lt;a href=&#34;http://ceph.com/&#34;&gt;Ceph&lt;/a&gt;, runs on modern hardware and spans multiple locations.&lt;/p&gt;
 
@@ -83,11 +82,11 @@
     
     <item>
       <title>Filebin available on http://filebin.net</title>
-      <link>http://www.espenbraastad.no/post/filebin-available/</link>
+      <link>http://www.espenbraastad.no/posts/filebin-available/</link>
       <pubDate>Fri, 27 Jul 2012 22:10:29 +0100</pubDate>
       
-      <guid>http://www.espenbraastad.no/post/filebin-available/</guid>
-      <description>&lt;p&gt;&lt;a href=&#34;http://filebin.net&#34;&gt;Filebin.net&lt;/a&gt; was created to try out the new &lt;a href=&#34;http://www.w3.org/TR/FileAPI/&#34;&gt;File API&lt;/a&gt; features in HTML5.&lt;/p&gt;
+      <guid>http://www.espenbraastad.no/posts/filebin-available/</guid>
+      <description>&lt;p&gt;&lt;a href=&#34;https://filebin.net&#34;&gt;Filebin.net&lt;/a&gt; was created to try out the new &lt;a href=&#34;http://www.w3.org/TR/FileAPI/&#34;&gt;File API&lt;/a&gt; features in HTML5.&lt;/p&gt;
 
 &lt;p&gt;Filebin is a web application that is somewhat similar to a pastebin, except that it&amp;rsquo;s for files. It is written in Python, and the code is available on &lt;a href=&#34;http://github.com/espebra/filebin&#34;&gt;Github&lt;/a&gt;.&lt;/p&gt;
 </description>

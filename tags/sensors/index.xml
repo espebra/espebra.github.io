@@ -2,28 +2,27 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Sensors on Espen Braastad</title>
-    <link>http://www.espenbraastad.no/tags/sensors/</link>
+    <link>http://www.espenbraastad.no/tags/sensors/index.xml</link>
     <description>Recent content in Sensors on Espen Braastad</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 19 Feb 2014 23:32:00 +0100</lastBuildDate>
     <atom:link href="http://www.espenbraastad.no/tags/sensors/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Temperature trend monitoring at home</title>
-      <link>http://www.espenbraastad.no/post/temperature-trend-monitoring-at-home/</link>
+      <link>http://www.espenbraastad.no/posts/temperature-trend-monitoring-at-home/</link>
       <pubDate>Wed, 19 Feb 2014 23:32:00 +0100</pubDate>
       
-      <guid>http://www.espenbraastad.no/post/temperature-trend-monitoring-at-home/</guid>
+      <guid>http://www.espenbraastad.no/posts/temperature-trend-monitoring-at-home/</guid>
       <description>
 
-&lt;h2 id=&#34;background:88f8b93192da3e559035b25b4d4944bf&#34;&gt;Background&lt;/h2&gt;
+&lt;h2 id=&#34;background&#34;&gt;Background&lt;/h2&gt;
 
-&lt;p&gt;I’ve got balanced ventilation in my apartment. It works OK, but I don’t fully understand how it behaves if knobs are pushed and pots are turned, and I’m definitely not sure if its performance is as good as I should expect.&lt;/p&gt;
+&lt;p&gt;I&amp;rsquo;ve got balanced ventilation in my apartment. It works OK, but I don&amp;rsquo;t fully understand how it behaves if knobs are pushed and pots are turned, and I&amp;rsquo;m definitely not sure if its performance is as good as I should expect.&lt;/p&gt;
 
-&lt;p&gt;I’m going to do some measurements to see how the system reacts to changes in the outside temperature and tuning of the various settings. The first parameter to measure is the temperature in the air intake, exhaust air and some of the ventilation valves in the different rooms in the apartment.&lt;/p&gt;
+&lt;p&gt;I&amp;rsquo;m going to do some measurements to see how the system reacts to changes in the outside temperature and tuning of the various settings. The first parameter to measure is the temperature in the air intake, exhaust air and some of the ventilation valves in the different rooms in the apartment.&lt;/p&gt;
 
-&lt;h2 id=&#34;hardware:88f8b93192da3e559035b25b4d4944bf&#34;&gt;Hardware&lt;/h2&gt;
+&lt;h2 id=&#34;hardware&#34;&gt;Hardware&lt;/h2&gt;
 
 &lt;p&gt;Some temperature sensors are required. Price is an important factor, but so is accuracy. I settled with some sensors from the &lt;a href=&#34;http://www.raphnet.net/electronique/usbtenki/index_en.php&#34;&gt;USBTenki&lt;/a&gt; project. Schematics and software are open source, so you can assemble the sensors yourself if you want to. I didn’t want to, so I bought them ready to run from &lt;a href=&#34;http://www.dracal.com/store/products/usbtenki/index.php&#34;&gt;Dracal&lt;/a&gt;.&lt;/p&gt;
 
@@ -38,7 +37,7 @@
 
 &lt;p&gt;The price is 29.99$ CAD per sensor and they ship internationally. I bought five sensors. In addition, I bought some USB extension cords and a cheap bus powered USB hub from &lt;a href=&#34;http://www.dx.com/&#34;&gt;Deal Extreme&lt;/a&gt; to allow all sensors to be connected simultaneously.&lt;/p&gt;
 
-&lt;h2 id=&#34;software:88f8b93192da3e559035b25b4d4944bf&#34;&gt;Software&lt;/h2&gt;
+&lt;h2 id=&#34;software&#34;&gt;Software&lt;/h2&gt;
 
 &lt;p&gt;&lt;a href=&#34;http://munin-monitoring.org/&#34;&gt;Munin&lt;/a&gt; will be used to create graphs to show the temperature over time:&lt;/p&gt;
 
@@ -46,7 +45,7 @@
 
 &lt;p&gt;Munin is written in Perl and is available in the repositories of most Linux distributions. Installation is easy:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;# Fedora / Redhat / CentOS
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;# Fedora / Redhat / CentOS
 sudo yum install munin munin-node
 
 # Debian / Ubuntu
@@ -55,7 +54,7 @@ sudo apt-get install munin munin-node
 
 &lt;p&gt;USBTenki host software is used to communicate with the sensors from Linux.&lt;/p&gt;
 
-&lt;h2 id=&#34;setup:88f8b93192da3e559035b25b4d4944bf&#34;&gt;Setup&lt;/h2&gt;
+&lt;h2 id=&#34;setup&#34;&gt;Setup&lt;/h2&gt;
 
 &lt;p&gt;A couple of the sensors are mounted in the ventilation tubes for permanent monitoring, and the other ones are used for temporary monitoring at various locations.&lt;/p&gt;
 
@@ -71,7 +70,7 @@ sudo apt-get install munin munin-node
 
 &lt;p&gt;Data loaning configuration example and result:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;[sensor;ventilation]
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;[sensor;ventilation]
     address 127.0.0.1
     use_node_name no
     temp.update no

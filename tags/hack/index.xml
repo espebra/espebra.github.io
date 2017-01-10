@@ -2,26 +2,25 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Hack on Espen Braastad</title>
-    <link>http://www.espenbraastad.no/tags/hack/</link>
+    <link>http://www.espenbraastad.no/tags/hack/index.xml</link>
     <description>Recent content in Hack on Espen Braastad</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 16 Sep 2015 22:56:54 +0200</lastBuildDate>
     <atom:link href="http://www.espenbraastad.no/tags/hack/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Monitor stand / tabletop table IKEA hack</title>
-      <link>http://www.espenbraastad.no/post/monitor-stand-ikea-hack/</link>
+      <link>http://www.espenbraastad.no/posts/monitor-stand-ikea-hack/</link>
       <pubDate>Wed, 16 Sep 2015 22:56:54 +0200</pubDate>
       
-      <guid>http://www.espenbraastad.no/post/monitor-stand-ikea-hack/</guid>
+      <guid>http://www.espenbraastad.no/posts/monitor-stand-ikea-hack/</guid>
       <description>
 
-&lt;h2 id=&#34;background:b1c2d237bbeaf6f9d5d5c13938c2ce05&#34;&gt;Background&lt;/h2&gt;
+&lt;h2 id=&#34;background&#34;&gt;Background&lt;/h2&gt;
 
 &lt;p&gt;I needed something that would put my desktop monitors at the proper height on my desk. Instead of simply placing the monitors on some cardboards boxes, I decided to pick up something from IKEA to make a custom tabletop table / monitor stand.&lt;/p&gt;
 
-&lt;h2 id=&#34;hardware:b1c2d237bbeaf6f9d5d5c13938c2ce05&#34;&gt;Hardware&lt;/h2&gt;
+&lt;h2 id=&#34;hardware&#34;&gt;Hardware&lt;/h2&gt;
 
 &lt;table&gt;
 &lt;thead&gt;
@@ -53,11 +52,11 @@
 &lt;/tbody&gt;
 &lt;/table&gt;
 
-&lt;h2 id=&#34;software:b1c2d237bbeaf6f9d5d5c13938c2ce05&#34;&gt;Software&lt;/h2&gt;
+&lt;h2 id=&#34;software&#34;&gt;Software&lt;/h2&gt;
 
-&lt;p&gt;Eh, none.&lt;/p&gt;
+&lt;p&gt;None.&lt;/p&gt;
 
-&lt;h2 id=&#34;setup:b1c2d237bbeaf6f9d5d5c13938c2ce05&#34;&gt;Setup&lt;/h2&gt;
+&lt;h2 id=&#34;setup&#34;&gt;Setup&lt;/h2&gt;
 
 &lt;p&gt;This is straight forward. I used a &lt;a href=&#34;https://en.wikipedia.org/wiki/Router_(woodworking)&#34;&gt;router&lt;/a&gt; to hollow out some space for the legs&amp;rsquo; mounting plates, in an attempt to make the mounting plates invisible when the table is in upright position. I just happend to have a lot of glue, so I obviously applied a lot of it when fastening the mouning plates. This thing will never fall apart!&lt;/p&gt;
 

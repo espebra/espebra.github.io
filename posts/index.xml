@@ -1,0 +1,1444 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Posts on Espen Braastad</title>
+    <link>http://www.espenbraastad.no/posts/index.xml</link>
+    <description>Recent content in Posts on Espen Braastad</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 06 Jan 2017 21:34:20 +0100</lastBuildDate>
+    <atom:link href="http://www.espenbraastad.no/posts/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>CentOS 7 root filesystem on tmpfs</title>
+      <link>http://www.espenbraastad.no/posts/centos-7-rootfs-on-tmpfs/</link>
+      <pubDate>Fri, 06 Jan 2017 21:34:20 +0100</pubDate>
+      
+      <guid>http://www.espenbraastad.no/posts/centos-7-rootfs-on-tmpfs/</guid>
+      <description>
+
+&lt;p&gt;Several years ago I wrote a &lt;a href=&#34;http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs/&#34;&gt;series&lt;/a&gt; &lt;a href=&#34;http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs-update/&#34;&gt;of&lt;/a&gt; &lt;a href=&#34;http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs-update2/&#34;&gt;posts&lt;/a&gt; on how to run EL6 with its root filesystem on tmpfs. This post is a continuation of that series, and explains step by step how to run CentOS 7 with its root filesystem in memory. It should apply to RHEL, Ubuntu, Debian and other Linux distributions as well.&lt;/p&gt;
+
+&lt;p&gt;This post is a bit terse to show the concept. Several of the steps have potential for improvements.&lt;/p&gt;
+
+&lt;h2 id=&#34;build-environment&#34;&gt;Build environment&lt;/h2&gt;
+
+&lt;p&gt;A build host is needed to prepare the image to boot from. The build host should run CentOS 7 x86_64, and have the following packages installed:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;yum install libvirt virt-builder guestfish
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Make sure the libvirt daemon is running:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;systemctl start libvirtd
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Create some directories that will be used later, however feel free to relocate these to somewhere else:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;mkdir -p /work/initramfs/bin
+mkdir -p /work/newroot
+mkdir -p /work/result
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;disk-image&#34;&gt;Disk image&lt;/h2&gt;
+
+&lt;p&gt;For simplicity reasons we&amp;rsquo;ll fetch our rootfs from a pre-built disk image, but it is possible to build a &lt;a href=&#34;https://www.redpill-linpro.com/sysadvent/2016/12/14/use-virt-manager-to-build-disk-images.html&#34;&gt;custom disk image using virt-manager&lt;/a&gt;. I expect that most people would like to create their own disk image from scratch, but this is outside the scope of this post.&lt;/p&gt;
+
+&lt;p&gt;Use &lt;code&gt;virt-builder&lt;/code&gt; to download a pre-built CentOS 7.3 disk image and set the root password:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;virt-builder centos-7.3 -o /work/disk.img --root-password password:changeme
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Export the files from the disk image to one of the directories we created earlier:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;guestfish --ro -a /work/disk.img -i copy-out / /work/newroot/
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Clear fstab since it contains mount entries that no longer apply:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;echo &amp;gt; /work/newroot/etc/fstab
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;SELinux will complain about incorrect disk label at boot, so let&amp;rsquo;s just disable it right away. Production environments should have SELinux enabled.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;echo &amp;quot;SELINUX=disabled&amp;quot; &amp;gt; /work/newroot/etc/selinux/config
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Disable clearing the screen on login failure to make it possible to read any error messages:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;mkdir /work/newroot/etc/systemd/system/getty@.service.d
+cat &amp;gt; /work/newroot/etc/systemd/system/getty@.service.d/noclear.conf &amp;lt;&amp;lt; EOF
+[Service]
+TTYVTDisallocate=no
+EOF
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;initramfs&#34;&gt;Initramfs&lt;/h2&gt;
+
+&lt;p&gt;We&amp;rsquo;ll create our custom initramfs from scratch. The boot procedure will be, simply put:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Fetch kernel and a custom initramfs.&lt;/li&gt;
+&lt;li&gt;Execute kernel.&lt;/li&gt;
+&lt;li&gt;Mount the initramfs as the temporary root filesystem (for the kernel).&lt;/li&gt;
+&lt;li&gt;Execute &lt;code&gt;/init&lt;/code&gt; (in the initramfs).&lt;/li&gt;
+&lt;li&gt;Create a &lt;code&gt;tmpfs&lt;/code&gt; mount point.&lt;/li&gt;
+&lt;li&gt;Extract our CentOS 7 root filesystem to the &lt;code&gt;tmpfs&lt;/code&gt; mount point.&lt;/li&gt;
+&lt;li&gt;Execute &lt;code&gt;switch_root&lt;/code&gt; to boot on the CentOS 7 root filesystem.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;The initramfs will be based on &lt;a href=&#34;https://www.busybox.net/&#34;&gt;BusyBox&lt;/a&gt;. Download a pre-built binary or compile it from source, put the binary in the &lt;code&gt;initramfs/bin&lt;/code&gt; directory. In this post I&amp;rsquo;ll just download a pre-built binary:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;wget -O /work/initramfs/bin/busybox https://www.busybox.net/downloads/binaries/1.26.1-defconfig-multiarch/busybox-x86_64
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Make sure that &lt;code&gt;busybox&lt;/code&gt; has the execute bit set:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;chmod +x /work/initramfs/bin/busybox
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Create the file &lt;code&gt;/work/initramfs/init&lt;/code&gt; with the following contents:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;#!/bin/busybox sh
+
+# Dump to sh if something fails
+error() {
+	echo &amp;quot;Jumping into the shell...&amp;quot;
+	setsid cttyhack sh
+}
+
+# Populate /bin with binaries from busybox
+/bin/busybox --install /bin
+
+mkdir -p /proc
+mount -n -t proc none /proc
+
+mkdir -p /sys
+mount -n -t sysfs none /sys
+mkdir -p /sys/dev
+
+mkdir -p /var/run
+
+mkdir -p /dev
+mount -n -t tmpfs -o mode=0755 mdev /dev
+
+mkdir -p /dev/pts
+mount -n -t devpts devpts /dev/pts
+
+# Populate /dev
+echo /bin/mdev &amp;gt; /proc/sys/kernel/hotplug
+mdev -s
+
+mkdir -p /newroot
+mount -t tmpfs -o size=1500m tmpfs /newroot || error
+
+echo &amp;quot;Extracting rootfs... &amp;quot;
+xz -d -c -f rootfs.tar.xz | tar -x -f - -C /newroot || error
+
+mount --move /sys /newroot/sys
+mount --move /proc /newroot/proc
+mount --move /dev /newroot/dev
+
+exec switch_root /newroot /sbin/init || error
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Make sure it is executable:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;chmod +x /work/initramfs/init
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Create the root filesystem archive using &lt;code&gt;tar&lt;/code&gt;. The following command also uses xz compression to reduce the final size of the archive (from approximately 1 GB to 270 MB):&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;cd /work/newroot
+tar cJf /work/initramfs/rootfs.tar.xz .
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Create &lt;code&gt;initramfs.gz&lt;/code&gt; using:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;cd /work/initramfs
+find . -print0 | cpio --null -ov --format=newc | gzip -9 &amp;gt; /work/result/initramfs.gz
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Copy the kernel directly from the root filesystem using:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;cp /work/newroot/boot/vmlinuz-*x86_64 /work/result/vmlinuz
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The &lt;code&gt;/work/result&lt;/code&gt; directory now contains two files with file sizes similar to the following:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;ls -lh /work/result/
+total 277M
+-rw-r--r-- 1 root root 272M Jan  6 23:42 initramfs.gz
+-rwxr-xr-x 1 root root 5.2M Jan  6 23:42 vmlinuz
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;These files can be loaded directly in GRUB from disk, or using &lt;a href=&#34;http://ipxe.org/&#34;&gt;iPXE&lt;/a&gt; over HTTP using a script similar to:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;#!ipxe
+kernel http://example.com/vmlinuz
+initrd http://example.com/initramfs.gz
+boot
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Filebin upgrade</title>
+      <link>http://www.espenbraastad.no/posts/filebin-upgrade/</link>
+      <pubDate>Sun, 29 May 2016 20:40:48 +0200</pubDate>
+      
+      <guid>http://www.espenbraastad.no/posts/filebin-upgrade/</guid>
+      <description>
+
+&lt;p&gt;&lt;a href=&#34;https://filebin.net&#34;&gt;https://filebin.net&lt;/a&gt; is a public and free file upload/sharing service. Its main design principle is to be incredibly simple to use.&lt;/p&gt;
+
+&lt;p&gt;It has been in production for several years, and has more or less been unmodified until now. Today it has been upgraded in several ways, and this post aims to elaborate on some of the changes.&lt;/p&gt;
+
+&lt;h2 id=&#34;complete-rewrite&#34;&gt;Complete rewrite&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://github.com/espebra/filebin/tree/python&#34;&gt;The previous version of Filebin&lt;/a&gt; was written in Python and kept meta data in &lt;a href=&#34;https://mongodb.com&#34;&gt;MongoDB&lt;/a&gt;. For a number of reasons, Filebin has been completely rewritten in Go. It does no longer depend on any database except the local filesystem.&lt;/p&gt;
+
+&lt;p&gt;Some of the most visible changes are:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Tags are now called bins&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;The concept of &lt;em&gt;tags&lt;/em&gt; was always difficult to explain and confusing for new users. Hopefully &lt;em&gt;bins&lt;/em&gt; will be easier to understand. At least it is related to the domain and application name.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Bins are private only&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Earlier, tags could (optionally) be promoted publicly by being shown in a public list, for example to be picked up by crawlers. To simplify and avoid abuse, this feature is removed. From now on, all bins are private and it is necessary to know the URL to get access. The URL has to be shared using some other mechanism outside Filebin, such as email or instant messaging.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;No moderation&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;The &lt;em&gt;report for moderation&lt;/em&gt; functionality is gone. As a replacement, files can be deleted by any user knowing the URL to the bin. This is potentially controversional and problematic. The idea is to let users themselves delete malicious or illegal files uploaded by other users instead of going through a moderation process.&lt;/p&gt;
+
+&lt;p&gt;The potential downside is obviously that bad internet citizens that know the URL to a perfectly valid bin have access to delete it, and may do so just for the fun of it.&lt;/p&gt;
+
+&lt;p&gt;This open permission model is a bit experimental, and will have to be reconsidered as time goes. Feedback and suggestions are appreciated.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Album view&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Bins with images now have an &lt;em&gt;album view&lt;/em&gt; with larger versions of the images. This makes it convenient to view multiple images.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Dynamic expiration of bins&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Bins are created with a default expiration time of two months. Whenever new files are uploaded to a bin, its expiration time is reset to two months again. This makes bins long lived if files are uploaded now and then.&lt;/p&gt;
+
+&lt;p&gt;The default expiration at the time of this writing is two months, but it can be adjusted.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Mobile friendly&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;The web interface is responsive and mobile friendly. Files uploaded from iOS devices are handled properly to &lt;a href=&#34;http://apple.stackexchange.com/questions/118154/can-i-specify-the-file-name-of-an-ios-safari-image-upload&#34;&gt;avoid file name collision&lt;/a&gt;.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;new-hardware-and-software-stack&#34;&gt;New hardware and software stack&lt;/h2&gt;
+
+&lt;p&gt;The infrastructure, bandwidth and hardware needed to run &lt;a href=&#34;https://filebin.net&#34;&gt;filebin.net&lt;/a&gt; is sponsored by &lt;a href=&#34;https://www.redpill-linpro.com/&#34;&gt;Redpill Linpro&lt;/a&gt;, the leading provider of professional Open Source services and products in the Nordic region.&lt;/p&gt;
+
+&lt;p&gt;As part of todays upgrade, &lt;a href=&#34;https://filebin.net&#34;&gt;filebin.net&lt;/a&gt; has been migrated into their awesome IaaS cloud which is based on &lt;a href=&#34;https://www.openstack.org/&#34;&gt;OpenStack&lt;/a&gt; and &lt;a href=&#34;http://ceph.com/&#34;&gt;Ceph&lt;/a&gt;, runs on modern hardware and spans multiple locations.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Encrypted communications&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Client-server communication is now encrypted using HTTPS/TLS with certificates from &lt;a href=&#34;https://letsencrypt.org/&#34;&gt;Let&amp;rsquo;s Encrypt&lt;/a&gt;. The TLS proxy &lt;a href=&#34;https://hitch-tls.org&#34;&gt;Hitch&lt;/a&gt; is used to take care of the TLS handling.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;HTTP caching&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://varnish-cache.org&#34;&gt;Varnish Cache&lt;/a&gt; is now running in front of Filebin to boost performance.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;The source code of Filebin is available in &lt;a href=&#34;https://github.com/espebra/filebin&#34;&gt;Github&lt;/a&gt;. Bugs are reported and tracked in &lt;a href=&#34;https://github.com/espebra/filebin/issues&#34;&gt;Github issues&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Feel free to reach out with feedback and suggestions by email to espebra(a)ifi.uio.no, or by leaving a comment to this blog post.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Gofer - Simple notification IRC bot</title>
+      <link>http://www.espenbraastad.no/posts/gofer-notification-irc-bot/</link>
+      <pubDate>Fri, 08 Jan 2016 21:11:44 +0100</pubDate>
+      
+      <guid>http://www.espenbraastad.no/posts/gofer-notification-irc-bot/</guid>
+      <description>&lt;p&gt;&lt;a href=&#34;https://github.com/espebra/gofer/&#34;&gt;Gofer&lt;/a&gt; is an notification type of IRC bot which is simple to deploy and super easy to integrate with existing services. It serves two main purposes:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;Process messages in IRC channels and &lt;a href=&#34;https://github.com/espebra/gofer#command-execution&#34;&gt;execute commands&lt;/a&gt; to trigger actions based on pre-defined patterns. A good use case is to look for messages matching &lt;code&gt;#\d+&lt;/code&gt; (for example &lt;code&gt;#1337&lt;/code&gt;), look up the &lt;em&gt;title&lt;/em&gt; and &lt;em&gt;status&lt;/em&gt; in a issue tracker and print the information back in the IRC channel:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;user | So I just pushed a fix for #123.
+bot  | #123 [Open]: Server crash when foo (https://issue.tracker/tickets/123)
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Relay notifications from other services onto IRC via the built in &lt;a href=&#34;https://github.com/espebra/gofer#http-api-interface&#34;&gt;HTTP API&lt;/a&gt;. Good use cases for this are to let monitoring systems notify an IRC channel whenever some service status changes, and notify an IRC channel whenever a new ticket is created in the ticket system. Consider the following cURL command:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;curl -d &amp;quot;message=CRITICAL: http on somehost.example.com is unavailable - Socket timeout after 10 seconds&amp;quot; https://bot.example.com/channel/ops/privmsg
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;It will produce the following privmsg (regular message) in the IRC channel &lt;em&gt;#ops&lt;/em&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;bot | CRITICAL: http on somehost.example.com is unavailable - Socket timeout after 10 seconds
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Being written in Go, gofer may be built and distributed as a statically linked binary on most platforms without dependencies.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Monitor stand / tabletop table IKEA hack</title>
+      <link>http://www.espenbraastad.no/posts/monitor-stand-ikea-hack/</link>
+      <pubDate>Wed, 16 Sep 2015 22:56:54 +0200</pubDate>
+      
+      <guid>http://www.espenbraastad.no/posts/monitor-stand-ikea-hack/</guid>
+      <description>
+
+&lt;h2 id=&#34;background&#34;&gt;Background&lt;/h2&gt;
+
+&lt;p&gt;I needed something that would put my desktop monitors at the proper height on my desk. Instead of simply placing the monitors on some cardboards boxes, I decided to pick up something from IKEA to make a custom tabletop table / monitor stand.&lt;/p&gt;
+
+&lt;h2 id=&#34;hardware&#34;&gt;Hardware&lt;/h2&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Article #&lt;/th&gt;
+&lt;th&gt;Item&lt;/th&gt;
+&lt;th&gt;Price&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;102.678.95&lt;/td&gt;
+&lt;td&gt;&lt;a href=&#34;http://www.ikea.com/no/no/catalog/products/10267895/&#34;&gt;CAPITA&lt;/a&gt; 4 pack of stainless steel legs, with a length of 16 cm&lt;/td&gt;
+&lt;td&gt;NOK 95,-&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;301.798.74&lt;/td&gt;
+&lt;td&gt;&lt;a href=&#34;http://www.ikea.com/no/no/catalog/products/30179874/&#34;&gt;EKBY HEMNES&lt;/a&gt; solid wood shelf, with an area of 119x28 cm&lt;/td&gt;
+&lt;td&gt;NOK 135,-&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;802.918.73&lt;/td&gt;
+&lt;td&gt;&lt;a href=&#34;http://www.ikea.com/no/no/catalog/products/80291873/&#34;&gt;JYSSEN&lt;/a&gt; wireless charger for mobile phones&lt;/td&gt;
+&lt;td&gt;NOK 200,-&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h2 id=&#34;software&#34;&gt;Software&lt;/h2&gt;
+
+&lt;p&gt;None.&lt;/p&gt;
+
+&lt;h2 id=&#34;setup&#34;&gt;Setup&lt;/h2&gt;
+
+&lt;p&gt;This is straight forward. I used a &lt;a href=&#34;https://en.wikipedia.org/wiki/Router_(woodworking)&#34;&gt;router&lt;/a&gt; to hollow out some space for the legs&amp;rsquo; mounting plates, in an attempt to make the mounting plates invisible when the table is in upright position. I just happend to have a lot of glue, so I obviously applied a lot of it when fastening the mouning plates. This thing will never fall apart!&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/ikea-hack-1.jpg&#34; alt=&#34;WIP-1&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/ikea-hack-2.jpg&#34; alt=&#34;WIP-2&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;One leg fastened. Repeat, repeat and repeat - and the tabletop table to be suddenly has four legs.&lt;/p&gt;
+
+&lt;p&gt;The wireless charger is designed to be built into furniture, so it should be a good fit for my mini project. However, it is probably a better fit when the back of the charger can be hidden inside something. Since my tabletop table is relatively thin, the back of the charger will be clearly visible. That will not look good, but I rate wireless charging higher than the looks any time of day. It was simple to mount.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/ikea-hack-3.jpg&#34; alt=&#34;WIP-3&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/ikea-hack-4.jpg&#34; alt=&#34;WIP-4&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Mini project complete. The charger even works!&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Dummy API, Go rewrite</title>
+      <link>http://www.espenbraastad.no/posts/dummy-api-rewrite-in-go/</link>
+      <pubDate>Sat, 16 May 2015 19:48:47 +0200</pubDate>
+      
+      <guid>http://www.espenbraastad.no/posts/dummy-api-rewrite-in-go/</guid>
+      <description>&lt;p&gt;Dummy API was &lt;a href=&#34;http://www.espenbraastad.no/posts/dummy-api/&#34;&gt;originally&lt;/a&gt; written in Lua for running on top of &lt;a href=&#34;https://www.openresty.org/&#34;&gt;OpenResty&lt;/a&gt;. Reasons were high performance and simplicity. The most common Linux distributions do not provide packages for OpenResty in their repositories, which means that it has to be installed from source. This is straight forward, but it adds up - both in time required and extra build dependencies.&lt;/p&gt;
+
+&lt;p&gt;The purpose of Dummy API is to be that web application that can be rapidly installed and started when it is necessary to test API managers and web caches with a proper web application. The installation should be as simple and quick as possible.&lt;/p&gt;
+
+&lt;p&gt;I turned to &lt;a href=&#34;https://golang.org/&#34;&gt;Go&lt;/a&gt; and its &lt;a href=&#34;https://golang.org/pkg/net/http/&#34;&gt;http server&lt;/a&gt;, and reimplemented the Dummy API. What is really appealing about Go is that it is possible to compile an entire web application including all dependencies into one binary file. It means that the Dummy API and the web server can be compiled and distributed as one executable file:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ sudo yum install golang
+$ go build dummy-api.go
+$ chmod +x dummy-api
+$ ./dummy-api -host=0.0.0.0 -port=8080
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;It is possible to cross compile to various architectures and platforms.&lt;/p&gt;
+
+&lt;p&gt;I have compiled and pushed the binary version for &lt;code&gt;Linux&lt;/code&gt; on &lt;code&gt;x86_64&lt;/code&gt; to the repository. The result is that the installation steps have been narrowed down to:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ wget https://github.com/espebra/dummy-api/raw/master/dummy-api
+$ chmod +x dummy-api
+$ ./dummy-api
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;By default, it will bind to &lt;code&gt;127.0.0.1:1337&lt;/code&gt;. &lt;code&gt;./dummy-api -help&lt;/code&gt; shows the usage guide:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Usage of ./dummy-api:
+  -host=&amp;quot;127.0.0.1&amp;quot;: Listen host
+  -maxheaderbytes=1048576: Max header bytes.
+  -port=1337: Listen port
+  -readtimeout=10: Read timeout in seconds
+  -verbose=false: Verbose stdout.
+  -writetimeout=10: Write timeout in seconds
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The usage guide for web clients is shown with the &lt;code&gt;help&lt;/code&gt; query parameter:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;GET http://host/?help
+
+Dummy API
+=========
+
+The following request headers and query parameters will make an impact on the response.
+
+Delay
+-----
+header-delay = {int}         Delay to first header byte in ms.
+body-delay = {int}           Delay to first body byte in ms.
+
+Cache-control
+-------------
+max-age = {int}              Set the cache-control max-age value.
+s-maxage = {int}             Set the cache-control s-maxage value.
+must-revalidate              Set cache-control must-revalidate.
+public                       Set cache-control public.
+private                      Set cache-control private.
+no-store                     Set cache-control no-store.
+no-cache                     Set cache-control no-cache.
+no-transform                 Set cache-control no-transform.
+
+Misc
+----
+content-length               Set the content-length header, otherwise chunked
+                             transfer encoding is used.
+random-content = {int}       Add random string to the response of given length.
+predictable-content = {int}  Add predictable string to the response of given
+                             length.
+connection=close             Add connection=close to the response headers.
+response-status = {int}      Set the response status.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The Go version is available in &lt;a href=&#34;https://github.com/espebra/dummy-api/&#34;&gt;master&lt;/a&gt;, while the Lua version is available in the &lt;a href=&#34;https://github.com/espebra/dummy-api/tree/lua&#34;&gt;Lua branch&lt;/a&gt;. Remember to run it with an unprivileged user.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Varnish goes upstack with varnish modules and varnish configuration language</title>
+      <link>http://www.espenbraastad.no/posts/varnish-goes-upstack-with-varnish-modules-and-varnish-configuration-language/</link>
+      <pubDate>Thu, 07 May 2015 10:55:56 +0200</pubDate>
+      
+      <guid>http://www.espenbraastad.no/posts/varnish-goes-upstack-with-varnish-modules-and-varnish-configuration-language/</guid>
+      <description>
+
+&lt;p&gt;&lt;em&gt;This post was first published at &lt;a href=&#34;http://highscalability.com/blog/2015/5/6/varnish-goes-upstack-with-varnish-modules-and-varnish-config.html&#34;&gt;High Scalability&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;Varnish Software has just released Varnish API Engine, a high performance HTTP API Gateway which handles authentication, authorization and throttling all built on top of Varnish Cache. The Varnish API Engine can easily extend your current set of APIs with a uniform access control layer that has built in caching abilities for high volume read operations, and it provides real-time metrics.&lt;/p&gt;
+
+&lt;p&gt;Varnish API Engine is built using well known components like memcached, SQLite and most importantly Varnish Cache. The management API is written in Python. A core part of the product is written as an application on top of Varnish using VCL (Varnish Configuration Language) and VMODs (Varnish Modules) for extended functionality.&lt;/p&gt;
+
+&lt;p&gt;We would like to use this as an opportunity to show how you can create your own flexible yet still high performance applications in VCL with the help of VMODs.&lt;/p&gt;
+
+&lt;h2 id=&#34;vmods&#34;&gt;VMODs&lt;/h2&gt;
+
+&lt;p&gt;VCL is the language used to configure Varnish Cache. When varnishd loads a VCL configuration file, it will convert it into C code, compile it and then load it dynamically. It is therefore possible to extend functionality of VCL by inlining C code directly into the VCL configuration file, but the preferred way to do it since Varnish Cache 3 has been to use Varnish Modules, or VMODs for short, instead.&lt;/p&gt;
+
+&lt;p&gt;The typical request flow in a stack containing Varnish Cache is:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/normal-workflow.png&#34; alt=&#34;normal-workflow&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The client sends HTTP requests which are received and processed by Varnish Cache. Varnish Cache will decide to look up the requests in cache or not, and eventually it may fetch the content from the backend. This works very well, but we can do so much more.&lt;/p&gt;
+
+&lt;p&gt;The VCL language is designed for performance, and as such does not provide loops or external calls natively. VMODs, on the other hand, are free of these restrictions. This is great for flexibility, but places the responsibility for ensuring performance and avoiding delays on the VMOD code and behaviour.&lt;/p&gt;
+
+&lt;p&gt;The API Engine design illustrates how the powerful combination of VCL and custom VMODs can be used to build new applications. In Varnish API Engine, the request flow is:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/vmod-workflow.png&#34; alt=&#34;Fig showing workflow with sqlite and memcached VMODs&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Each request is matched against a ruleset using the SQLite VMOD and a set of Memcached counters using the memcached VMOD. The request is denied if one of the checks fail, for example if authentication failed or if one of the request limits have been exceeded.&lt;/p&gt;
+
+&lt;h2 id=&#34;example-application&#34;&gt;Example application&lt;/h2&gt;
+
+&lt;p&gt;The following example is a very simple version of some of the concepts used in the Varnish API Engine. We will create a small application written in VCL that will look up the requested URL in a database containing throttling rules and enforce them on a per IP basis.&lt;/p&gt;
+
+&lt;p&gt;Since testing and maintainability is crucial when developing an application, we will use Varnish&amp;rsquo;s integrated testing tool: &lt;code&gt;varnishtest&lt;/code&gt;. Varnishtest is a powerful testing tool which is used to test all aspects of Varnish Cache. Varnishtest&amp;rsquo;s simple interface means that developers and operation engineers can leverage it to test their VCL/VMOD configurations.&lt;/p&gt;
+
+&lt;p&gt;Varnishtest reads a file describing a set of mock servers, clients, and varnish instances. The clients perform requests that go via varnish, to the server. Expectations can be set on content, headers, HTTP response codes and more. With &lt;code&gt;varnishtest&lt;/code&gt; we can quickly test our example application, and verify that our requests are passed or blocked as per the defined expectations.&lt;/p&gt;
+
+&lt;p&gt;First we need a database with our throttle rules. Using the sqlite3 command, we create the database in &lt;code&gt;/tmp/rules.db3&lt;/code&gt; and add a couple of rules.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ sqlite3 /tmp/rules.db3 &amp;quot;CREATE TABLE t (rule text, path text);&amp;quot;
+$ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;3r5&#39;, &#39;/search&#39;);&amp;quot;
+$ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r3600&#39;, &#39;/login&#39;);&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;These rules will allow 3 requests per 5 seconds to &lt;code&gt;/search&lt;/code&gt; and 15 requests per hour to &lt;code&gt;/login&lt;/code&gt;. The idea is to enforce these rules on a per IP basis.&lt;/p&gt;
+
+&lt;p&gt;For the sake of simplicity, we’ll write the tests and VCL configuration in the same file, &lt;a href=&#34;http://www.espenbraastad.no/files/throttle.vtc&#34;&gt;throttle.vtc&lt;/a&gt;. It is, however, possible to include separate VCL configuration files using include statements in the test files, to separate VCL configuration and the different tests.&lt;/p&gt;
+
+&lt;p&gt;The first line in the file is optionally used to set the name or the title of the test.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;varnishtest &amp;quot;Simple throttling with SQLite and Memcached&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Our test environment consists of one backend, called s1. We will first expect one request to a URL without a rule in the database.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;server s1 {
+    rxreq
+    expect req.url == &amp;quot;/&amp;quot;
+    txresp
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;We then expect 4 requests to &lt;code&gt;/search&lt;/code&gt; to arrive according to our following expectations. Note that the query parameters are slightly different, making all of these unique requests.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;    rxreq
+    expect req.url == &amp;quot;/search?id=123&amp;amp;type=1&amp;quot;
+    expect req.http.path == &amp;quot;/search&amp;quot;
+    expect req.http.rule == &amp;quot;3r5&amp;quot;
+    expect req.http.requests == &amp;quot;3&amp;quot;
+    expect req.http.period == &amp;quot;5&amp;quot;
+    expect req.http.counter == &amp;quot;1&amp;quot;
+    txresp
+  
+    rxreq
+    expect req.url == &amp;quot;/search?id=123&amp;amp;type=2&amp;quot;
+    expect req.http.path == &amp;quot;/search&amp;quot;
+    expect req.http.rule == &amp;quot;3r5&amp;quot;
+    expect req.http.requests == &amp;quot;3&amp;quot;
+    expect req.http.period == &amp;quot;5&amp;quot;
+    expect req.http.counter == &amp;quot;2&amp;quot;
+    txresp
+  
+    rxreq
+    expect req.url == &amp;quot;/search?id=123&amp;amp;type=3&amp;quot;
+    expect req.http.path == &amp;quot;/search&amp;quot;
+    expect req.http.rule == &amp;quot;3r5&amp;quot;
+    expect req.http.requests == &amp;quot;3&amp;quot;
+    expect req.http.period == &amp;quot;5&amp;quot;
+    expect req.http.counter == &amp;quot;3&amp;quot;
+    txresp
+  
+    rxreq
+    expect req.url == &amp;quot;/search?id=123&amp;amp;type=4&amp;quot;
+    expect req.http.path == &amp;quot;/search&amp;quot;
+    expect req.http.rule == &amp;quot;3r5&amp;quot;
+    expect req.http.requests == &amp;quot;3&amp;quot;
+    expect req.http.period == &amp;quot;5&amp;quot;
+    expect req.http.counter == &amp;quot;1&amp;quot;
+    txresp
+} -start
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Now it is time to write the mini-application in VCL. Our test environment consists of one varnish instance, called v1. Initially, the VCL version marker and the VMOD imports are added.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;varnish v1 -vcl+backend {
+    vcl 4.0;
+    import std;
+    import sqlite3;
+    import memcached;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;VMODs are usually configured in &lt;code&gt;vcl_init&lt;/code&gt;, and this is true for sqlite3 and memcached as well. For sqlite3, we set the path to the database and the field delimiter to use on multi column results. The memcached VMOD can have a wide variety of configuration options supported by &lt;a href=&#34;http://docs.libmemcached.org/libmemcached_configuration.html&#34;&gt;libmemcached&lt;/a&gt;.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;    sub vcl_init {
+        sqlite3.open(&amp;quot;/tmp/rules.db3&amp;quot;, &amp;quot;|;&amp;quot;);
+        memcached.servers(&amp;quot;--SERVER=localhost --BINARY-PROTOCOL&amp;quot;);
+    }
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;In &lt;code&gt;vcl_recv&lt;/code&gt;, the incoming HTTP requests are received. We start by extracting the request path without query parameters and potential dangerous characters. This is important since the path will be part of the SQL query later. The following regex will match &lt;code&gt;req.url&lt;/code&gt; from the beginning of the line up until any of the characters ? &amp;amp; ;  “  ‘ or whitespace.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;    sub vcl_recv {
+        set req.http.path = regsub(req.url, {&amp;quot;^([^?&amp;amp;;&amp;quot;&#39; ]+).*&amp;quot;}, &amp;quot;\1&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The use of &lt;code&gt;{&amp;quot; &amp;quot;}&lt;/code&gt; in the regular expression enables handling of the &amp;ldquo; character in the regular expression rule. The path we just extracted is used when the rule is looked up in the database. The response, if any, is stored in &lt;code&gt;req.http.rule&lt;/code&gt;.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;        set req.http.rule = sqlite3.exec(&amp;quot;SELECT rule FROM t WHERE path=&#39;&amp;quot; + req.http.path + &amp;quot;&#39; LIMIT 1&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;If we get a response, it will be on the format &lt;code&gt;RnT&lt;/code&gt;, where &lt;code&gt;R&lt;/code&gt; is the amount of requests allowed over a period of &lt;code&gt;T&lt;/code&gt; seconds. Since this is a string, we need to apply more regex to separate those.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;        set req.http.requests = regsub(req.http.rule, &amp;quot;^([0-9]+)r.*$&amp;quot;, &amp;quot;\1&amp;quot;);
+        set req.http.period = regsub(req.http.rule, &amp;quot;^[0-9]+r([0-9]+)$&amp;quot;, &amp;quot;\1&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;We do throttling on this request only if we got proper values from the previous regex filters.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;        if (req.http.requests != &amp;quot;&amp;quot; &amp;amp;&amp;amp; req.http.period != &amp;quot;&amp;quot;) {
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Increment or create a Memcached counter unique for this &lt;code&gt;client.ip&lt;/code&gt; and path with the value 1. The expiry time we specify is equal to the period in the throttle rule set in the database. This way, the throttle rules can be flexible regarding time period. The return value is the new value of the counter, which corresponds to the amount of requests this &lt;code&gt;client.ip&lt;/code&gt; has done this path in the current time period.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;           set req.http.counter = memcached.incr_set(
+               req.http.path + &amp;quot;-&amp;quot; + client.ip, 1, 1, std.integer(req.http.period, 0));
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Check if the counter is higher than the limit set in the database. If it is, then abort the request here with a &lt;code&gt;429&lt;/code&gt; response code.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;            if (std.integer(req.http.counter, 0) &amp;gt; std.integer(req.http.requests, 0)) {
+                 return (synth(429, &amp;quot;Too many requests&amp;quot;));
+            }
+        }
+    }
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;In &lt;code&gt;vcl_deliver&lt;/code&gt; we set response headers showing the throttle limit and status for each request which might be helpful for the consumers.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;    sub vcl_deliver {
+        if (req.http.requests &amp;amp;&amp;amp; req.http.counter &amp;amp;&amp;amp; req.http.period) {
+            set resp.http.X-RateLimit-Limit = req.http.requests;
+            set resp.http.X-RateLimit-Counter = req.http.counter;
+            set resp.http.X-RateLimit-Period = req.http.period;
+        }
+    }
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Errors will get the same headers set in &lt;code&gt;vcl_synth&lt;/code&gt;.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;    sub vcl_synth {
+        if (req.http.requests &amp;amp;&amp;amp; req.http.counter &amp;amp;&amp;amp; req.http.period) {
+            set resp.http.X-RateLimit-Limit = req.http.requests;
+            set resp.http.X-RateLimit-Counter = req.http.counter;
+            set resp.http.X-RateLimit-Period = req.http.period;
+        }
+    }
+} -start
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The configuration is complete, and it is time to add some clients to verify that the configuration is correct. First we send a request that we expect to be unthrottled, meaning that there are no throttle rules in the database for this URL.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;client c1 {
+    txreq -url &amp;quot;/&amp;quot;
+    rxresp
+    expect resp.status == 200
+    expect resp.http.X-RateLimit-Limit == &amp;lt;undef&amp;gt;
+    expect resp.http.X-RateLimit-Counter == &amp;lt;undef&amp;gt;
+    expect resp.http.X-RateLimit-Period == &amp;lt;undef&amp;gt;
+} -run
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The next client sends requests to a URL that we know is a match in the throttle database, and we expect the rate-limit headers to be set. The throttle rule for &lt;code&gt;/search&lt;/code&gt; is &lt;code&gt;3r5&lt;/code&gt;, which means that the three first requests within a 5 second period should succeed (with return code &lt;code&gt;200&lt;/code&gt;) while the fourth request should be throttled (with return code &lt;code&gt;429&lt;/code&gt;).&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;client c2 {
+    txreq -url &amp;quot;/search?id=123&amp;amp;type=1&amp;quot;
+    rxresp
+    expect resp.status == 200
+    expect resp.http.X-RateLimit-Limit == &amp;quot;3&amp;quot;
+    expect resp.http.X-RateLimit-Counter == &amp;quot;1&amp;quot;
+    expect resp.http.X-RateLimit-Period == &amp;quot;5&amp;quot;
+  
+    txreq -url &amp;quot;/search?id=123&amp;amp;type=2&amp;quot;
+    rxresp
+    expect resp.status == 200
+    expect resp.http.X-RateLimit-Limit == &amp;quot;3&amp;quot;
+    expect resp.http.X-RateLimit-Counter == &amp;quot;2&amp;quot;
+    expect resp.http.X-RateLimit-Period == &amp;quot;5&amp;quot;
+  
+    txreq -url &amp;quot;/search?id=123&amp;amp;type=3&amp;quot;
+    rxresp
+    expect resp.status == 200
+    expect resp.http.X-RateLimit-Limit == &amp;quot;3&amp;quot;
+    expect resp.http.X-RateLimit-Counter == &amp;quot;3&amp;quot;
+    expect resp.http.X-RateLimit-Period == &amp;quot;5&amp;quot;
+  
+    txreq -url &amp;quot;/search?id=123&amp;amp;type=4&amp;quot;
+    rxresp
+    expect resp.status == 429
+    expect resp.http.X-RateLimit-Limit == &amp;quot;3&amp;quot;
+    expect resp.http.X-RateLimit-Counter == &amp;quot;4&amp;quot;
+    expect resp.http.X-RateLimit-Period == &amp;quot;5&amp;quot;
+} -run
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;At this point, we know that requests are being throttled. To verify that new requests are allowed after the time limit is up, we add a delay here before we send the next and last request. This request should succeed since we are in a new throttle window.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;delay 5;
+ 
+client c3 {
+   txreq -url &amp;quot;/search?id=123&amp;amp;type=4&amp;quot;
+   rxresp
+   expect resp.status == 200
+   expect resp.http.X-RateLimit-Limit == &amp;quot;3&amp;quot;
+   expect resp.http.X-RateLimit-Counter == &amp;quot;1&amp;quot;
+   expect resp.http.X-RateLimit-Period == &amp;quot;5&amp;quot;
+} -run
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;To execute the test file, make sure the memcached service is running locally and execute:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ varnishtest example.vtc
+#     top  TEST example.vtc passed (6.533)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Add &lt;code&gt;-v&lt;/code&gt; for verbose mode to get more information from the test run.&lt;/p&gt;
+
+&lt;p&gt;Requests to our application in the example will receive the following response headers. The first is a request that has been allowed, and the second is a request that has been throttled.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-http&#34;&gt;$ curl -iI http://localhost/search
+HTTP/1.1 200 OK
+Age: 6
+Content-Length: 936
+X-RateLimit-Counter: 1
+X-RateLimit-Limit: 3
+X-RateLimit-Period: 5
+X-Varnish: 32770 3
+Via: 1.1 varnish-plus-v4
+
+$ curl -iI http://localhost/search
+HTTP/1.1 429 Too many requests
+Content-Length: 273
+X-RateLimit-Counter: 4
+X-RateLimit-Limit: 3
+X-RateLimit-Period: 5
+X-Varnish: 32774
+Via: 1.1 varnish-plus-v4
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The complete &lt;a href=&#34;http://www.espenbraastad.no/files/throttle.vtc&#34;&gt;throttle.vtc&lt;/a&gt; file outputs timestamp information before and after VMOD processing, to give us some data on the overhead introduced by the Memcached and SQLite queries. Running 60 requests in varnishtest on a local vm with Memcached running locally returned the following timings pr operation (in ms):&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;SQLite SELECT, max: 0.32, median: 0.08, average: 0.115&lt;/li&gt;
+&lt;li&gt;Memcached incr_set(), max: 1.23, median: 0.27, average: 0.29&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;These are by no means scientific results, but hints to performance that should for most scenarios prove to be fast enough. Performance is also about the ability to scale horizontally. The simple example provided in this article will scale horizontally with global counters in a pool of Memcached instances if needed.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/horizontal-scaling.png&#34; alt=&#34;Fig showing horizontally scaled setup&#34; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;further-reading&#34;&gt;Further reading&lt;/h2&gt;
+
+&lt;p&gt;There are a number of VMODs available, and the &lt;a href=&#34;https://www.varnish-cache.org/VMODs&#34;&gt;VMODs Directory&lt;/a&gt; is a good starting point. Some highlights from the directory are VMODs for cURL usage, Redis, Digest functions and various authentication modules.&lt;/p&gt;
+
+&lt;p&gt;Varnish Plus, the fully supported commercial edition of Varnish Cache, is bundled with a set of high quality, support backed VMODs. For the open source edition, you can download and compile the VMODs you require manually.&lt;/p&gt;
+
+&lt;p&gt;Varnish API Engine is more than VCL and VMODs. It also packs features such as key authentication, a centralized REST API for management, administration interface and real time statistics. For more information about Varnish API Engine, please contact &lt;a href=&#34;https://www.varnish-software.com/&#34;&gt;Varnish Software&lt;/a&gt;.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Dummy API</title>
+      <link>http://www.espenbraastad.no/posts/dummy-api/</link>
+      <pubDate>Sat, 02 May 2015 21:42:21 +0200</pubDate>
+      
+      <guid>http://www.espenbraastad.no/posts/dummy-api/</guid>
+      <description>&lt;p&gt;&lt;em&gt;Update: Dummy API has been &lt;a href=&#34;http://www.espenbraastad.no/posts/dummy-api-rewrite-in-go/&#34;&gt;rewritten in Go&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;The purpose of Dummy API to act as a performant, simple and flexible HTTP API to use when testing API gateway performance. Put it behing a API gateway and generate responses to it from a set of consumers/clients. The Dummy API will read the request headers and query parameters and generate the responses accordingly. Some examples are custom cache-control header, response status and response delays.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/dummy-api.png&#34; alt=&#34;Dummy API&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The following is a &lt;code&gt;GET&lt;/code&gt; request to host &lt;code&gt;dummy-api.varnish-software.com&lt;/code&gt; and path &lt;code&gt;/foo&lt;/code&gt;, where the response should contain a 10 characters random string, 20 characters predictable random string, response status &lt;code&gt;418&lt;/code&gt; and a &lt;code&gt;cache-control&lt;/code&gt; header with the value &lt;code&gt;max-age=2, s-maxage=3&lt;/code&gt;. The response will be delivered with a 2 seconds delay before the first byte of the body, to mimic a slow web application:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-http&#34;&gt;GET http://dummy-api.varnish-software.com/foo?random-content=10&amp;amp;predictable-content=20&amp;amp;response-status=418&amp;amp;body-delay=2&amp;amp;max-age=2&amp;amp;s-maxage=3
+
+HTTP/1.1 418
+Cache-control: max-age=2, s-maxage=3
+Connection: close
+Content-Type: application/json
+Date: Sun, 03 May 2015 15:12:36 GMT
+Server: Dummy API
+Transfer-Encoding: chunked
+
+{
+    &amp;quot;body-delay&amp;quot;: 2,
+    &amp;quot;host&amp;quot;: &amp;quot;dummy-api.varnish-software.com&amp;quot;,
+    &amp;quot;max-age&amp;quot;: 2,
+    &amp;quot;method&amp;quot;: &amp;quot;GET&amp;quot;,
+    &amp;quot;predictable-content&amp;quot;: &amp;quot;Q1qxI72mD3wFAGTtPlJx&amp;quot;,
+    &amp;quot;random-content&amp;quot;: &amp;quot;NlYhricCPZ&amp;quot;,
+    &amp;quot;request-headers&amp;quot;: {
+        &amp;quot;accept&amp;quot;: &amp;quot;*/*&amp;quot;,
+        &amp;quot;accept-encoding&amp;quot;: &amp;quot;gzip, deflate&amp;quot;,
+        &amp;quot;host&amp;quot;: &amp;quot;dummy-api.varnish-software.com&amp;quot;,
+        &amp;quot;user-agent&amp;quot;: &amp;quot;HTTPie/0.8.0&amp;quot;
+    },
+    &amp;quot;request-parameters&amp;quot;: {
+        &amp;quot;body-delay&amp;quot;: &amp;quot;2&amp;quot;,
+        &amp;quot;max-age&amp;quot;: &amp;quot;2&amp;quot;,
+        &amp;quot;predictable-content&amp;quot;: &amp;quot;20&amp;quot;,
+        &amp;quot;random-content&amp;quot;: &amp;quot;10&amp;quot;,
+        &amp;quot;response-status&amp;quot;: &amp;quot;418&amp;quot;,
+        &amp;quot;s-maxage&amp;quot;: &amp;quot;3\n&amp;quot;
+    },
+    &amp;quot;response-status&amp;quot;: 418,
+    &amp;quot;s-maxage&amp;quot;: 3,
+    &amp;quot;uri&amp;quot;: &amp;quot;/foo&amp;quot;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The following is a &lt;code&gt;POST&lt;/code&gt; request to &lt;code&gt;dummy-api.varnish-software.com&lt;/code&gt; and path &lt;code&gt;/someurl&lt;/code&gt;, where the response status should be &lt;code&gt;201&lt;/code&gt;, the &lt;code&gt;cache-control&lt;/code&gt; header should be set to &lt;code&gt;must-revalidate&lt;/code&gt; and the &lt;code&gt;content-length&lt;/code&gt; header should be set instead of using &lt;code&gt;chunked&lt;/code&gt; &lt;code&gt;transfer-encoding&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-http&#34;&gt;POST http://dummy-api.varnish-software.com/someurl?must-revalidate&amp;amp;response-status=201&amp;amp;content-length
+
+HTTP/1.1 201 Created
+Cache-control: must-revalidate
+Connection: close
+Content-Type: application/json
+Content-length: 458
+Date: Sun, 03 May 2015 15:13:43 GMT
+Server: Dummy API
+
+{
+    &amp;quot;content-length&amp;quot;: true,
+    &amp;quot;host&amp;quot;: &amp;quot;dummy-api.varnish-software.com&amp;quot;,
+    &amp;quot;method&amp;quot;: &amp;quot;POST&amp;quot;,
+    &amp;quot;must-revalidate&amp;quot;: true,
+    &amp;quot;request-headers&amp;quot;: {
+        &amp;quot;accept&amp;quot;: &amp;quot;application/json&amp;quot;,
+        &amp;quot;accept-encoding&amp;quot;: &amp;quot;gzip, deflate&amp;quot;,
+        &amp;quot;content-length&amp;quot;: &amp;quot;14&amp;quot;,
+        &amp;quot;content-type&amp;quot;: &amp;quot;application/json; charset=utf-8&amp;quot;,
+        &amp;quot;host&amp;quot;: &amp;quot;dummy-api.varnish-software.com&amp;quot;,
+        &amp;quot;user-agent&amp;quot;: &amp;quot;HTTPie/0.8.0&amp;quot;
+    },
+    &amp;quot;request-parameters&amp;quot;: {
+        &amp;quot;content-length&amp;quot;: true,
+        &amp;quot;must-revalidate&amp;quot;: true,
+        &amp;quot;response-status&amp;quot;: &amp;quot;201&amp;quot;
+    },
+    &amp;quot;response-status&amp;quot;: 201,
+    &amp;quot;uri&amp;quot;: &amp;quot;/someurl&amp;quot;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The buit in help text is available with the &lt;code&gt;help&lt;/code&gt; request header or query parameter:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-http&#34;&gt;GET http://dummy-api.varnish-software.com/?help
+
+HTTP/1.1 200 OK
+Connection: close
+Content-Type: text/plain
+Date: Sat, 02 May 2015 19:59:39 GMT
+Server: Dummy API
+Transfer-Encoding: chunked
+    
+Dummy API
+=========
+
+The following request headers and query parameters will make an impact on the response.
+
+Delay
+-----
+header-delay = {float}           Delay to first header byte
+body-delay = {float}             Delay to first body byte
+
+Cache-control
+-------------
+max-age = {int}                  Set the response max-age value
+s-maxage = {int}                 Set the response s-maxage value
+must-revalidate                  Set must-revalidate
+public                           Set public
+private                          Set private
+no-store                         Set no-store
+no-cache                         Set no-cache
+no-transform                     Set no-transform
+
+Misc
+----
+content-length                   Set the content-length header, otherwise chunked transfer encoding is used
+random-content = {int}           Add random string to the response of given length
+predictable-content = {int}      Add predictable string to the response of given length
+response-status = {int}          Set the response status
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The Dummy API is written in Lua and is available for download at &lt;a href=&#34;https://github.com/espebra/dummy-api&#34;&gt;Github&lt;/a&gt;. It will run on the &lt;a href=&#34;http://openresty.org/&#34;&gt;OpenResty&lt;/a&gt; web application server.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Remote console on HP ProLiant MicroServer G7 N54L</title>
+      <link>http://www.espenbraastad.no/posts/remote-console-on-hp-proliant-microserver-g7-n54l/</link>
+      <pubDate>Sat, 30 Aug 2014 20:48:00 +0100</pubDate>
+      
+      <guid>http://www.espenbraastad.no/posts/remote-console-on-hp-proliant-microserver-g7-n54l/</guid>
+      <description>&lt;p&gt;I bought the &lt;a href=&#34;http://www8.hp.com/us/en/products/proliant-servers/product-detail.html?oid=6280786&#34;&gt;HP ProLiant MicroServer G7 N54L&lt;/a&gt; a while ago. I threw in a &lt;a href=&#34;http://www8.hp.com/us/en/products/oas/product-detail.html?oid=4275612&#34;&gt;HP MicroServer Remote Access Card Kit&lt;/a&gt; to get remote console and power management. While the power management, web UI and CLI (over ssh) works fine out of the box, the remote console (KVM) does not. What happens is that the KVM client shows the following &lt;code&gt;Out of range&lt;/code&gt; message:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/outofrange.png&#34; alt=&#34;Out of range&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;To fix this, go into the BIOS. Navigate to Advanced, PCI Express Configuration and Embedded VGA Control like this:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/bios1.png&#34; alt=&#34;BIOS 1&#34; /&gt;
+&lt;img src=&#34;http://www.espenbraastad.no/img/bios2.png&#34; alt=&#34;BIOS 2&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Flip from &lt;code&gt;Always enabled&lt;/code&gt; (default) to &lt;code&gt;Auto Detect&lt;/code&gt;. Save and quit. Then, make sure that your monitor is connected to the VGA port on the RAC instead of the embedded VGA port.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Altibox, TV- og datatrafikk over samme nettverkskabel</title>
+      <link>http://www.espenbraastad.no/posts/altibox-tv-and-data-over-the-same-ethernet-cable/</link>
+      <pubDate>Thu, 22 May 2014 22:41:00 +0100</pubDate>
+      
+      <guid>http://www.espenbraastad.no/posts/altibox-tv-and-data-over-the-same-ethernet-cable/</guid>
+      <description>&lt;p&gt;Altibox leverer en hjemmesentral hvor man henter ut TV-signal og internettilgang fra to (eller flere) forskjellige RJ45-porter. Som trådløs router har hjemmesentralen kun et minimum av funksjonalitet, og man skal ikke være en veldig avansert bruker før man vil rekonfigurere hjemmesentralen som en bridge og heller ha en egen trådløs router på baksiden. Dette gir også mening dersom boligen har flere etasjer, og hjemmesentralen ikke er kraftig nok til å levere god nok trådløs dekning.&lt;/p&gt;
+
+&lt;p&gt;Denne posten viser hvordan TV og datatrafikk kan sendes via èn nettverkskabel til et annet sted i boligen ved hjelp av to stk Mikrotik 951G-2HnD. RB951G-2HnD er en fleksibel trådløs router (2,4 GHz) med 5 stk 1 Gbps-porter beregnet på hjemmebruk. Utstyret kobles som skjemaet under viser.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/mikrotik-altibox.png&#34; alt=&#34;Diagram&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Mikrotik A, konfigurasjon:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;/interface vlan add name=vlan-10 vlan-id=10 interface=ether2 disabled=no
+/interface bridge add name=br-vlan10 disabled=no
+/interface bridge port add interface=&amp;quot;vlan-10&amp;quot; bridge=&amp;quot;br-vlan10&amp;quot; disabled=no
+/interface ethernet set numbers=ether5-slave-local master-port=none
+/interface bridge port add interface=&amp;quot;ether5-slave-local&amp;quot; bridge=&amp;quot;br-vlan10&amp;quot; disabled=no
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Mikrotik A, portoversikt:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Port 1: Internett inn (datakabel fra Altibox hjemmesentral)
+Port 2: Trunk til Mikrotik B
+Port 3: Data
+Port 4: Data
+Port 5: TV inn (TV-kabel fra Altibox hjemmesentral)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Mikrotik B, konfigurasjon:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;/interface vlan add name=vlan-10 vlan-id=10 interface=ether2 disabled=no
+/interface bridge add name=br-vlan10 disabled=no
+/interface bridge port add interface=&amp;quot;vlan-10&amp;quot; bridge=&amp;quot;br-vlan10&amp;quot; disabled=no
+/interface ethernet set numbers=ether4-slave-local master-port=none
+/interface ethernet set numbers=ether5-slave-local master-port=none
+/interface bridge port add interface=&amp;quot;ether4-slave-local&amp;quot; bridge=&amp;quot;br-vlan10&amp;quot; disabled=no
+/interface bridge port add interface=&amp;quot;ether5-slave-local&amp;quot; bridge=&amp;quot;br-vlan10&amp;quot; disabled=no
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;I tillegg må Mikrotik B settes opp som en bridge.&lt;/p&gt;
+
+&lt;p&gt;Mikrotik B, portoversikt:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Port 1: Data
+Port 2: Trunk til Mikrotik A
+Port 3: Data
+Port 4: TV ut
+Port 5: TV ut
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Temperature trend monitoring at home</title>
+      <link>http://www.espenbraastad.no/posts/temperature-trend-monitoring-at-home/</link>
+      <pubDate>Wed, 19 Feb 2014 23:32:00 +0100</pubDate>
+      
+      <guid>http://www.espenbraastad.no/posts/temperature-trend-monitoring-at-home/</guid>
+      <description>
+
+&lt;h2 id=&#34;background&#34;&gt;Background&lt;/h2&gt;
+
+&lt;p&gt;I&amp;rsquo;ve got balanced ventilation in my apartment. It works OK, but I don&amp;rsquo;t fully understand how it behaves if knobs are pushed and pots are turned, and I&amp;rsquo;m definitely not sure if its performance is as good as I should expect.&lt;/p&gt;
+
+&lt;p&gt;I&amp;rsquo;m going to do some measurements to see how the system reacts to changes in the outside temperature and tuning of the various settings. The first parameter to measure is the temperature in the air intake, exhaust air and some of the ventilation valves in the different rooms in the apartment.&lt;/p&gt;
+
+&lt;h2 id=&#34;hardware&#34;&gt;Hardware&lt;/h2&gt;
+
+&lt;p&gt;Some temperature sensors are required. Price is an important factor, but so is accuracy. I settled with some sensors from the &lt;a href=&#34;http://www.raphnet.net/electronique/usbtenki/index_en.php&#34;&gt;USBTenki&lt;/a&gt; project. Schematics and software are open source, so you can assemble the sensors yourself if you want to. I didn’t want to, so I bought them ready to run from &lt;a href=&#34;http://www.dracal.com/store/products/usbtenki/index.php&#34;&gt;Dracal&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/usbtenki_sensor_on_table.png&#34; alt=&#34;Sensor&#34; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;±0.5°C typical accuracy at 25°C&lt;/li&gt;
+&lt;li&gt;±1°C (max.) accuracy from -10°C to +85°C&lt;/li&gt;
+&lt;li&gt;±2°C (max.) accuracy from -10°C to +125°C&lt;/li&gt;
+&lt;li&gt;±3°C (max.) accuracy from -55°C to +125°C&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;The price is 29.99$ CAD per sensor and they ship internationally. I bought five sensors. In addition, I bought some USB extension cords and a cheap bus powered USB hub from &lt;a href=&#34;http://www.dx.com/&#34;&gt;Deal Extreme&lt;/a&gt; to allow all sensors to be connected simultaneously.&lt;/p&gt;
+
+&lt;h2 id=&#34;software&#34;&gt;Software&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&#34;http://munin-monitoring.org/&#34;&gt;Munin&lt;/a&gt; will be used to create graphs to show the temperature over time:&lt;/p&gt;
+
+&lt;p&gt;Munin is a networked resource monitoring tool that can help analyze resource trends and “what just happened to kill our performance?” problems. It is designed to be very plug and play. A default installation provides a lot of graphs with almost no work.&lt;/p&gt;
+
+&lt;p&gt;Munin is written in Perl and is available in the repositories of most Linux distributions. Installation is easy:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;# Fedora / Redhat / CentOS
+sudo yum install munin munin-node
+
+# Debian / Ubuntu
+sudo apt-get install munin munin-node
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;USBTenki host software is used to communicate with the sensors from Linux.&lt;/p&gt;
+
+&lt;h2 id=&#34;setup&#34;&gt;Setup&lt;/h2&gt;
+
+&lt;p&gt;A couple of the sensors are mounted in the ventilation tubes for permanent monitoring, and the other ones are used for temporary monitoring at various locations.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/usbtenki_sensor_mounted.png&#34; alt=&#34;Sensor&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Since the number of sensors and the locations will vary, I need a munin plugin that is flexible. I wrote a simple multigraph plugin that will detect new sensors and create a new graph per sensor that is added. These graphs are completely standardised and (frankly) pretty boring:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/sensor_905270-week.png&#34; alt=&#34;Sensor&#34; /&gt;
+&lt;img src=&#34;http://www.espenbraastad.no/img/sensor_E10084-week.png&#34; alt=&#34;Sensor&#34; /&gt;
+&lt;img src=&#34;http://www.espenbraastad.no/img/sensor_E10087-week.png&#34; alt=&#34;Sensor&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Data loaning is used to aggregate the different sensor data and to modify their presentation (type, colour, label, etc) as I see fit, without having to modify the plugin itself. This will ensure that old sensor data is kept whenever modifications are made, and the data from each sensor can be used in multiple aggregated graphs if needed.&lt;/p&gt;
+
+&lt;p&gt;Data loaning configuration example and result:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;[sensor;ventilation]
+    address 127.0.0.1
+    use_node_name no
+    temp.update no
+    temp.graph_title Temperature
+    temp.graph_args --base 1000
+    temp.graph_vlabel Celcius
+    temp.graph_scale no
+    temp.graph_category temperature
+    temp.graph_order \
+        E10084=oslo;caesar:sensor_E10084.output \
+        E10090=oslo;caesar:sensor_E10090.output \
+        E10087=oslo;caesar:sensor_E10087.output 
+    temp.E10084.draw LINE1
+    temp.E10084.colour FF00FF
+    temp.E10084.label Air exhaust (inside)
+    temp.E10087.draw LINE1
+    temp.E10087.colour FF0000
+    temp.E10087.label Air intake (outside)
+    temp.E10090.draw LINE1
+    temp.E10090.colour 00FF00
+    temp.E10090.label Air intake (inside)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/temp-week.png&#34; alt=&#34;Aggregated, by week&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/temp-day.png&#34; alt=&#34;Aggregated, by day&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Air flow, carbon dioxide, humidity and power consumption are other aspects that are interesting to monitor as well, but those will have to wait until I find reasonably priced sensors with satisfying accuracy and quality.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>CentOS/RHEL/SL 6: root filesystem on tmpfs, UPDATE #2</title>
+      <link>http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs-update2/</link>
+      <pubDate>Sun, 23 Jun 2013 21:44:19 +0100</pubDate>
+      
+      <guid>http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs-update2/</guid>
+      <description>
+
+&lt;p&gt;In a &lt;a href=&#34;http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs&#34;&gt;previous post&lt;/a&gt;, I’ve explained how to boot EL6 from memory without having / needing a physical disk.&lt;/p&gt;
+
+&lt;p&gt;A bright reader, Jeff, came up with an alternative method. This alternative method does not involve dd’ing the image into a loop device, but instead copying the contents of the disk image directly into tmpfs. The result is higher write/read performance and generally lower memory requirements. The latter because unused disk space does not consume memory, which is important to consider when choosing the method to use in production systems.&lt;/p&gt;
+
+&lt;h2 id=&#34;example&#34;&gt;Example&lt;/h2&gt;
+
+&lt;p&gt;I got a lot of questions by e-mail on the previous posts regarding the subject and how to actually getting it to work, so this time I’ve created a complete set of files to get you going with Jeff’s method:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;The original &lt;code&gt;dmsquash-live-root&lt;/code&gt;. You won’t need this, but I added it as a reference.&lt;/li&gt;
+&lt;li&gt;The updated &lt;code&gt;dmsquash-live-root&lt;/code&gt;. You might need to look at this to understand what is going on.&lt;/li&gt;
+&lt;li&gt;The patch which is the diff of the two previous files. This one is used in the kickstart file below as a base64 encoded string.&lt;/li&gt;
+&lt;li&gt;The complete example kickstart file. This is a rather default CentOS 6.4 x86_64. The root password is being set to ‘foobar’.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;build-the-disk-image&#34;&gt;Build the disk image&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ sudo yum install livecd-tools
+$ sudo livecd-creator --config=centos64-pxe.ks --fslabel=centos64-pxe
+$ sudo livecd-iso-to-pxeboot centos64-pxe.iso
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The last command will output &lt;code&gt;vmlinuz0&lt;/code&gt; and &lt;code&gt;initrd0.img&lt;/code&gt;. Put these on your webserver, &lt;a href=&#34;http://example.com/&#34;&gt;http://example.com/&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;boot-a-host-on-the-disk-image&#34;&gt;Boot a host on the disk image&lt;/h2&gt;
+
+&lt;p&gt;Boot it using DHCP, iPXE and the following iPXE script:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;#!ipxe 
+initrd http://example.com/initrd0.img
+kernel http://example.com/vmlinuz0 initrd=/initrd0.img root=/centos64-pxe.iso rootfstype=auto rw liveimg toram size=4096
+boot
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Note the size boot parameter. The patch will set the tmpfs size (in MB) according to this parameter. If the parameter is not set, 2048 is used as a default. The size can be changed runtime using mount, for example:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ sudo mount -o remount,size=10G,rw /dev/root
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;difference-in-memory-usage&#34;&gt;Difference in memory usage&lt;/h2&gt;
+
+&lt;p&gt;The files in the file system in our example will consume around 1 GB of disk space. When booting with a file system (tmpfs) size of 4 GB, the memory usage is quite different between the previous and this (Jeff’s) method:&lt;/p&gt;
+
+&lt;h3 id=&#34;previous-method&#34;&gt;Previous method&lt;/h3&gt;
+
+&lt;p&gt;The important thing to notice here is that the file system already have allocated 4 GB of memory. This is because the file system already is consuming the amount of memory equivalent to the given size of the file system, independently on the actual disk space being consumed by the files currently in the file system.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;[root@lab-e ~]# free -m
+             total       used       free     shared    buffers     cached
+Mem:          7956       4272       3683          0          6       4135
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;One can argue that this is a waste of memory. On the other (conservative) side, one can argue that it is safest to pre-allocate the memory to reserve / ensure enough available memory to the file system should the system need it later. It depend on the use case, I guess.&lt;/p&gt;
+
+&lt;h3 id=&#34;this-method&#34;&gt;This method&lt;/h3&gt;
+
+&lt;p&gt;The memory footprint of the file system is equivalent of the size of the current files in the file system, which means that free disk space does not consume memory. In some scenarios, this may be a far better approach in terms of resource cost. You may however very well overbook too much, so be careful to leave sufficient memory available for new files to be added. If the file system tries to use more memory than what’s currently available, your system will crash.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;             total       used       free     shared    buffers     cached
+Mem:          7956       1179       6777          0          0       1001
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;difference-in-performance&#34;&gt;Difference in performance&lt;/h2&gt;
+
+&lt;p&gt;The following measurements are far from being scientifically valid.&lt;/p&gt;
+
+&lt;h3 id=&#34;previous-method-1&#34;&gt;Previous method&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;[root@lab-a ~]# time dd if=/dev/zero of=/foobar bs=1M count=2000 ; time sync
+2000+0 records in
+2000+0 records out
+2097152000 bytes (2.1 GB) copied, 2.45832 s, 853 MB/s
+
+real	0m2.480s
+user	0m0.003s
+sys	0m2.002s
+
+real	0m0.245s
+user	0m0.000s
+sys	0m0.037s
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;this-method-1&#34;&gt;This method&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;[root@lab-e ~]# time dd if=/dev/zero of=/foobar bs=1M count=2000 ; time sync
+2000+0 records in
+2000+0 records out
+2097152000 bytes (2.1 GB) copied, 0.823305 s, 2.5 GB/s
+
+real	0m0.825s
+user	0m0.002s
+sys	0m0.821s
+
+real	0m0.001s
+user	0m0.000s
+sys	0m0.002s
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>CentOS/RHEL/SL 6: root filesystem on tmpfs, UPDATE</title>
+      <link>http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs-update/</link>
+      <pubDate>Thu, 21 Mar 2013 09:57:00 +0100</pubDate>
+      
+      <guid>http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs-update/</guid>
+      <description>&lt;p&gt;In EL6.4, the file &lt;code&gt;/usr/share/dracut/modules.d/90dmsquash-live/dmsquash-live-root&lt;/code&gt; was updated so that the &lt;a href=&#34;http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs&#34;&gt;previous patch&lt;/a&gt; no longer works as it should. I’ve updated the patch, and here it is:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-diff&#34;&gt;--- original    2013-03-20 16:25:23.698846581 +0100
++++ new 2013-03-21 08:58:11.175339694 +0100
+@@ -24,6 +24,8 @@
+ getarg readonly_overlay &amp;amp;&amp;amp; readonly_overlay=&amp;quot;--readonly&amp;quot; || readonly_overlay=&amp;quot;&amp;quot;
+ overlay=$(getarg overlay)
+ 
++getarg toram &amp;amp;&amp;amp; toram=&amp;quot;yes&amp;quot;
++
+ # FIXME: we need to be able to hide the plymouth splash for the check really
+ [ -e $livedev ] &amp;amp; fs=$(blkid -s TYPE -o value $livedev)
+ if [ &amp;quot;$fs&amp;quot; = &amp;quot;iso9660&amp;quot; -o &amp;quot;$fs&amp;quot; = &amp;quot;udf&amp;quot; ]; then
+@@ -132,7 +134,10 @@
+     BASE_LOOPDEV=$( losetup -f )
+     losetup -r $BASE_LOOPDEV $EXT3FS
+ 
+-    do_live_from_base_loop
++    # Create overlay only if toram is not set
++    if [ -z &amp;quot;$toram&amp;quot; ] ; then
++        do_live_from_base_loop
++    fi
+ fi
+ 
+ # we might have an embedded ext3 on squashfs to use as rootfs (compressed live)
+@@ -163,13 +168,66 @@
+ 
+     umount -l /squashfs
+ 
+-    do_live_from_base_loop
++    # Create overlay only if toram is not set
++    if [ -z &amp;quot;$toram&amp;quot; ] ; then
++        do_live_from_base_loop
++    fi
++fi
++
++# If the kernel parameter toram is set, create a tmpfs device and copy the 
++# filesystem to it. Continue the boot process with this tmpfs device as
++# a writable root device.
++if [ -n &amp;quot;$toram&amp;quot; ] ; then
++    blocks=$( blockdev --getsz $BASE_LOOPDEV )
++
++    echo &amp;quot;Create tmpfs ($blocks blocks) for the root filesystem...&amp;quot;
++    mkdir -p /image
++    mount -n -t tmpfs -o nr_blocks=$blocks tmpfs /image
++
++    echo &amp;quot;Copy filesystem image to tmpfs... (this may take a few minutes)&amp;quot;
++    dd if=$BASE_LOOPDEV of=/image/rootfs.img
++
++    ROOTFS_LOOPDEV=$( losetup -f )
++    echo &amp;quot;Create loop device for the root filesystem: $ROOTFS_LOOPDEV&amp;quot;
++    losetup $ROOTFS_LOOPDEV /image/rootfs.img
++
++    echo &amp;quot;It&#39;s time to clean up.. &amp;quot;
++
++    echo &amp;quot; &amp;gt; Umounting images&amp;quot;
++    umount -l /image
++    umount -l /dev/.initramfs/live
++
++    echo &amp;quot; &amp;gt; Detach $OSMIN_LOOPDEV&amp;quot;
++    losetup -d $OSMIN_LOOPDEV
++
++    echo &amp;quot; &amp;gt; Detach $OSMIN_SQUASHED_LOOPDEV&amp;quot;
++    losetup -d $OSMIN_SQUASHED_LOOPDEV
++    
++    echo &amp;quot; &amp;gt; Detach $BASE_LOOPDEV&amp;quot;
++    losetup -d $BASE_LOOPDEV
++    
++    echo &amp;quot; &amp;gt; Detach $SQUASHED_LOOPDEV&amp;quot;
++    losetup -d $SQUASHED_LOOPDEV
++    
++    echo &amp;quot; &amp;gt; Detach /dev/loop0&amp;quot;
++    losetup -d /dev/loop0
++
++    losetup -a
++
++    echo &amp;quot;Root filesystem is now on $ROOTFS_LOOPDEV.&amp;quot;
++    echo
++
++    ln -s $ROOTFS_LOOPDEV /dev/root
++    printf &#39;/bin/mount -o rw %s %s\n&#39; &amp;quot;$ROOTFS_LOOPDEV&amp;quot; &amp;quot;$NEWROOT&amp;quot; &amp;gt; /mount/01-$$-live.sh
++    exit 0
+ fi
+ 
+ if [ -b &amp;quot;$OSMIN_LOOPDEV&amp;quot; ]; then
+     # set up the devicemapper snapshot device, which will merge
+     # the normal live fs image, and the delta, into a minimzied fs image
+-    echo &amp;quot;0 $( blockdev --getsz $BASE_LOOPDEV ) snapshot $BASE_LOOPDEV $OSMIN_LOOPDEV p 8&amp;quot; | dmsetup create --readonly live-osimg-min
++    if [ -z &amp;quot;$toram&amp;quot; ] ; then
++        echo &amp;quot;0 $( blockdev --getsz $BASE_LOOPDEV ) snapshot $BASE_LOOPDEV $OSMIN_LOOPDEV p 8&amp;quot; | dmsetup create --readonly live-osimg-min
++    fi
+ fi
+ 
+ ROOTFLAGS=&amp;quot;$(getarg rootflags)&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;It may be easier to download it from &lt;a href=&#34;http://www.espenbraastad.no/files/patch.sl64.txt&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>KVM/Xen and libvirt: currentMemory, memory and ballooning. Where did my memory go?</title>
+      <link>http://www.espenbraastad.no/posts/memory-ballooning/</link>
+      <pubDate>Mon, 24 Sep 2012 16:58:32 +0100</pubDate>
+      
+      <guid>http://www.espenbraastad.no/posts/memory-ballooning/</guid>
+      <description>&lt;p&gt;KVM and Xen provide a method to change the amount of memory in use by guests at runtime. The method is called memory ballooning [&lt;a href=&#34;http://www.linux-kvm.org/page/FAQ#Is_dynamic_memory_management_for_guests_supported.3F&#34;&gt;1&lt;/a&gt;, &lt;a href=&#34;http://rwmj.wordpress.com/2010/07/17/virtio-balloon&#34;&gt;2&lt;/a&gt;], and it must be supported by the guest operating system to work.&lt;/p&gt;
+
+&lt;p&gt;In libvirt, memory allocation (and hence the ballooning capability) for a guest can be configured using the &lt;code&gt;memory&lt;/code&gt;, &lt;code&gt;currentMemory&lt;/code&gt; and &lt;code&gt;memballoon&lt;/code&gt; tags:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-xml&#34;&gt;&amp;lt;domain type=&#39;kvm&#39;&amp;gt;
+  [...]
+  &amp;lt;memory unit=&#39;KiB&#39;&amp;gt;16777216&amp;lt;/memory&amp;gt;
+  &amp;lt;currentMemory unit=&#39;KiB&#39;&amp;gt;1048576&amp;lt;/currentMemory&amp;gt;
+  [...]
+  &amp;lt;devices&amp;gt;
+    &amp;lt;memballoon model=&#39;virtio&#39;/&amp;gt;
+  &amp;lt;/devices&amp;gt;
+&amp;lt;/domain&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The guest can never use more memory than specified in the &lt;code&gt;memory&lt;/code&gt; tag and it is the amount of memory the guest will use at boot time. The &lt;code&gt;currentMemory&lt;/code&gt; tag, if set, should be less than or equal (default) to &lt;code&gt;memory&lt;/code&gt;. The guest will, when the balloon driver is loaded some time during the boot process, adjust itself to use the amount of memory specified by &lt;code&gt;currentMemory&lt;/code&gt;. The &lt;code&gt;memballoon&lt;/code&gt; tag is being added automatically, so there is really no need to specify it.&lt;/p&gt;
+
+&lt;p&gt;The command line tool &lt;code&gt;virsh&lt;/code&gt; can later be used on the host to see the current memory configuration for each guest:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;[root@host ~]# virsh dominfo guest
+Id:             -
+Name:           guest
+UUID:           4f610a1f-7539-47cf-8299-9534500b340d
+OS Type:        hvm
+State:          shut off
+CPU(s):         1
+Max memory:     16777216 kB
+Used memory:    1048576 kB
+Persistent:     yes
+Autostart:      disable
+Managed save:   no
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;So far, so good. At this point it makes sense to set &lt;code&gt;memory&lt;/code&gt; really high on all guests to ensure that we are able to reallocate memory on the fly for all our Linux guests. Doing this might not be a good idea.&lt;/p&gt;
+
+&lt;p&gt;Linux as a guest, even though it has a balloon driver, does not seem to behave like one would expect. When &lt;code&gt;memory&lt;/code&gt; is set higher than &lt;code&gt;currentMemory&lt;/code&gt;, the guest operating system does not see (or use) the amount of memory that it should. Ideally, the value that libvirt reports as Used memory at the host should be visible inside the guest also.&lt;/p&gt;
+
+&lt;p&gt;The graphs below show different guests (RHEL6, SL6 and Ubuntu Precise) on KVM (SL6) and Xen (RHEL5). The Y-axis show the amount of memory visible inside the guest (as reported by &lt;code&gt;free -m&lt;/code&gt;), while the X-axis show the value of memory. The value of currentMemory is 1024M in all plots – which means that the guests should use 1024M of memory and that the graphs should stay flat out at 1024M, given zero overhead. The graphs show that this is not the reality.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/kvm-precise-1024.png&#34; alt=&#34;KVM, Ubuntu Precise, 1024 MB ram&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/kvm-rhel6-1024.png&#34; alt=&#34;KVM, RHEL6, 1024 MB ram&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/xen-sl6-1024.png&#34; alt=&#34;Xen, SL6, 1024 MB ram&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/xen-precise-1024.png&#34; alt=&#34;Xen, Ubuntu Precise, 1024 MB ram&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The graphs with KVM do not have values for 32G memory because the guests went ballistic and OOM-ed.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Filebin available on http://filebin.net</title>
+      <link>http://www.espenbraastad.no/posts/filebin-available/</link>
+      <pubDate>Fri, 27 Jul 2012 22:10:29 +0100</pubDate>
+      
+      <guid>http://www.espenbraastad.no/posts/filebin-available/</guid>
+      <description>&lt;p&gt;&lt;a href=&#34;https://filebin.net&#34;&gt;Filebin.net&lt;/a&gt; was created to try out the new &lt;a href=&#34;http://www.w3.org/TR/FileAPI/&#34;&gt;File API&lt;/a&gt; features in HTML5.&lt;/p&gt;
+
+&lt;p&gt;Filebin is a web application that is somewhat similar to a pastebin, except that it&amp;rsquo;s for files. It is written in Python, and the code is available on &lt;a href=&#34;http://github.com/espebra/filebin&#34;&gt;Github&lt;/a&gt;.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>CentOS/RHEL/SL 6: root filesystem on tmpfs</title>
+      <link>http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs/</link>
+      <pubDate>Mon, 30 Apr 2012 21:44:19 +0100</pubDate>
+      
+      <guid>http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs/</guid>
+      <description>&lt;p&gt;UPDATE: The patch below has been updated &lt;a href=&#34;http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs-update&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;There are several scenarios where conventional hard drives are not really needed. Examples are HPC cluster nodes, virtualization nodes, home theater streaming PCs, silent desktops, internet cafés and embedded systems. Hard drives tend to fail, they are slow, they consume power, they generate heat and noise, and they are quite expensive if you need/want something faster and more reliable than SATA.&lt;/p&gt;
+
+&lt;p&gt;This post will show how to run CentOS 6 directly from tmpfs backed by memory, without using the (standard) 512 MB writable overlay. The procedure should be similar for RHEL and Scientific Linux 6.&lt;/p&gt;
+
+&lt;p&gt;The resulting boot process will be:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Boot a node off a PXE enabled DHCP server.&lt;/li&gt;
+&lt;li&gt;Chainload into &lt;a href=&#34;http://blog.braastad.org/?p=128&#34;&gt;iPXE&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Download vmlinuz and a rather large initrd containing the entire filesystem over ftp/http(s). Try to avoid &lt;a href=&#34;http://en.wikipedia.org/wiki/Trivial_File_Transfer_Protocol&#34;&gt;TFTP&lt;/a&gt; when downloading the initrd because of its file size limitation and slow transfer speeds.&lt;/li&gt;
+&lt;li&gt;Once downloaded, the kernel will start and the initrd will be mounted.&lt;/li&gt;
+&lt;li&gt;The modified dracut scripts in the initrd will create a tmpfs partition in memory with the same size as your filesystem image included in the initrd.&lt;/li&gt;
+&lt;li&gt;Your entire filesystem image will be copied to the tmpfs partition and attached to a loop device.&lt;/li&gt;
+&lt;li&gt;This loop device will be used as the new root device, and the boot process continues as usual.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;This is a screenshot from an ongoing boot process:
+&lt;img src=&#34;http://www.espenbraastad.no/img/centos6-from-tmpfs1.png&#34; alt=&#34;Boot process&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Now to the procedure:&lt;/p&gt;
+
+&lt;p&gt;First, create a custom kickstart file. I&amp;rsquo;ve included the specialties below:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;bootloader --location=mbr --append=&amp;quot;toram&amp;quot;
+clearpart --all
+firstboot --disabled
+install
+lang en_US.UTF-8
+network --bootproto dhcp --device eth0 --onboot yes
+part / --fstype=ext4 --size=2048
+reboot
+zerombr
+
+%packages
+patch
+
+%post
+cat &amp;gt; /etc/fstab &amp;lt;&amp;lt; END 
+tmpfs      /         tmpfs   defaults         0 0
+devpts     /dev/pts  devpts  gid=5,mode=620   0 0
+tmpfs      /dev/shm  tmpfs   defaults         0 0
+proc       /proc     proc    defaults         0 0
+sysfs      /sys      sysfs   defaults         0 0
+END
+
+# The patch is base64 encoded to avoid having to escape it manually.
+cat &amp;gt; /root/dmsquash-live-root.base64 &amp;lt;&amp;lt; EOF_patch
+MjFhMjIKPiBnZXRhcmcgdG9yYW0gJiYgdG9yYW09InllcyIKMTM0YzEzNSwxMzgKPCAgICAgZG9f
+bGl2ZV9mcm9tX2Jhc2VfbG9vcAotLS0KPiAgICAgIyBDcmVhdGUgb3ZlcmxheSBvbmx5IGlmIHRv
+cmFtIGlzIG5vdCBzZXQKPiAgICAgaWYgWyAteiAiJHRvcmFtIiBdIDsgdGhlbgo+ICAgICAgICAg
+ZG9fbGl2ZV9mcm9tX2Jhc2VfbG9vcAo+ICAgICBmaQoxNjNjMTY3LDIxMwo8ICAgICBkb19saXZl
+X2Zyb21fYmFzZV9sb29wCi0tLQo+ICAgICAjIENyZWF0ZSBvdmVybGF5IG9ubHkgaWYgdG9yYW0g
+aXMgbm90IHNldAo+ICAgICBpZiBbIC16ICIkdG9yYW0iIF0gOyB0aGVuCj4gICAgICAgICBkb19s
+aXZlX2Zyb21fYmFzZV9sb29wCj4gICAgIGZpCj4gZmkKPiAKPiAjIEkgdGhlIGtlcm5lbCBwYXJh
+bWV0ZXIgdG9yYW0gaXMgc2V0LCBjcmVhdGUgYSB0bXBmcyBkZXZpY2UgYW5kIGNvcHkgdGhlIAo+
+ICMgZmlsZXN5c3RlbSB0byBpdC4gQ29udGludWUgdGhlIGJvb3QgcHJvY2VzcyB3aXRoIHRoaXMg
+dG1wZnMgZGV2aWNlIGFzCj4gIyBhIHdyaXRhYmxlIHJvb3QgZGV2aWNlLgo+IGlmIFsgLW4gIiR0
+b3JhbSIgXSA7IHRoZW4KPiAgICAgYmxvY2tzPSQoIGJsb2NrZGV2IC0tZ2V0c3ogJEJBU0VfTE9P
+UERFViApCj4gCj4gICAgIGVjaG8gIkNyZWF0ZSB0bXBmcyAoJGJsb2NrcyBibG9ja3MpIGZvciB0
+aGUgcm9vdCBmaWxlc3lzdGVtLi4uIgo+ICAgICBta2RpciAtcCAvaW1hZ2UKPiAgICAgbW91bnQg
+LW4gLXQgdG1wZnMgLW8gbnJfYmxvY2tzPSRibG9ja3MgdG1wZnMgL2ltYWdlCj4gCj4gICAgIGVj
+aG8gIkNvcHkgZmlsZXN5c3RlbSBpbWFnZSB0byB0bXBmcy4uLiAodGhpcyBtYXkgdGFrZSBhIGZl
+dyBtaW51dGVzKSIKPiAgICAgZGQgaWY9JEJBU0VfTE9PUERFViBvZj0vaW1hZ2Uvcm9vdGZzLmlt
+Zwo+IAo+ICAgICBST09URlNfTE9PUERFVj0kKCBsb3NldHVwIC1mICkKPiAgICAgZWNobyAiQ3Jl
+YXRlIGxvb3AgZGV2aWNlIGZvciB0aGUgcm9vdCBmaWxlc3lzdGVtOiAkUk9PVEZTX0xPT1BERVYi
+Cj4gICAgIGxvc2V0dXAgJFJPT1RGU19MT09QREVWIC9pbWFnZS9yb290ZnMuaW1nCj4gCj4gICAg
+IGVjaG8gIkl0J3MgdGltZSB0byBjbGVhbiB1cC4uICIKPiAKPiAgICAgZWNobyAiID4gVW1vdW50
+aW5nIGltYWdlcyIKPiAgICAgdW1vdW50IC1sIC9pbWFnZQo+ICAgICB1bW91bnQgLWwgL2Rldi8u
+aW5pdHJhbWZzL2xpdmUKPiAKPiAgICAgZWNobyAiID4gRGV0YWNoICRPU01JTl9MT09QREVWIgo+
+ICAgICBsb3NldHVwIC1kICRPU01JTl9MT09QREVWCj4gCj4gICAgIGVjaG8gIiA+IERldGFjaCAk
+T1NNSU5fU1FVQVNIRURfTE9PUERFViIKPiAgICAgbG9zZXR1cCAtZCAkT1NNSU5fU1FVQVNIRURf
+TE9PUERFVgo+ICAgICAKPiAgICAgZWNobyAiID4gRGV0YWNoICRCQVNFX0xPT1BERVYiCj4gICAg
+IGxvc2V0dXAgLWQgJEJBU0VfTE9PUERFVgo+ICAgICAKPiAgICAgZWNobyAiID4gRGV0YWNoICRT
+UVVBU0hFRF9MT09QREVWIgo+ICAgICBsb3NldHVwIC1kICRTUVVBU0hFRF9MT09QREVWCj4gCj4g
+ICAgIGVjaG8gIlJvb3QgZmlsZXN5c3RlbSBpcyBub3cgb24gJFJPT1RGU19MT09QREVWLiIKPiAg
+ICAgZWNobwo+IAo+ICAgICBsbiAtcyAkUk9PVEZTX0xPT1BERVYgL2Rldi9yb290Cj4gICAgIHBy
+aW50ZiAnL2Jpbi9tb3VudCAtbyBydyAlcyAlc1xuJyAiJFJPT1RGU19MT09QREVWIiAiJE5FV1JP
+T1QiID4gL21vdW50LzAxLSQkLWxpdmUuc2gKPiAgICAgZXhpdCAwCjE2OWMyMTksMjIxCjwgICAg
+IGVjaG8gIjAgJCggYmxvY2tkZXYgLS1nZXRzeiAkQkFTRV9MT09QREVWICkgc25hcHNob3QgJEJB
+U0VfTE9PUERFViAkT1NNSU5fTE9PUERFViBwIDgiIHwgZG1zZXR1cCBjcmVhdGUgLS1yZWFkb25s
+eSBsaXZlLW9zaW1nLW1pbgotLS0KPiAgICAgaWYgWyAteiAiJHRvcmFtIiBdIDsgdGhlbgo+ICAg
+ICAgICAgZWNobyAiMCAkKCBibG9ja2RldiAtLWdldHN6ICRCQVNFX0xPT1BERVYgKSBzbmFwc2hv
+dCAkQkFTRV9MT09QREVWICRPU01JTl9MT09QREVWIHAgOCIgfCBkbXNldHVwIGNyZWF0ZSAtLXJl
+YWRvbmx5IGxpdmUtb3NpbWctbWluCj4gICAgIGZpCg==
+EOF_patch
+
+cat /root/dmsquash-live-root.base64 | base64 -d &amp;gt; /root/dmsquash-live-root.patch
+
+patch /usr/share/dracut/modules.d/90dmsquash-live/dmsquash-live-root /root/dmsquash-live-root.patch
+
+ls /lib/modules | while read kernel; do
+  echo &amp;quot; &amp;gt; Update initramfs for kernel ${kernel}&amp;quot;
+  initrdfile=&amp;quot;/boot/initramfs-${kernel}.img&amp;quot;
+
+  /sbin/dracut -f $initrdfile $kernel
+done
+%end
+
+%post --nochroot
+
+echo &amp;quot;Copy initramfs outside the chroot:&amp;quot;
+ls $INSTALL_ROOT/lib/modules | while read kernel; do
+  src=&amp;quot;$INSTALL_ROOT/boot/initramfs-${kernel}.img&amp;quot;
+  dst=&amp;quot;$LIVE_ROOT/isolinux/initrd0.img&amp;quot;
+  echo &amp;quot; &amp;gt; $src -&amp;gt; $dst&amp;quot;
+  cp -f $src $dst
+done
+%end
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;b&gt;Explaination:&lt;/b&gt; The post script will apply a patch to &lt;i&gt;/usr/share/dracut/modules.d/90dmsquash-live/dmsquash-live-root&lt;/i&gt; before regenerating the initramfs. This patch will add support for the &amp;lsquo;toram&amp;rsquo; boot parameter. Then, the initramfs is being copied to the isolinux directory outside the filesystem image.&lt;/p&gt;
+
+&lt;p&gt;Second, use &lt;i&gt;livecd-creator&lt;/i&gt; and &lt;i&gt;livecd-iso-to-pxeboot&lt;/i&gt; from the &lt;i&gt;livecd-tools&lt;/i&gt; package to convert the kickstart file into a bootable vmlinuz and initrd:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ sudo livecd-creator --config=centos6.ks fslabel=centos6
+$ sudo livecd-iso-to-pxeboot centos6.iso
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The commands above will create &lt;i&gt;tftpboot/vmlinuz0&lt;/i&gt; and &lt;i&gt;tftpboot/initrd0.img&lt;/i&gt;. Put these files on your boot server and create a suitable PXE configuration. &lt;i&gt;livecd-iso-to-pxeboot&lt;/i&gt; will create &lt;i&gt;tftpboot/pxelinux.cfg/default&lt;/i&gt; which can be used as a template.&lt;/p&gt;
+
+&lt;p&gt;Now you are ready to boot one or multiple CentOS 6 in-memory instances over the network!&lt;/p&gt;
+
+&lt;p&gt;Another screenshot:
+&lt;img src=&#34;http://www.espenbraastad.no/img/centos6-from-tmpfs-details.png&#34; alt=&#34;losetup&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Feature request &lt;a href=&#34;http://article.gmane.org/gmane.linux.kernel.initramfs/2588&#34;&gt;upstream&lt;/a&gt;.&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+	<link href="http://gmpg.org/xfn/11" rel="profile">
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+	
+	<title>CentOS 7 root filesystem on tmpfs</title>
+	
+	
+	<link rel="stylesheet" href="http://www.espenbraastad.no//bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" href="http://www.espenbraastad.no//font-awesome/css/font-awesome.min.css">
+	<link rel="stylesheet" href="/custom.css">
+	
+	
+	<link rel="stylesheet" href="/prism/prism.css">
+	
+	
+	<link href="" rel="alternate" type="application/rss+xml" title="Espen Braastad" />
+	
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+		
+		ga('create', 'UA-59220530-1', 'auto');
+		ga('send', 'pageview');
+	</script>
+</head>
+<body>
+
+
+<div class="container">
+        <div class="row">
+                <div class="col-md-12">
+                        <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                                <li class="breadcrumb-item"><a href="/posts">Posts</a></li>
+                                <li class="breadcrumb-item active">CentOS 7 root filesystem on tmpfs</li>
+                        <ol>
+                </div>
+        </div>
+</div>
+
+<div class="container">
+        <div class="row">
+	<div class="col-md-12">
+		<h1>CentOS 7 root filesystem on tmpfs</h1>
+		<small class="text-muted">
+			Published Friday, January 6, 2017 (700 words, 4 minutes to read).
+		</small>
+		
+		<p>
+			
+
+<p>Several years ago I wrote a <a href="/posts/el6-rootfs-on-tmpfs/">series</a> <a href="/posts/el6-rootfs-on-tmpfs-update/">of</a> <a href="/posts/el6-rootfs-on-tmpfs-update2/">posts</a> on how to run EL6 with its root filesystem on tmpfs. This post is a continuation of that series, and explains step by step how to run CentOS 7 with its root filesystem in memory. It should apply to RHEL, Ubuntu, Debian and other Linux distributions as well.</p>
+
+<p>This post is a bit terse to show the concept. Several of the steps have potential for improvements.</p>
+
+<h2 id="build-environment">Build environment</h2>
+
+<p>A build host is needed to prepare the image to boot from. The build host should run CentOS 7 x86_64, and have the following packages installed:</p>
+
+<pre><code class="language-bash">yum install libvirt virt-builder guestfish
+</code></pre>
+
+<p>Make sure the libvirt daemon is running:</p>
+
+<pre><code class="language-bash">systemctl start libvirtd
+</code></pre>
+
+<p>Create some directories that will be used later, however feel free to relocate these to somewhere else:</p>
+
+<pre><code class="language-bash">mkdir -p /work/initramfs/bin
+mkdir -p /work/newroot
+mkdir -p /work/result
+</code></pre>
+
+<h2 id="disk-image">Disk image</h2>
+
+<p>For simplicity reasons we&rsquo;ll fetch our rootfs from a pre-built disk image, but it is possible to build a <a href="https://www.redpill-linpro.com/sysadvent/2016/12/14/use-virt-manager-to-build-disk-images.html">custom disk image using virt-manager</a>. I expect that most people would like to create their own disk image from scratch, but this is outside the scope of this post.</p>
+
+<p>Use <code>virt-builder</code> to download a pre-built CentOS 7.3 disk image and set the root password:</p>
+
+<pre><code class="language-bash">virt-builder centos-7.3 -o /work/disk.img --root-password password:changeme
+</code></pre>
+
+<p>Export the files from the disk image to one of the directories we created earlier:</p>
+
+<pre><code class="language-bash">guestfish --ro -a /work/disk.img -i copy-out / /work/newroot/
+</code></pre>
+
+<p>Clear fstab since it contains mount entries that no longer apply:</p>
+
+<pre><code class="language-bash">echo &gt; /work/newroot/etc/fstab
+</code></pre>
+
+<p>SELinux will complain about incorrect disk label at boot, so let&rsquo;s just disable it right away. Production environments should have SELinux enabled.</p>
+
+<pre><code class="language-bash">echo &quot;SELINUX=disabled&quot; &gt; /work/newroot/etc/selinux/config
+</code></pre>
+
+<p>Disable clearing the screen on login failure to make it possible to read any error messages:</p>
+
+<pre><code class="language-bash">mkdir /work/newroot/etc/systemd/system/getty@.service.d
+cat &gt; /work/newroot/etc/systemd/system/getty@.service.d/noclear.conf &lt;&lt; EOF
+[Service]
+TTYVTDisallocate=no
+EOF
+</code></pre>
+
+<h2 id="initramfs">Initramfs</h2>
+
+<p>We&rsquo;ll create our custom initramfs from scratch. The boot procedure will be, simply put:</p>
+
+<ol>
+<li>Fetch kernel and a custom initramfs.</li>
+<li>Execute kernel.</li>
+<li>Mount the initramfs as the temporary root filesystem (for the kernel).</li>
+<li>Execute <code>/init</code> (in the initramfs).</li>
+<li>Create a <code>tmpfs</code> mount point.</li>
+<li>Extract our CentOS 7 root filesystem to the <code>tmpfs</code> mount point.</li>
+<li>Execute <code>switch_root</code> to boot on the CentOS 7 root filesystem.</li>
+</ol>
+
+<p>The initramfs will be based on <a href="https://www.busybox.net/">BusyBox</a>. Download a pre-built binary or compile it from source, put the binary in the <code>initramfs/bin</code> directory. In this post I&rsquo;ll just download a pre-built binary:</p>
+
+<pre><code class="language-bash">wget -O /work/initramfs/bin/busybox https://www.busybox.net/downloads/binaries/1.26.1-defconfig-multiarch/busybox-x86_64
+</code></pre>
+
+<p>Make sure that <code>busybox</code> has the execute bit set:</p>
+
+<pre><code class="language-bash">chmod +x /work/initramfs/bin/busybox
+</code></pre>
+
+<p>Create the file <code>/work/initramfs/init</code> with the following contents:</p>
+
+<pre><code class="language-bash">#!/bin/busybox sh
+
+# Dump to sh if something fails
+error() {
+	echo &quot;Jumping into the shell...&quot;
+	setsid cttyhack sh
+}
+
+# Populate /bin with binaries from busybox
+/bin/busybox --install /bin
+
+mkdir -p /proc
+mount -n -t proc none /proc
+
+mkdir -p /sys
+mount -n -t sysfs none /sys
+mkdir -p /sys/dev
+
+mkdir -p /var/run
+
+mkdir -p /dev
+mount -n -t tmpfs -o mode=0755 mdev /dev
+
+mkdir -p /dev/pts
+mount -n -t devpts devpts /dev/pts
+
+# Populate /dev
+echo /bin/mdev &gt; /proc/sys/kernel/hotplug
+mdev -s
+
+mkdir -p /newroot
+mount -t tmpfs -o size=1500m tmpfs /newroot || error
+
+echo &quot;Extracting rootfs... &quot;
+xz -d -c -f rootfs.tar.xz | tar -x -f - -C /newroot || error
+
+mount --move /sys /newroot/sys
+mount --move /proc /newroot/proc
+mount --move /dev /newroot/dev
+
+exec switch_root /newroot /sbin/init || error
+</code></pre>
+
+<p>Make sure it is executable:</p>
+
+<pre><code class="language-bash">chmod +x /work/initramfs/init
+</code></pre>
+
+<p>Create the root filesystem archive using <code>tar</code>. The following command also uses xz compression to reduce the final size of the archive (from approximately 1 GB to 270 MB):</p>
+
+<pre><code class="language-bash">cd /work/newroot
+tar cJf /work/initramfs/rootfs.tar.xz .
+</code></pre>
+
+<p>Create <code>initramfs.gz</code> using:</p>
+
+<pre><code class="language-bash">cd /work/initramfs
+find . -print0 | cpio --null -ov --format=newc | gzip -9 &gt; /work/result/initramfs.gz
+</code></pre>
+
+<p>Copy the kernel directly from the root filesystem using:</p>
+
+<pre><code class="language-bash">cp /work/newroot/boot/vmlinuz-*x86_64 /work/result/vmlinuz
+</code></pre>
+
+<p>The <code>/work/result</code> directory now contains two files with file sizes similar to the following:</p>
+
+<pre><code class="language-bash">ls -lh /work/result/
+total 277M
+-rw-r--r-- 1 root root 272M Jan  6 23:42 initramfs.gz
+-rwxr-xr-x 1 root root 5.2M Jan  6 23:42 vmlinuz
+</code></pre>
+
+<p>These files can be loaded directly in GRUB from disk, or using <a href="http://ipxe.org/">iPXE</a> over HTTP using a script similar to:</p>
+
+<pre><code class="language-bash">#!ipxe
+kernel http://example.com/vmlinuz
+initrd http://example.com/initramfs.gz
+boot
+</code></pre>
+
+		</p>
+        </div>
+
+	<div class="col-md-12">
+		<div id="disqus_thread"></div>
+<script type="text/javascript">
+	 
+	var disqus_shortname = 'espenbraastad';
+	var disqus_identifier = 'CentOS 7 root filesystem on tmpfs';
+
+     
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+	</div>
+</div>
+
+</div>
+
+</body>
+<script src="http://www.espenbraastad.no//prism/prism.js"></script>
+<script src="http://www.espenbraastad.no//jquery.min.js"></script>
+<script>
+	 
+	$(function() { $('table').addClass('table table-responsive'); })
+	$(function() { $('img').addClass('img-fluid'); })
+</script>
+</html>
+
