@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Varnish on Espen Braastad</title>
+    <title>Espen Braastad</title>
     <link>http://www.espenbraastad.no/categories/varnish/index.xml</link>
-    <description>Recent content in Varnish on Espen Braastad</description>
+    <description>Recent content on Espen Braastad</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <atom:link href="http://www.espenbraastad.no/categories/varnish/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Varnish goes upstack with varnish modules and varnish configuration language</title>
-      <link>http://www.espenbraastad.no/posts/varnish-goes-upstack-with-varnish-modules-and-varnish-configuration-language/</link>
+      <link>http://www.espenbraastad.no/post/varnish-goes-upstack-with-varnish-modules-and-varnish-configuration-language/</link>
       <pubDate>Thu, 07 May 2015 10:55:56 +0200</pubDate>
       
-      <guid>http://www.espenbraastad.no/posts/varnish-goes-upstack-with-varnish-modules-and-varnish-configuration-language/</guid>
+      <guid>http://www.espenbraastad.no/post/varnish-goes-upstack-with-varnish-modules-and-varnish-configuration-language/</guid>
       <description>
 
 &lt;p&gt;&lt;em&gt;This post was first published at &lt;a href=&#34;http://highscalability.com/blog/2015/5/6/varnish-goes-upstack-with-varnish-modules-and-varnish-config.html&#34;&gt;High Scalability&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
@@ -52,7 +52,7 @@
 
 &lt;p&gt;First we need a database with our throttle rules. Using the sqlite3 command, we create the database in &lt;code&gt;/tmp/rules.db3&lt;/code&gt; and add a couple of rules.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ sqlite3 /tmp/rules.db3 &amp;quot;CREATE TABLE t (rule text, path text);&amp;quot;
+&lt;pre&gt;&lt;code&gt;$ sqlite3 /tmp/rules.db3 &amp;quot;CREATE TABLE t (rule text, path text);&amp;quot;
 $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;3r5&#39;, &#39;/search&#39;);&amp;quot;
 $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r3600&#39;, &#39;/login&#39;);&amp;quot;
 &lt;/code&gt;&lt;/pre&gt;
@@ -63,12 +63,12 @@ $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r36
 
 &lt;p&gt;The first line in the file is optionally used to set the name or the title of the test.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;varnishtest &amp;quot;Simple throttling with SQLite and Memcached&amp;quot;
+&lt;pre&gt;&lt;code&gt;varnishtest &amp;quot;Simple throttling with SQLite and Memcached&amp;quot;
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Our test environment consists of one backend, called s1. We will first expect one request to a URL without a rule in the database.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;server s1 {
+&lt;pre&gt;&lt;code&gt;server s1 {
     rxreq
     expect req.url == &amp;quot;/&amp;quot;
     txresp
@@ -76,7 +76,7 @@ $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r36
 
 &lt;p&gt;We then expect 4 requests to &lt;code&gt;/search&lt;/code&gt; to arrive according to our following expectations. Note that the query parameters are slightly different, making all of these unique requests.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;    rxreq
+&lt;pre&gt;&lt;code&gt;    rxreq
     expect req.url == &amp;quot;/search?id=123&amp;amp;type=1&amp;quot;
     expect req.http.path == &amp;quot;/search&amp;quot;
     expect req.http.rule == &amp;quot;3r5&amp;quot;
@@ -84,7 +84,7 @@ $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r36
     expect req.http.period == &amp;quot;5&amp;quot;
     expect req.http.counter == &amp;quot;1&amp;quot;
     txresp
-  
+
     rxreq
     expect req.url == &amp;quot;/search?id=123&amp;amp;type=2&amp;quot;
     expect req.http.path == &amp;quot;/search&amp;quot;
@@ -93,7 +93,7 @@ $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r36
     expect req.http.period == &amp;quot;5&amp;quot;
     expect req.http.counter == &amp;quot;2&amp;quot;
     txresp
-  
+
     rxreq
     expect req.url == &amp;quot;/search?id=123&amp;amp;type=3&amp;quot;
     expect req.http.path == &amp;quot;/search&amp;quot;
@@ -102,7 +102,7 @@ $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r36
     expect req.http.period == &amp;quot;5&amp;quot;
     expect req.http.counter == &amp;quot;3&amp;quot;
     txresp
-  
+
     rxreq
     expect req.url == &amp;quot;/search?id=123&amp;amp;type=4&amp;quot;
     expect req.http.path == &amp;quot;/search&amp;quot;
@@ -116,7 +116,7 @@ $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r36
 
 &lt;p&gt;Now it is time to write the mini-application in VCL. Our test environment consists of one varnish instance, called v1. Initially, the VCL version marker and the VMOD imports are added.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;varnish v1 -vcl+backend {
+&lt;pre&gt;&lt;code&gt;varnish v1 -vcl+backend {
     vcl 4.0;
     import std;
     import sqlite3;
@@ -125,7 +125,7 @@ $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r36
 
 &lt;p&gt;VMODs are usually configured in &lt;code&gt;vcl_init&lt;/code&gt;, and this is true for sqlite3 and memcached as well. For sqlite3, we set the path to the database and the field delimiter to use on multi column results. The memcached VMOD can have a wide variety of configuration options supported by &lt;a href=&#34;http://docs.libmemcached.org/libmemcached_configuration.html&#34;&gt;libmemcached&lt;/a&gt;.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;    sub vcl_init {
+&lt;pre&gt;&lt;code&gt;    sub vcl_init {
         sqlite3.open(&amp;quot;/tmp/rules.db3&amp;quot;, &amp;quot;|;&amp;quot;);
         memcached.servers(&amp;quot;--SERVER=localhost --BINARY-PROTOCOL&amp;quot;);
     }
@@ -133,35 +133,35 @@ $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r36
 
 &lt;p&gt;In &lt;code&gt;vcl_recv&lt;/code&gt;, the incoming HTTP requests are received. We start by extracting the request path without query parameters and potential dangerous characters. This is important since the path will be part of the SQL query later. The following regex will match &lt;code&gt;req.url&lt;/code&gt; from the beginning of the line up until any of the characters ? &amp;amp; ;  “  ‘ or whitespace.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;    sub vcl_recv {
+&lt;pre&gt;&lt;code&gt;    sub vcl_recv {
         set req.http.path = regsub(req.url, {&amp;quot;^([^?&amp;amp;;&amp;quot;&#39; ]+).*&amp;quot;}, &amp;quot;\1&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;The use of &lt;code&gt;{&amp;quot; &amp;quot;}&lt;/code&gt; in the regular expression enables handling of the &amp;ldquo; character in the regular expression rule. The path we just extracted is used when the rule is looked up in the database. The response, if any, is stored in &lt;code&gt;req.http.rule&lt;/code&gt;.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;        set req.http.rule = sqlite3.exec(&amp;quot;SELECT rule FROM t WHERE path=&#39;&amp;quot; + req.http.path + &amp;quot;&#39; LIMIT 1&amp;quot;);
+&lt;pre&gt;&lt;code&gt;        set req.http.rule = sqlite3.exec(&amp;quot;SELECT rule FROM t WHERE path=&#39;&amp;quot; + req.http.path + &amp;quot;&#39; LIMIT 1&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;If we get a response, it will be on the format &lt;code&gt;RnT&lt;/code&gt;, where &lt;code&gt;R&lt;/code&gt; is the amount of requests allowed over a period of &lt;code&gt;T&lt;/code&gt; seconds. Since this is a string, we need to apply more regex to separate those.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;        set req.http.requests = regsub(req.http.rule, &amp;quot;^([0-9]+)r.*$&amp;quot;, &amp;quot;\1&amp;quot;);
+&lt;pre&gt;&lt;code&gt;        set req.http.requests = regsub(req.http.rule, &amp;quot;^([0-9]+)r.*$&amp;quot;, &amp;quot;\1&amp;quot;);
         set req.http.period = regsub(req.http.rule, &amp;quot;^[0-9]+r([0-9]+)$&amp;quot;, &amp;quot;\1&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;We do throttling on this request only if we got proper values from the previous regex filters.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;        if (req.http.requests != &amp;quot;&amp;quot; &amp;amp;&amp;amp; req.http.period != &amp;quot;&amp;quot;) {
+&lt;pre&gt;&lt;code&gt;        if (req.http.requests != &amp;quot;&amp;quot; &amp;amp;&amp;amp; req.http.period != &amp;quot;&amp;quot;) {
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Increment or create a Memcached counter unique for this &lt;code&gt;client.ip&lt;/code&gt; and path with the value 1. The expiry time we specify is equal to the period in the throttle rule set in the database. This way, the throttle rules can be flexible regarding time period. The return value is the new value of the counter, which corresponds to the amount of requests this &lt;code&gt;client.ip&lt;/code&gt; has done this path in the current time period.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;           set req.http.counter = memcached.incr_set(
-               req.http.path + &amp;quot;-&amp;quot; + client.ip, 1, 1, std.integer(req.http.period, 0));
+&lt;pre&gt;&lt;code&gt;            set req.http.counter = memcached.incr_set(
+                req.http.path + &amp;quot;-&amp;quot; + client.ip, 1, 1, std.integer(req.http.period, 0));
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Check if the counter is higher than the limit set in the database. If it is, then abort the request here with a &lt;code&gt;429&lt;/code&gt; response code.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;            if (std.integer(req.http.counter, 0) &amp;gt; std.integer(req.http.requests, 0)) {
+&lt;pre&gt;&lt;code&gt;            if (std.integer(req.http.counter, 0) &amp;gt; std.integer(req.http.requests, 0)) {
                  return (synth(429, &amp;quot;Too many requests&amp;quot;));
             }
         }
@@ -170,7 +170,7 @@ $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r36
 
 &lt;p&gt;In &lt;code&gt;vcl_deliver&lt;/code&gt; we set response headers showing the throttle limit and status for each request which might be helpful for the consumers.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;    sub vcl_deliver {
+&lt;pre&gt;&lt;code&gt;    sub vcl_deliver {
         if (req.http.requests &amp;amp;&amp;amp; req.http.counter &amp;amp;&amp;amp; req.http.period) {
             set resp.http.X-RateLimit-Limit = req.http.requests;
             set resp.http.X-RateLimit-Counter = req.http.counter;
@@ -181,7 +181,7 @@ $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r36
 
 &lt;p&gt;Errors will get the same headers set in &lt;code&gt;vcl_synth&lt;/code&gt;.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;    sub vcl_synth {
+&lt;pre&gt;&lt;code&gt;    sub vcl_synth {
         if (req.http.requests &amp;amp;&amp;amp; req.http.counter &amp;amp;&amp;amp; req.http.period) {
             set resp.http.X-RateLimit-Limit = req.http.requests;
             set resp.http.X-RateLimit-Counter = req.http.counter;
@@ -193,7 +193,7 @@ $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r36
 
 &lt;p&gt;The configuration is complete, and it is time to add some clients to verify that the configuration is correct. First we send a request that we expect to be unthrottled, meaning that there are no throttle rules in the database for this URL.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;client c1 {
+&lt;pre&gt;&lt;code&gt;client c1 {
     txreq -url &amp;quot;/&amp;quot;
     rxresp
     expect resp.status == 200
@@ -205,28 +205,28 @@ $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r36
 
 &lt;p&gt;The next client sends requests to a URL that we know is a match in the throttle database, and we expect the rate-limit headers to be set. The throttle rule for &lt;code&gt;/search&lt;/code&gt; is &lt;code&gt;3r5&lt;/code&gt;, which means that the three first requests within a 5 second period should succeed (with return code &lt;code&gt;200&lt;/code&gt;) while the fourth request should be throttled (with return code &lt;code&gt;429&lt;/code&gt;).&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;client c2 {
+&lt;pre&gt;&lt;code&gt;client c2 {
     txreq -url &amp;quot;/search?id=123&amp;amp;type=1&amp;quot;
     rxresp
     expect resp.status == 200
     expect resp.http.X-RateLimit-Limit == &amp;quot;3&amp;quot;
     expect resp.http.X-RateLimit-Counter == &amp;quot;1&amp;quot;
     expect resp.http.X-RateLimit-Period == &amp;quot;5&amp;quot;
-  
+
     txreq -url &amp;quot;/search?id=123&amp;amp;type=2&amp;quot;
     rxresp
     expect resp.status == 200
     expect resp.http.X-RateLimit-Limit == &amp;quot;3&amp;quot;
     expect resp.http.X-RateLimit-Counter == &amp;quot;2&amp;quot;
     expect resp.http.X-RateLimit-Period == &amp;quot;5&amp;quot;
-  
+
     txreq -url &amp;quot;/search?id=123&amp;amp;type=3&amp;quot;
     rxresp
     expect resp.status == 200
     expect resp.http.X-RateLimit-Limit == &amp;quot;3&amp;quot;
     expect resp.http.X-RateLimit-Counter == &amp;quot;3&amp;quot;
     expect resp.http.X-RateLimit-Period == &amp;quot;5&amp;quot;
-  
+
     txreq -url &amp;quot;/search?id=123&amp;amp;type=4&amp;quot;
     rxresp
     expect resp.status == 429
@@ -238,8 +238,8 @@ $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r36
 
 &lt;p&gt;At this point, we know that requests are being throttled. To verify that new requests are allowed after the time limit is up, we add a delay here before we send the next and last request. This request should succeed since we are in a new throttle window.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;delay 5;
- 
+&lt;pre&gt;&lt;code&gt;delay 5;
+
 client c3 {
    txreq -url &amp;quot;/search?id=123&amp;amp;type=4&amp;quot;
    rxresp
@@ -252,7 +252,7 @@ client c3 {
 
 &lt;p&gt;To execute the test file, make sure the memcached service is running locally and execute:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ varnishtest example.vtc
+&lt;pre&gt;&lt;code&gt;$ varnishtest example.vtc
 #     top  TEST example.vtc passed (6.533)
 &lt;/code&gt;&lt;/pre&gt;
 
@@ -260,7 +260,7 @@ client c3 {
 
 &lt;p&gt;Requests to our application in the example will receive the following response headers. The first is a request that has been allowed, and the second is a request that has been throttled.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-http&#34;&gt;$ curl -iI http://localhost/search
+&lt;pre&gt;&lt;code&gt;$ curl -iI http://localhost/search
 HTTP/1.1 200 OK
 Age: 6
 Content-Length: 936

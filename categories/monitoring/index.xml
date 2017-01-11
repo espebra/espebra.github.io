@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Monitoring on Espen Braastad</title>
+    <title>Espen Braastad</title>
     <link>http://www.espenbraastad.no/categories/monitoring/index.xml</link>
-    <description>Recent content in Monitoring on Espen Braastad</description>
+    <description>Recent content on Espen Braastad</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <atom:link href="http://www.espenbraastad.no/categories/monitoring/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>munincollector-ng</title>
-      <link>http://www.espenbraastad.no/posts/munincollector-ng/</link>
+      <link>http://www.espenbraastad.no/post/munincollector-ng/</link>
       <pubDate>Mon, 16 Aug 2010 20:15:00 +0100</pubDate>
       
-      <guid>http://www.espenbraastad.no/posts/munincollector-ng/</guid>
+      <guid>http://www.espenbraastad.no/post/munincollector-ng/</guid>
       <description>&lt;p&gt;Munincollector-ng is a perl script that collects graphs from multiple &lt;a href=&#34;http://munin-monitoring.org&#34;&gt;munin&lt;/a&gt; installations to display them in one page. A scenario where this is helpful is when you have (too) many munin clients on (too) many munin masters, and you want to look through some of the graphs - i.e. the &lt;em&gt;Disk usage in percent&lt;/em&gt; (aka &lt;em&gt;df&lt;/em&gt;) plugin - without spending/wasting too much time browsing through the less important graphs.&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/munincollector.png&#34; alt=&#34;Munincollector&#34; /&gt;&lt;/p&gt;
@@ -22,7 +22,7 @@
 
 &lt;p&gt;Below is some example configuration that will gather the &lt;em&gt;week&lt;/em&gt; and &lt;em&gt;month&lt;/em&gt; graphs from the &lt;em&gt;df&lt;/em&gt; plugin from four separate munin masters (three without authentication and one with authentication). The graphs will be downloaded to &lt;em&gt;/var/www/munincollector-ng/&lt;/em&gt;:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;# General configuration
+&lt;pre&gt;&lt;code&gt;# General configuration
 graph.plugin df
 graph.type week month
 graph.log /var/log/munincollector-ng.log
@@ -46,7 +46,7 @@ baz.netloc baz.com:80
 
 &lt;p&gt;An example cron job that will execute the script once per day (make sure &lt;em&gt;user&lt;/em&gt; have write permissions in &lt;em&gt;/var/www/munincollector-ng/&lt;/em&gt;):&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-cron&#34;&gt;8 8 * * * user /usr/local/bin/munincollector-ng -c /etc/munincollector-ng/example.conf
+&lt;pre&gt;&lt;code&gt;8 8 * * * user /usr/local/bin/munincollector-ng -c /etc/munincollector-ng/example.conf
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;The script is available from &lt;a href=&#34;https://github.com/espebra/munincollector-ng&#34;&gt;Github&lt;/a&gt;.&lt;/p&gt;

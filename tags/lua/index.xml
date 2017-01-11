@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Lua on Espen Braastad</title>
+    <title>Espen Braastad</title>
     <link>http://www.espenbraastad.no/tags/lua/index.xml</link>
-    <description>Recent content in Lua on Espen Braastad</description>
+    <description>Recent content on Espen Braastad</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <atom:link href="http://www.espenbraastad.no/tags/lua/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Dummy API</title>
-      <link>http://www.espenbraastad.no/posts/dummy-api/</link>
+      <link>http://www.espenbraastad.no/post/dummy-api/</link>
       <pubDate>Sat, 02 May 2015 21:42:21 +0200</pubDate>
       
-      <guid>http://www.espenbraastad.no/posts/dummy-api/</guid>
-      <description>&lt;p&gt;&lt;em&gt;Update: Dummy API has been &lt;a href=&#34;http://www.espenbraastad.no/posts/dummy-api-rewrite-in-go/&#34;&gt;rewritten in Go&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
+      <guid>http://www.espenbraastad.no/post/dummy-api/</guid>
+      <description>&lt;p&gt;&lt;em&gt;Update: Dummy API has been &lt;a href=&#34;http://www.espenbraastad.no/post/dummy-api-rewrite-in-go/&#34;&gt;rewritten in Go&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
 
 &lt;p&gt;The purpose of Dummy API to act as a performant, simple and flexible HTTP API to use when testing API gateway performance. Put it behing a API gateway and generate responses to it from a set of consumers/clients. The Dummy API will read the request headers and query parameters and generate the responses accordingly. Some examples are custom cache-control header, response status and response delays.&lt;/p&gt;
 
@@ -22,7 +22,7 @@
 
 &lt;p&gt;The following is a &lt;code&gt;GET&lt;/code&gt; request to host &lt;code&gt;dummy-api.varnish-software.com&lt;/code&gt; and path &lt;code&gt;/foo&lt;/code&gt;, where the response should contain a 10 characters random string, 20 characters predictable random string, response status &lt;code&gt;418&lt;/code&gt; and a &lt;code&gt;cache-control&lt;/code&gt; header with the value &lt;code&gt;max-age=2, s-maxage=3&lt;/code&gt;. The response will be delivered with a 2 seconds delay before the first byte of the body, to mimic a slow web application:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-http&#34;&gt;GET http://dummy-api.varnish-software.com/foo?random-content=10&amp;amp;predictable-content=20&amp;amp;response-status=418&amp;amp;body-delay=2&amp;amp;max-age=2&amp;amp;s-maxage=3
+&lt;pre&gt;&lt;code&gt;GET http://dummy-api.varnish-software.com/foo?random-content=10&amp;amp;predictable-content=20&amp;amp;response-status=418&amp;amp;body-delay=2&amp;amp;max-age=2&amp;amp;s-maxage=3
 
 HTTP/1.1 418
 Cache-control: max-age=2, s-maxage=3
@@ -56,12 +56,12 @@ Transfer-Encoding: chunked
     &amp;quot;response-status&amp;quot;: 418,
     &amp;quot;s-maxage&amp;quot;: 3,
     &amp;quot;uri&amp;quot;: &amp;quot;/foo&amp;quot;
-}
+}   
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;The following is a &lt;code&gt;POST&lt;/code&gt; request to &lt;code&gt;dummy-api.varnish-software.com&lt;/code&gt; and path &lt;code&gt;/someurl&lt;/code&gt;, where the response status should be &lt;code&gt;201&lt;/code&gt;, the &lt;code&gt;cache-control&lt;/code&gt; header should be set to &lt;code&gt;must-revalidate&lt;/code&gt; and the &lt;code&gt;content-length&lt;/code&gt; header should be set instead of using &lt;code&gt;chunked&lt;/code&gt; &lt;code&gt;transfer-encoding&lt;/code&gt;:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-http&#34;&gt;POST http://dummy-api.varnish-software.com/someurl?must-revalidate&amp;amp;response-status=201&amp;amp;content-length
+&lt;pre&gt;&lt;code&gt;POST http://dummy-api.varnish-software.com/someurl?must-revalidate&amp;amp;response-status=201&amp;amp;content-length
 
 HTTP/1.1 201 Created
 Cache-control: must-revalidate
@@ -96,7 +96,7 @@ Server: Dummy API
 
 &lt;p&gt;The buit in help text is available with the &lt;code&gt;help&lt;/code&gt; request header or query parameter:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-http&#34;&gt;GET http://dummy-api.varnish-software.com/?help
+&lt;pre&gt;&lt;code&gt;GET http://dummy-api.varnish-software.com/?help
 
 HTTP/1.1 200 OK
 Connection: close
@@ -104,7 +104,7 @@ Content-Type: text/plain
 Date: Sat, 02 May 2015 19:59:39 GMT
 Server: Dummy API
 Transfer-Encoding: chunked
-    
+
 Dummy API
 =========
 
