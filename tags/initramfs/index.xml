@@ -16,9 +16,9 @@
       <guid>http://www.espenbraastad.no/posts/centos-7-rootfs-on-tmpfs/</guid>
       <description>
 
-&lt;p&gt;Several years ago I wrote a &lt;a href=&#34;http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs/&#34;&gt;series&lt;/a&gt; &lt;a href=&#34;http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs-update/&#34;&gt;of&lt;/a&gt; &lt;a href=&#34;http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs-update2/&#34;&gt;posts&lt;/a&gt; on how to run EL6 with its root filesystem on tmpfs. This post is a continuation of that series, and explains step by step how to run CentOS 7 with its root filesystem in memory. It should apply to RHEL, Ubuntu, Debian and other Linux distributions as well.&lt;/p&gt;
+&lt;p&gt;Several years ago I wrote a &lt;a href=&#34;http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs/&#34;&gt;series&lt;/a&gt; &lt;a href=&#34;http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs-update/&#34;&gt;of&lt;/a&gt; &lt;a href=&#34;http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs-update2/&#34;&gt;posts&lt;/a&gt; on how to run EL6 with its root filesystem on tmpfs. This post is a continuation of that series, and explains step by step how to run CentOS 7 with its root filesystem in memory. It should apply to RHEL, Ubuntu, Debian and other Linux distributions as well. The post is a bit terse to focus on the concept, and several of the steps have potential for improvements.&lt;/p&gt;
 
-&lt;p&gt;This post is a bit terse to show the concept. Several of the steps have potential for improvements.&lt;/p&gt;
+&lt;p&gt;The following is a screen recording from a host running CentOS 7 in tmpfs:&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/centos7-in-tmpfs.gif&#34; alt=&#34;Sensor&#34; /&gt;&lt;/p&gt;
 
