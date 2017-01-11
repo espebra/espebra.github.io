@@ -10,17 +10,17 @@
     
     <item>
       <title>Temperature trend monitoring at home</title>
-      <link>http://www.espenbraastad.no/post/temperature-trend-monitoring-at-home/</link>
+      <link>http://www.espenbraastad.no/posts/temperature-trend-monitoring-at-home/</link>
       <pubDate>Wed, 19 Feb 2014 23:32:00 +0100</pubDate>
       
-      <guid>http://www.espenbraastad.no/post/temperature-trend-monitoring-at-home/</guid>
+      <guid>http://www.espenbraastad.no/posts/temperature-trend-monitoring-at-home/</guid>
       <description>
 
 &lt;h2 id=&#34;background&#34;&gt;Background&lt;/h2&gt;
 
-&lt;p&gt;I’ve got balanced ventilation in my apartment. It works OK, but I don’t fully understand how it behaves if knobs are pushed and pots are turned, and I’m definitely not sure if its performance is as good as I should expect.&lt;/p&gt;
+&lt;p&gt;I&amp;rsquo;ve got balanced ventilation in my apartment. It works OK, but I don&amp;rsquo;t fully understand how it behaves if knobs are pushed and pots are turned, and I&amp;rsquo;m definitely not sure if its performance is as good as I should expect.&lt;/p&gt;
 
-&lt;p&gt;I’m going to do some measurements to see how the system reacts to changes in the outside temperature and tuning of the various settings. The first parameter to measure is the temperature in the air intake, exhaust air and some of the ventilation valves in the different rooms in the apartment.&lt;/p&gt;
+&lt;p&gt;I&amp;rsquo;m going to do some measurements to see how the system reacts to changes in the outside temperature and tuning of the various settings. The first parameter to measure is the temperature in the air intake, exhaust air and some of the ventilation valves in the different rooms in the apartment.&lt;/p&gt;
 
 &lt;h2 id=&#34;hardware&#34;&gt;Hardware&lt;/h2&gt;
 
@@ -45,7 +45,7 @@
 
 &lt;p&gt;Munin is written in Perl and is available in the repositories of most Linux distributions. Installation is easy:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;# Fedora / Redhat / CentOS
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;# Fedora / Redhat / CentOS
 sudo yum install munin munin-node
 
 # Debian / Ubuntu
@@ -70,7 +70,7 @@ sudo apt-get install munin munin-node
 
 &lt;p&gt;Data loaning configuration example and result:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;[sensor;ventilation]
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;[sensor;ventilation]
     address 127.0.0.1
     use_node_name no
     temp.update no
@@ -104,10 +104,10 @@ sudo apt-get install munin munin-node
     
     <item>
       <title>munincollector-ng</title>
-      <link>http://www.espenbraastad.no/post/munincollector-ng/</link>
+      <link>http://www.espenbraastad.no/posts/munincollector-ng/</link>
       <pubDate>Mon, 16 Aug 2010 20:15:00 +0100</pubDate>
       
-      <guid>http://www.espenbraastad.no/post/munincollector-ng/</guid>
+      <guid>http://www.espenbraastad.no/posts/munincollector-ng/</guid>
       <description>&lt;p&gt;Munincollector-ng is a perl script that collects graphs from multiple &lt;a href=&#34;http://munin-monitoring.org&#34;&gt;munin&lt;/a&gt; installations to display them in one page. A scenario where this is helpful is when you have (too) many munin clients on (too) many munin masters, and you want to look through some of the graphs - i.e. the &lt;em&gt;Disk usage in percent&lt;/em&gt; (aka &lt;em&gt;df&lt;/em&gt;) plugin - without spending/wasting too much time browsing through the less important graphs.&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/munincollector.png&#34; alt=&#34;Munincollector&#34; /&gt;&lt;/p&gt;
@@ -116,7 +116,7 @@ sudo apt-get install munin munin-node
 
 &lt;p&gt;Below is some example configuration that will gather the &lt;em&gt;week&lt;/em&gt; and &lt;em&gt;month&lt;/em&gt; graphs from the &lt;em&gt;df&lt;/em&gt; plugin from four separate munin masters (three without authentication and one with authentication). The graphs will be downloaded to &lt;em&gt;/var/www/munincollector-ng/&lt;/em&gt;:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;# General configuration
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;# General configuration
 graph.plugin df
 graph.type week month
 graph.log /var/log/munincollector-ng.log
@@ -140,7 +140,7 @@ baz.netloc baz.com:80
 
 &lt;p&gt;An example cron job that will execute the script once per day (make sure &lt;em&gt;user&lt;/em&gt; have write permissions in &lt;em&gt;/var/www/munincollector-ng/&lt;/em&gt;):&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;8 8 * * * user /usr/local/bin/munincollector-ng -c /etc/munincollector-ng/example.conf
+&lt;pre&gt;&lt;code class=&#34;language-cron&#34;&gt;8 8 * * * user /usr/local/bin/munincollector-ng -c /etc/munincollector-ng/example.conf
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;The script is available from &lt;a href=&#34;https://github.com/espebra/munincollector-ng&#34;&gt;Github&lt;/a&gt;.&lt;/p&gt;

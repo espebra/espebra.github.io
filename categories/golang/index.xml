@@ -10,10 +10,10 @@
     
     <item>
       <title>Filebin upgrade</title>
-      <link>http://www.espenbraastad.no/post/filebin-upgrade/</link>
+      <link>http://www.espenbraastad.no/posts/filebin-upgrade/</link>
       <pubDate>Sun, 29 May 2016 20:40:48 +0200</pubDate>
       
-      <guid>http://www.espenbraastad.no/post/filebin-upgrade/</guid>
+      <guid>http://www.espenbraastad.no/posts/filebin-upgrade/</guid>
       <description>
 
 &lt;p&gt;&lt;a href=&#34;https://filebin.net&#34;&gt;https://filebin.net&lt;/a&gt; is a public and free file upload/sharing service. Its main design principle is to be incredibly simple to use.&lt;/p&gt;
@@ -60,7 +60,7 @@
 
 &lt;h2 id=&#34;new-hardware-and-software-stack&#34;&gt;New hardware and software stack&lt;/h2&gt;
 
-&lt;p&gt;The infrastructure, bandwidth and hardware needed to run &lt;a href=&#34;https://filebin.net&#34;&gt;filebin.net&lt;/a&gt; is sponsored by &lt;a href=&#34;http://redpill-linpro.com/&#34;&gt;Redpill Linpro&lt;/a&gt;, the leading provider of professional Open Source services and products in the Nordic region.&lt;/p&gt;
+&lt;p&gt;The infrastructure, bandwidth and hardware needed to run &lt;a href=&#34;https://filebin.net&#34;&gt;filebin.net&lt;/a&gt; is sponsored by &lt;a href=&#34;https://www.redpill-linpro.com/&#34;&gt;Redpill Linpro&lt;/a&gt;, the leading provider of professional Open Source services and products in the Nordic region.&lt;/p&gt;
 
 &lt;p&gt;As part of todays upgrade, &lt;a href=&#34;https://filebin.net&#34;&gt;filebin.net&lt;/a&gt; has been migrated into their awesome IaaS cloud which is based on &lt;a href=&#34;https://www.openstack.org/&#34;&gt;OpenStack&lt;/a&gt; and &lt;a href=&#34;http://ceph.com/&#34;&gt;Ceph&lt;/a&gt;, runs on modern hardware and spans multiple locations.&lt;/p&gt;
 
@@ -82,27 +82,27 @@
     
     <item>
       <title>Gofer - Simple notification IRC bot</title>
-      <link>http://www.espenbraastad.no/post/gofer-notification-irc-bot/</link>
+      <link>http://www.espenbraastad.no/posts/gofer-notification-irc-bot/</link>
       <pubDate>Fri, 08 Jan 2016 21:11:44 +0100</pubDate>
       
-      <guid>http://www.espenbraastad.no/post/gofer-notification-irc-bot/</guid>
+      <guid>http://www.espenbraastad.no/posts/gofer-notification-irc-bot/</guid>
       <description>&lt;p&gt;&lt;a href=&#34;https://github.com/espebra/gofer/&#34;&gt;Gofer&lt;/a&gt; is an notification type of IRC bot which is simple to deploy and super easy to integrate with existing services. It serves two main purposes:&lt;/p&gt;
 
 &lt;ol&gt;
 &lt;li&gt;&lt;p&gt;Process messages in IRC channels and &lt;a href=&#34;https://github.com/espebra/gofer#command-execution&#34;&gt;execute commands&lt;/a&gt; to trigger actions based on pre-defined patterns. A good use case is to look for messages matching &lt;code&gt;#\d+&lt;/code&gt; (for example &lt;code&gt;#1337&lt;/code&gt;), look up the &lt;em&gt;title&lt;/em&gt; and &lt;em&gt;status&lt;/em&gt; in a issue tracker and print the information back in the IRC channel:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;user | So I just pushed a fix for #123.
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;user | So I just pushed a fix for #123.
 bot  | #123 [Open]: Server crash when foo (https://issue.tracker/tickets/123)
 &lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
 
 &lt;li&gt;&lt;p&gt;Relay notifications from other services onto IRC via the built in &lt;a href=&#34;https://github.com/espebra/gofer#http-api-interface&#34;&gt;HTTP API&lt;/a&gt;. Good use cases for this are to let monitoring systems notify an IRC channel whenever some service status changes, and notify an IRC channel whenever a new ticket is created in the ticket system. Consider the following cURL command:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;$ curl -d &amp;quot;message=CRITICAL: http on somehost.example.com is unavailable - Socket timeout after 10 seconds&amp;quot; https://bot.example.com/channel/ops/privmsg
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;curl -d &amp;quot;message=CRITICAL: http on somehost.example.com is unavailable - Socket timeout after 10 seconds&amp;quot; https://bot.example.com/channel/ops/privmsg
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;It will produce the following privmsg (regular message) in the IRC channel &lt;em&gt;#ops&lt;/em&gt;:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;bot | CRITICAL: http on somehost.example.com is unavailable - Socket timeout after 10 seconds
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;bot | CRITICAL: http on somehost.example.com is unavailable - Socket timeout after 10 seconds
 &lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
 &lt;/ol&gt;
 
@@ -112,17 +112,17 @@ bot  | #123 [Open]: Server crash when foo (https://issue.tracker/tickets/123)
     
     <item>
       <title>Dummy API, Go rewrite</title>
-      <link>http://www.espenbraastad.no/post/dummy-api-rewrite-in-go/</link>
+      <link>http://www.espenbraastad.no/posts/dummy-api-rewrite-in-go/</link>
       <pubDate>Sat, 16 May 2015 19:48:47 +0200</pubDate>
       
-      <guid>http://www.espenbraastad.no/post/dummy-api-rewrite-in-go/</guid>
-      <description>&lt;p&gt;Dummy API was &lt;a href=&#34;http://www.espenbraastad.no/post/dummy-api/&#34;&gt;originally&lt;/a&gt; written in Lua for running on top of &lt;a href=&#34;https://www.openresty.org/&#34;&gt;OpenResty&lt;/a&gt;. Reasons were high performance and simplicity. The most common Linux distributions do not provide packages for OpenResty in their repositories, which means that it has to be installed from source. This is straight forward, but it adds up - both in time required and extra build dependencies.&lt;/p&gt;
+      <guid>http://www.espenbraastad.no/posts/dummy-api-rewrite-in-go/</guid>
+      <description>&lt;p&gt;Dummy API was &lt;a href=&#34;http://www.espenbraastad.no/posts/dummy-api/&#34;&gt;originally&lt;/a&gt; written in Lua for running on top of &lt;a href=&#34;https://www.openresty.org/&#34;&gt;OpenResty&lt;/a&gt;. Reasons were high performance and simplicity. The most common Linux distributions do not provide packages for OpenResty in their repositories, which means that it has to be installed from source. This is straight forward, but it adds up - both in time required and extra build dependencies.&lt;/p&gt;
 
 &lt;p&gt;The purpose of Dummy API is to be that web application that can be rapidly installed and started when it is necessary to test API managers and web caches with a proper web application. The installation should be as simple and quick as possible.&lt;/p&gt;
 
 &lt;p&gt;I turned to &lt;a href=&#34;https://golang.org/&#34;&gt;Go&lt;/a&gt; and its &lt;a href=&#34;https://golang.org/pkg/net/http/&#34;&gt;http server&lt;/a&gt;, and reimplemented the Dummy API. What is really appealing about Go is that it is possible to compile an entire web application including all dependencies into one binary file. It means that the Dummy API and the web server can be compiled and distributed as one executable file:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;$ sudo yum install golang
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ sudo yum install golang
 $ go build dummy-api.go
 $ chmod +x dummy-api
 $ ./dummy-api -host=0.0.0.0 -port=8080
@@ -132,7 +132,7 @@ $ ./dummy-api -host=0.0.0.0 -port=8080
 
 &lt;p&gt;I have compiled and pushed the binary version for &lt;code&gt;Linux&lt;/code&gt; on &lt;code&gt;x86_64&lt;/code&gt; to the repository. The result is that the installation steps have been narrowed down to:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;$ wget https://github.com/espebra/dummy-api/raw/master/dummy-api
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ wget https://github.com/espebra/dummy-api/raw/master/dummy-api
 $ chmod +x dummy-api
 $ ./dummy-api
 &lt;/code&gt;&lt;/pre&gt;
@@ -150,7 +150,7 @@ $ ./dummy-api
 
 &lt;p&gt;The usage guide for web clients is shown with the &lt;code&gt;help&lt;/code&gt; query parameter:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;GET http://host/?help
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;GET http://host/?help
 
 Dummy API
 =========

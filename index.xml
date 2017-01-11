@@ -11,15 +11,17 @@
     
     <item>
       <title>CentOS 7 root filesystem on tmpfs</title>
-      <link>http://www.espenbraastad.no/post/centos-7-rootfs-on-tmpfs/</link>
+      <link>http://www.espenbraastad.no/posts/centos-7-rootfs-on-tmpfs/</link>
       <pubDate>Fri, 06 Jan 2017 21:34:20 +0100</pubDate>
       
-      <guid>http://www.espenbraastad.no/post/centos-7-rootfs-on-tmpfs/</guid>
+      <guid>http://www.espenbraastad.no/posts/centos-7-rootfs-on-tmpfs/</guid>
       <description>
 
-&lt;p&gt;Several years ago I wrote a &lt;a href=&#34;http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs/&#34;&gt;series&lt;/a&gt; &lt;a href=&#34;http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs-update/&#34;&gt;of&lt;/a&gt; &lt;a href=&#34;http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs-update2/&#34;&gt;posts&lt;/a&gt; on how to run EL6 with its root filesystem on tmpfs. This post is a continuation of that series, and explains step by step how to run CentOS 7 with its root filesystem in memory. It should apply to RHEL, Ubuntu, Debian and other Linux distributions as well.&lt;/p&gt;
+&lt;p&gt;Several years ago I wrote a &lt;a href=&#34;http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs/&#34;&gt;series&lt;/a&gt; &lt;a href=&#34;http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs-update/&#34;&gt;of&lt;/a&gt; &lt;a href=&#34;http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs-update2/&#34;&gt;posts&lt;/a&gt; on how to run EL6 with its root filesystem on tmpfs. This post is a continuation of that series, and explains step by step how to run CentOS 7 with its root filesystem in memory. It should apply to RHEL, Ubuntu, Debian and other Linux distributions as well.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/centos7-in-tmpfs.gif&#34; alt=&#34;Boot process screen recording&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;This post is a bit terse to show the concept. Several of the steps have potential for improvements.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/centos7-in-tmpfs.gif&#34; alt=&#34;Sensor&#34; /&gt;&lt;/p&gt;
 
 &lt;h2 id=&#34;build-environment&#34;&gt;Build environment&lt;/h2&gt;
 
@@ -64,7 +66,7 @@ mkdir -p /work/result
 &lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;echo &amp;quot;SELINUX=disabled&amp;quot; &amp;gt; /work/newroot/etc/selinux/config
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;Disable clearing the screen on login failure to make it possible to read error messages:&lt;/p&gt;
+&lt;p&gt;Disable clearing the screen on login failure to make it possible to read any error messages:&lt;/p&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;mkdir /work/newroot/etc/systemd/system/getty@.service.d
 cat &amp;gt; /work/newroot/etc/systemd/system/getty@.service.d/noclear.conf &amp;lt;&amp;lt; EOF
@@ -81,10 +83,10 @@ EOF
 &lt;li&gt;Fetch kernel and a custom initramfs.&lt;/li&gt;
 &lt;li&gt;Execute kernel.&lt;/li&gt;
 &lt;li&gt;Mount the initramfs as the temporary root filesystem (for the kernel).&lt;/li&gt;
-&lt;li&gt;Execute &lt;code&gt;/init&lt;/code&gt; (shipped in the initramfs).&lt;/li&gt;
+&lt;li&gt;Execute &lt;code&gt;/init&lt;/code&gt; (in the initramfs).&lt;/li&gt;
 &lt;li&gt;Create a &lt;code&gt;tmpfs&lt;/code&gt; mount point.&lt;/li&gt;
-&lt;li&gt;Extract the root filesystem to the &lt;code&gt;tmpfs&lt;/code&gt; mount point.&lt;/li&gt;
-&lt;li&gt;Execute &lt;code&gt;switch_root&lt;/code&gt; to boot on the &lt;code&gt;tmpfs&lt;/code&gt; root filesystem.&lt;/li&gt;
+&lt;li&gt;Extract our CentOS 7 root filesystem to the &lt;code&gt;tmpfs&lt;/code&gt; mount point.&lt;/li&gt;
+&lt;li&gt;Execute &lt;code&gt;switch_root&lt;/code&gt; to boot on the CentOS 7 root filesystem.&lt;/li&gt;
 &lt;/ol&gt;
 
 &lt;p&gt;The initramfs will be based on &lt;a href=&#34;https://www.busybox.net/&#34;&gt;BusyBox&lt;/a&gt;. Download a pre-built binary or compile it from source, put the binary in the &lt;code&gt;initramfs/bin&lt;/code&gt; directory. In this post I&amp;rsquo;ll just download a pre-built binary:&lt;/p&gt;
@@ -142,7 +144,12 @@ mount --move /dev /newroot/dev
 exec switch_root /newroot /sbin/init || error
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;Create the root filesystem archive using &lt;code&gt;tar&lt;/code&gt;. The following command also uses xz compression to reduce the final size of the archive:&lt;/p&gt;
+&lt;p&gt;Make sure it is executable:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;chmod +x /work/initramfs/init
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Create the root filesystem archive using &lt;code&gt;tar&lt;/code&gt;. The following command also uses xz compression to reduce the final size of the archive (from approximately 1 GB to 270 MB):&lt;/p&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;cd /work/newroot
 tar cJf /work/initramfs/rootfs.tar.xz .
@@ -159,6 +166,8 @@ find . -print0 | cpio --null -ov --format=newc | gzip -9 &amp;gt; /work/result/i
 &lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;cp /work/newroot/boot/vmlinuz-*x86_64 /work/result/vmlinuz
 &lt;/code&gt;&lt;/pre&gt;
 
+&lt;h2 id=&#34;result&#34;&gt;Result&lt;/h2&gt;
+
 &lt;p&gt;The &lt;code&gt;/work/result&lt;/code&gt; directory now contains two files with file sizes similar to the following:&lt;/p&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;ls -lh /work/result/
@@ -169,22 +178,20 @@ total 277M
 
 &lt;p&gt;These files can be loaded directly in GRUB from disk, or using &lt;a href=&#34;http://ipxe.org/&#34;&gt;iPXE&lt;/a&gt; over HTTP using a script similar to:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;#!ipxe
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;#!ipxe
 kernel http://example.com/vmlinuz
 initrd http://example.com/initramfs.gz
 boot
 &lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Well done!&lt;/p&gt;
 </description>
     </item>
     
     <item>
       <title>Filebin upgrade</title>
-      <link>http://www.espenbraastad.no/post/filebin-upgrade/</link>
+      <link>http://www.espenbraastad.no/posts/filebin-upgrade/</link>
       <pubDate>Sun, 29 May 2016 20:40:48 +0200</pubDate>
       
-      <guid>http://www.espenbraastad.no/post/filebin-upgrade/</guid>
+      <guid>http://www.espenbraastad.no/posts/filebin-upgrade/</guid>
       <description>
 
 &lt;p&gt;&lt;a href=&#34;https://filebin.net&#34;&gt;https://filebin.net&lt;/a&gt; is a public and free file upload/sharing service. Its main design principle is to be incredibly simple to use.&lt;/p&gt;
@@ -231,7 +238,7 @@ boot
 
 &lt;h2 id=&#34;new-hardware-and-software-stack&#34;&gt;New hardware and software stack&lt;/h2&gt;
 
-&lt;p&gt;The infrastructure, bandwidth and hardware needed to run &lt;a href=&#34;https://filebin.net&#34;&gt;filebin.net&lt;/a&gt; is sponsored by &lt;a href=&#34;http://redpill-linpro.com/&#34;&gt;Redpill Linpro&lt;/a&gt;, the leading provider of professional Open Source services and products in the Nordic region.&lt;/p&gt;
+&lt;p&gt;The infrastructure, bandwidth and hardware needed to run &lt;a href=&#34;https://filebin.net&#34;&gt;filebin.net&lt;/a&gt; is sponsored by &lt;a href=&#34;https://www.redpill-linpro.com/&#34;&gt;Redpill Linpro&lt;/a&gt;, the leading provider of professional Open Source services and products in the Nordic region.&lt;/p&gt;
 
 &lt;p&gt;As part of todays upgrade, &lt;a href=&#34;https://filebin.net&#34;&gt;filebin.net&lt;/a&gt; has been migrated into their awesome IaaS cloud which is based on &lt;a href=&#34;https://www.openstack.org/&#34;&gt;OpenStack&lt;/a&gt; and &lt;a href=&#34;http://ceph.com/&#34;&gt;Ceph&lt;/a&gt;, runs on modern hardware and spans multiple locations.&lt;/p&gt;
 
@@ -253,27 +260,27 @@ boot
     
     <item>
       <title>Gofer - Simple notification IRC bot</title>
-      <link>http://www.espenbraastad.no/post/gofer-notification-irc-bot/</link>
+      <link>http://www.espenbraastad.no/posts/gofer-notification-irc-bot/</link>
       <pubDate>Fri, 08 Jan 2016 21:11:44 +0100</pubDate>
       
-      <guid>http://www.espenbraastad.no/post/gofer-notification-irc-bot/</guid>
+      <guid>http://www.espenbraastad.no/posts/gofer-notification-irc-bot/</guid>
       <description>&lt;p&gt;&lt;a href=&#34;https://github.com/espebra/gofer/&#34;&gt;Gofer&lt;/a&gt; is an notification type of IRC bot which is simple to deploy and super easy to integrate with existing services. It serves two main purposes:&lt;/p&gt;
 
 &lt;ol&gt;
 &lt;li&gt;&lt;p&gt;Process messages in IRC channels and &lt;a href=&#34;https://github.com/espebra/gofer#command-execution&#34;&gt;execute commands&lt;/a&gt; to trigger actions based on pre-defined patterns. A good use case is to look for messages matching &lt;code&gt;#\d+&lt;/code&gt; (for example &lt;code&gt;#1337&lt;/code&gt;), look up the &lt;em&gt;title&lt;/em&gt; and &lt;em&gt;status&lt;/em&gt; in a issue tracker and print the information back in the IRC channel:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;user | So I just pushed a fix for #123.
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;user | So I just pushed a fix for #123.
 bot  | #123 [Open]: Server crash when foo (https://issue.tracker/tickets/123)
 &lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
 
 &lt;li&gt;&lt;p&gt;Relay notifications from other services onto IRC via the built in &lt;a href=&#34;https://github.com/espebra/gofer#http-api-interface&#34;&gt;HTTP API&lt;/a&gt;. Good use cases for this are to let monitoring systems notify an IRC channel whenever some service status changes, and notify an IRC channel whenever a new ticket is created in the ticket system. Consider the following cURL command:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;$ curl -d &amp;quot;message=CRITICAL: http on somehost.example.com is unavailable - Socket timeout after 10 seconds&amp;quot; https://bot.example.com/channel/ops/privmsg
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;curl -d &amp;quot;message=CRITICAL: http on somehost.example.com is unavailable - Socket timeout after 10 seconds&amp;quot; https://bot.example.com/channel/ops/privmsg
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;It will produce the following privmsg (regular message) in the IRC channel &lt;em&gt;#ops&lt;/em&gt;:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;bot | CRITICAL: http on somehost.example.com is unavailable - Socket timeout after 10 seconds
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;bot | CRITICAL: http on somehost.example.com is unavailable - Socket timeout after 10 seconds
 &lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
 &lt;/ol&gt;
 
@@ -283,10 +290,10 @@ bot  | #123 [Open]: Server crash when foo (https://issue.tracker/tickets/123)
     
     <item>
       <title>Monitor stand / tabletop table IKEA hack</title>
-      <link>http://www.espenbraastad.no/post/monitor-stand-ikea-hack/</link>
+      <link>http://www.espenbraastad.no/posts/monitor-stand-ikea-hack/</link>
       <pubDate>Wed, 16 Sep 2015 22:56:54 +0200</pubDate>
       
-      <guid>http://www.espenbraastad.no/post/monitor-stand-ikea-hack/</guid>
+      <guid>http://www.espenbraastad.no/posts/monitor-stand-ikea-hack/</guid>
       <description>
 
 &lt;h2 id=&#34;background&#34;&gt;Background&lt;/h2&gt;
@@ -327,11 +334,11 @@ bot  | #123 [Open]: Server crash when foo (https://issue.tracker/tickets/123)
 
 &lt;h2 id=&#34;software&#34;&gt;Software&lt;/h2&gt;
 
-&lt;p&gt;Eh, none.&lt;/p&gt;
+&lt;p&gt;None.&lt;/p&gt;
 
 &lt;h2 id=&#34;setup&#34;&gt;Setup&lt;/h2&gt;
 
-&lt;p&gt;This is straight forward. I used a [router](&lt;a href=&#34;https://en.wikipedia.org/wiki/Router_(woodworking)&#34;&gt;https://en.wikipedia.org/wiki/Router_(woodworking)&lt;/a&gt;) to hollow out some space for the legs&amp;rsquo; mounting plates, in an attempt to make the mounting plates invisible when the table is in upright position. I just happend to have a lot of glue, so I obviously applied a lot of it when fastening the mouning plates. This thing will never fall apart!&lt;/p&gt;
+&lt;p&gt;This is straight forward. I used a &lt;a href=&#34;https://en.wikipedia.org/wiki/Router_(woodworking)&#34;&gt;router&lt;/a&gt; to hollow out some space for the legs&amp;rsquo; mounting plates, in an attempt to make the mounting plates invisible when the table is in upright position. I just happend to have a lot of glue, so I obviously applied a lot of it when fastening the mouning plates. This thing will never fall apart!&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/ikea-hack-1.jpg&#34; alt=&#34;WIP-1&#34; /&gt;&lt;/p&gt;
 
@@ -351,17 +358,17 @@ bot  | #123 [Open]: Server crash when foo (https://issue.tracker/tickets/123)
     
     <item>
       <title>Dummy API, Go rewrite</title>
-      <link>http://www.espenbraastad.no/post/dummy-api-rewrite-in-go/</link>
+      <link>http://www.espenbraastad.no/posts/dummy-api-rewrite-in-go/</link>
       <pubDate>Sat, 16 May 2015 19:48:47 +0200</pubDate>
       
-      <guid>http://www.espenbraastad.no/post/dummy-api-rewrite-in-go/</guid>
-      <description>&lt;p&gt;Dummy API was &lt;a href=&#34;http://www.espenbraastad.no/post/dummy-api/&#34;&gt;originally&lt;/a&gt; written in Lua for running on top of &lt;a href=&#34;https://www.openresty.org/&#34;&gt;OpenResty&lt;/a&gt;. Reasons were high performance and simplicity. The most common Linux distributions do not provide packages for OpenResty in their repositories, which means that it has to be installed from source. This is straight forward, but it adds up - both in time required and extra build dependencies.&lt;/p&gt;
+      <guid>http://www.espenbraastad.no/posts/dummy-api-rewrite-in-go/</guid>
+      <description>&lt;p&gt;Dummy API was &lt;a href=&#34;http://www.espenbraastad.no/posts/dummy-api/&#34;&gt;originally&lt;/a&gt; written in Lua for running on top of &lt;a href=&#34;https://www.openresty.org/&#34;&gt;OpenResty&lt;/a&gt;. Reasons were high performance and simplicity. The most common Linux distributions do not provide packages for OpenResty in their repositories, which means that it has to be installed from source. This is straight forward, but it adds up - both in time required and extra build dependencies.&lt;/p&gt;
 
 &lt;p&gt;The purpose of Dummy API is to be that web application that can be rapidly installed and started when it is necessary to test API managers and web caches with a proper web application. The installation should be as simple and quick as possible.&lt;/p&gt;
 
 &lt;p&gt;I turned to &lt;a href=&#34;https://golang.org/&#34;&gt;Go&lt;/a&gt; and its &lt;a href=&#34;https://golang.org/pkg/net/http/&#34;&gt;http server&lt;/a&gt;, and reimplemented the Dummy API. What is really appealing about Go is that it is possible to compile an entire web application including all dependencies into one binary file. It means that the Dummy API and the web server can be compiled and distributed as one executable file:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;$ sudo yum install golang
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ sudo yum install golang
 $ go build dummy-api.go
 $ chmod +x dummy-api
 $ ./dummy-api -host=0.0.0.0 -port=8080
@@ -371,7 +378,7 @@ $ ./dummy-api -host=0.0.0.0 -port=8080
 
 &lt;p&gt;I have compiled and pushed the binary version for &lt;code&gt;Linux&lt;/code&gt; on &lt;code&gt;x86_64&lt;/code&gt; to the repository. The result is that the installation steps have been narrowed down to:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;$ wget https://github.com/espebra/dummy-api/raw/master/dummy-api
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ wget https://github.com/espebra/dummy-api/raw/master/dummy-api
 $ chmod +x dummy-api
 $ ./dummy-api
 &lt;/code&gt;&lt;/pre&gt;
@@ -389,7 +396,7 @@ $ ./dummy-api
 
 &lt;p&gt;The usage guide for web clients is shown with the &lt;code&gt;help&lt;/code&gt; query parameter:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;GET http://host/?help
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;GET http://host/?help
 
 Dummy API
 =========
@@ -429,10 +436,10 @@ response-status = {int}      Set the response status.
     
     <item>
       <title>Varnish goes upstack with varnish modules and varnish configuration language</title>
-      <link>http://www.espenbraastad.no/post/varnish-goes-upstack-with-varnish-modules-and-varnish-configuration-language/</link>
+      <link>http://www.espenbraastad.no/posts/varnish-goes-upstack-with-varnish-modules-and-varnish-configuration-language/</link>
       <pubDate>Thu, 07 May 2015 10:55:56 +0200</pubDate>
       
-      <guid>http://www.espenbraastad.no/post/varnish-goes-upstack-with-varnish-modules-and-varnish-configuration-language/</guid>
+      <guid>http://www.espenbraastad.no/posts/varnish-goes-upstack-with-varnish-modules-and-varnish-configuration-language/</guid>
       <description>
 
 &lt;p&gt;&lt;em&gt;This post was first published at &lt;a href=&#34;http://highscalability.com/blog/2015/5/6/varnish-goes-upstack-with-varnish-modules-and-varnish-config.html&#34;&gt;High Scalability&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
@@ -471,7 +478,7 @@ response-status = {int}      Set the response status.
 
 &lt;p&gt;First we need a database with our throttle rules. Using the sqlite3 command, we create the database in &lt;code&gt;/tmp/rules.db3&lt;/code&gt; and add a couple of rules.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;$ sqlite3 /tmp/rules.db3 &amp;quot;CREATE TABLE t (rule text, path text);&amp;quot;
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ sqlite3 /tmp/rules.db3 &amp;quot;CREATE TABLE t (rule text, path text);&amp;quot;
 $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;3r5&#39;, &#39;/search&#39;);&amp;quot;
 $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r3600&#39;, &#39;/login&#39;);&amp;quot;
 &lt;/code&gt;&lt;/pre&gt;
@@ -482,12 +489,12 @@ $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r36
 
 &lt;p&gt;The first line in the file is optionally used to set the name or the title of the test.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;varnishtest &amp;quot;Simple throttling with SQLite and Memcached&amp;quot;
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;varnishtest &amp;quot;Simple throttling with SQLite and Memcached&amp;quot;
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Our test environment consists of one backend, called s1. We will first expect one request to a URL without a rule in the database.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;server s1 {
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;server s1 {
     rxreq
     expect req.url == &amp;quot;/&amp;quot;
     txresp
@@ -495,7 +502,7 @@ $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r36
 
 &lt;p&gt;We then expect 4 requests to &lt;code&gt;/search&lt;/code&gt; to arrive according to our following expectations. Note that the query parameters are slightly different, making all of these unique requests.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;    rxreq
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;    rxreq
     expect req.url == &amp;quot;/search?id=123&amp;amp;type=1&amp;quot;
     expect req.http.path == &amp;quot;/search&amp;quot;
     expect req.http.rule == &amp;quot;3r5&amp;quot;
@@ -503,7 +510,7 @@ $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r36
     expect req.http.period == &amp;quot;5&amp;quot;
     expect req.http.counter == &amp;quot;1&amp;quot;
     txresp
-
+  
     rxreq
     expect req.url == &amp;quot;/search?id=123&amp;amp;type=2&amp;quot;
     expect req.http.path == &amp;quot;/search&amp;quot;
@@ -512,7 +519,7 @@ $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r36
     expect req.http.period == &amp;quot;5&amp;quot;
     expect req.http.counter == &amp;quot;2&amp;quot;
     txresp
-
+  
     rxreq
     expect req.url == &amp;quot;/search?id=123&amp;amp;type=3&amp;quot;
     expect req.http.path == &amp;quot;/search&amp;quot;
@@ -521,7 +528,7 @@ $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r36
     expect req.http.period == &amp;quot;5&amp;quot;
     expect req.http.counter == &amp;quot;3&amp;quot;
     txresp
-
+  
     rxreq
     expect req.url == &amp;quot;/search?id=123&amp;amp;type=4&amp;quot;
     expect req.http.path == &amp;quot;/search&amp;quot;
@@ -535,7 +542,7 @@ $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r36
 
 &lt;p&gt;Now it is time to write the mini-application in VCL. Our test environment consists of one varnish instance, called v1. Initially, the VCL version marker and the VMOD imports are added.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;varnish v1 -vcl+backend {
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;varnish v1 -vcl+backend {
     vcl 4.0;
     import std;
     import sqlite3;
@@ -544,7 +551,7 @@ $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r36
 
 &lt;p&gt;VMODs are usually configured in &lt;code&gt;vcl_init&lt;/code&gt;, and this is true for sqlite3 and memcached as well. For sqlite3, we set the path to the database and the field delimiter to use on multi column results. The memcached VMOD can have a wide variety of configuration options supported by &lt;a href=&#34;http://docs.libmemcached.org/libmemcached_configuration.html&#34;&gt;libmemcached&lt;/a&gt;.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;    sub vcl_init {
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;    sub vcl_init {
         sqlite3.open(&amp;quot;/tmp/rules.db3&amp;quot;, &amp;quot;|;&amp;quot;);
         memcached.servers(&amp;quot;--SERVER=localhost --BINARY-PROTOCOL&amp;quot;);
     }
@@ -552,35 +559,35 @@ $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r36
 
 &lt;p&gt;In &lt;code&gt;vcl_recv&lt;/code&gt;, the incoming HTTP requests are received. We start by extracting the request path without query parameters and potential dangerous characters. This is important since the path will be part of the SQL query later. The following regex will match &lt;code&gt;req.url&lt;/code&gt; from the beginning of the line up until any of the characters ? &amp;amp; ;  “  ‘ or whitespace.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;    sub vcl_recv {
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;    sub vcl_recv {
         set req.http.path = regsub(req.url, {&amp;quot;^([^?&amp;amp;;&amp;quot;&#39; ]+).*&amp;quot;}, &amp;quot;\1&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;The use of &lt;code&gt;{&amp;quot; &amp;quot;}&lt;/code&gt; in the regular expression enables handling of the &amp;ldquo; character in the regular expression rule. The path we just extracted is used when the rule is looked up in the database. The response, if any, is stored in &lt;code&gt;req.http.rule&lt;/code&gt;.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;        set req.http.rule = sqlite3.exec(&amp;quot;SELECT rule FROM t WHERE path=&#39;&amp;quot; + req.http.path + &amp;quot;&#39; LIMIT 1&amp;quot;);
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;        set req.http.rule = sqlite3.exec(&amp;quot;SELECT rule FROM t WHERE path=&#39;&amp;quot; + req.http.path + &amp;quot;&#39; LIMIT 1&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;If we get a response, it will be on the format &lt;code&gt;RnT&lt;/code&gt;, where &lt;code&gt;R&lt;/code&gt; is the amount of requests allowed over a period of &lt;code&gt;T&lt;/code&gt; seconds. Since this is a string, we need to apply more regex to separate those.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;        set req.http.requests = regsub(req.http.rule, &amp;quot;^([0-9]+)r.*$&amp;quot;, &amp;quot;\1&amp;quot;);
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;        set req.http.requests = regsub(req.http.rule, &amp;quot;^([0-9]+)r.*$&amp;quot;, &amp;quot;\1&amp;quot;);
         set req.http.period = regsub(req.http.rule, &amp;quot;^[0-9]+r([0-9]+)$&amp;quot;, &amp;quot;\1&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;We do throttling on this request only if we got proper values from the previous regex filters.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;        if (req.http.requests != &amp;quot;&amp;quot; &amp;amp;&amp;amp; req.http.period != &amp;quot;&amp;quot;) {
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;        if (req.http.requests != &amp;quot;&amp;quot; &amp;amp;&amp;amp; req.http.period != &amp;quot;&amp;quot;) {
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Increment or create a Memcached counter unique for this &lt;code&gt;client.ip&lt;/code&gt; and path with the value 1. The expiry time we specify is equal to the period in the throttle rule set in the database. This way, the throttle rules can be flexible regarding time period. The return value is the new value of the counter, which corresponds to the amount of requests this &lt;code&gt;client.ip&lt;/code&gt; has done this path in the current time period.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;            set req.http.counter = memcached.incr_set(
-                req.http.path + &amp;quot;-&amp;quot; + client.ip, 1, 1, std.integer(req.http.period, 0));
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;           set req.http.counter = memcached.incr_set(
+               req.http.path + &amp;quot;-&amp;quot; + client.ip, 1, 1, std.integer(req.http.period, 0));
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Check if the counter is higher than the limit set in the database. If it is, then abort the request here with a &lt;code&gt;429&lt;/code&gt; response code.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;            if (std.integer(req.http.counter, 0) &amp;gt; std.integer(req.http.requests, 0)) {
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;            if (std.integer(req.http.counter, 0) &amp;gt; std.integer(req.http.requests, 0)) {
                  return (synth(429, &amp;quot;Too many requests&amp;quot;));
             }
         }
@@ -589,7 +596,7 @@ $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r36
 
 &lt;p&gt;In &lt;code&gt;vcl_deliver&lt;/code&gt; we set response headers showing the throttle limit and status for each request which might be helpful for the consumers.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;    sub vcl_deliver {
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;    sub vcl_deliver {
         if (req.http.requests &amp;amp;&amp;amp; req.http.counter &amp;amp;&amp;amp; req.http.period) {
             set resp.http.X-RateLimit-Limit = req.http.requests;
             set resp.http.X-RateLimit-Counter = req.http.counter;
@@ -600,7 +607,7 @@ $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r36
 
 &lt;p&gt;Errors will get the same headers set in &lt;code&gt;vcl_synth&lt;/code&gt;.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;    sub vcl_synth {
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;    sub vcl_synth {
         if (req.http.requests &amp;amp;&amp;amp; req.http.counter &amp;amp;&amp;amp; req.http.period) {
             set resp.http.X-RateLimit-Limit = req.http.requests;
             set resp.http.X-RateLimit-Counter = req.http.counter;
@@ -612,7 +619,7 @@ $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r36
 
 &lt;p&gt;The configuration is complete, and it is time to add some clients to verify that the configuration is correct. First we send a request that we expect to be unthrottled, meaning that there are no throttle rules in the database for this URL.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;client c1 {
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;client c1 {
     txreq -url &amp;quot;/&amp;quot;
     rxresp
     expect resp.status == 200
@@ -624,28 +631,28 @@ $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r36
 
 &lt;p&gt;The next client sends requests to a URL that we know is a match in the throttle database, and we expect the rate-limit headers to be set. The throttle rule for &lt;code&gt;/search&lt;/code&gt; is &lt;code&gt;3r5&lt;/code&gt;, which means that the three first requests within a 5 second period should succeed (with return code &lt;code&gt;200&lt;/code&gt;) while the fourth request should be throttled (with return code &lt;code&gt;429&lt;/code&gt;).&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;client c2 {
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;client c2 {
     txreq -url &amp;quot;/search?id=123&amp;amp;type=1&amp;quot;
     rxresp
     expect resp.status == 200
     expect resp.http.X-RateLimit-Limit == &amp;quot;3&amp;quot;
     expect resp.http.X-RateLimit-Counter == &amp;quot;1&amp;quot;
     expect resp.http.X-RateLimit-Period == &amp;quot;5&amp;quot;
-
+  
     txreq -url &amp;quot;/search?id=123&amp;amp;type=2&amp;quot;
     rxresp
     expect resp.status == 200
     expect resp.http.X-RateLimit-Limit == &amp;quot;3&amp;quot;
     expect resp.http.X-RateLimit-Counter == &amp;quot;2&amp;quot;
     expect resp.http.X-RateLimit-Period == &amp;quot;5&amp;quot;
-
+  
     txreq -url &amp;quot;/search?id=123&amp;amp;type=3&amp;quot;
     rxresp
     expect resp.status == 200
     expect resp.http.X-RateLimit-Limit == &amp;quot;3&amp;quot;
     expect resp.http.X-RateLimit-Counter == &amp;quot;3&amp;quot;
     expect resp.http.X-RateLimit-Period == &amp;quot;5&amp;quot;
-
+  
     txreq -url &amp;quot;/search?id=123&amp;amp;type=4&amp;quot;
     rxresp
     expect resp.status == 429
@@ -657,8 +664,8 @@ $ sqlite3 /tmp/rules.db3 &amp;quot;INSERT INTO t (rule, path) VALUES (&#39;15r36
 
 &lt;p&gt;At this point, we know that requests are being throttled. To verify that new requests are allowed after the time limit is up, we add a delay here before we send the next and last request. This request should succeed since we are in a new throttle window.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;delay 5;
-
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;delay 5;
+ 
 client c3 {
    txreq -url &amp;quot;/search?id=123&amp;amp;type=4&amp;quot;
    rxresp
@@ -671,7 +678,7 @@ client c3 {
 
 &lt;p&gt;To execute the test file, make sure the memcached service is running locally and execute:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;$ varnishtest example.vtc
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ varnishtest example.vtc
 #     top  TEST example.vtc passed (6.533)
 &lt;/code&gt;&lt;/pre&gt;
 
@@ -679,7 +686,7 @@ client c3 {
 
 &lt;p&gt;Requests to our application in the example will receive the following response headers. The first is a request that has been allowed, and the second is a request that has been throttled.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;$ curl -iI http://localhost/search
+&lt;pre&gt;&lt;code class=&#34;language-http&#34;&gt;$ curl -iI http://localhost/search
 HTTP/1.1 200 OK
 Age: 6
 Content-Length: 936
@@ -722,11 +729,11 @@ Via: 1.1 varnish-plus-v4
     
     <item>
       <title>Dummy API</title>
-      <link>http://www.espenbraastad.no/post/dummy-api/</link>
+      <link>http://www.espenbraastad.no/posts/dummy-api/</link>
       <pubDate>Sat, 02 May 2015 21:42:21 +0200</pubDate>
       
-      <guid>http://www.espenbraastad.no/post/dummy-api/</guid>
-      <description>&lt;p&gt;&lt;em&gt;Update: Dummy API has been &lt;a href=&#34;http://www.espenbraastad.no/post/dummy-api-rewrite-in-go/&#34;&gt;rewritten in Go&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
+      <guid>http://www.espenbraastad.no/posts/dummy-api/</guid>
+      <description>&lt;p&gt;&lt;em&gt;Update: Dummy API has been &lt;a href=&#34;http://www.espenbraastad.no/posts/dummy-api-rewrite-in-go/&#34;&gt;rewritten in Go&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
 
 &lt;p&gt;The purpose of Dummy API to act as a performant, simple and flexible HTTP API to use when testing API gateway performance. Put it behing a API gateway and generate responses to it from a set of consumers/clients. The Dummy API will read the request headers and query parameters and generate the responses accordingly. Some examples are custom cache-control header, response status and response delays.&lt;/p&gt;
 
@@ -734,7 +741,7 @@ Via: 1.1 varnish-plus-v4
 
 &lt;p&gt;The following is a &lt;code&gt;GET&lt;/code&gt; request to host &lt;code&gt;dummy-api.varnish-software.com&lt;/code&gt; and path &lt;code&gt;/foo&lt;/code&gt;, where the response should contain a 10 characters random string, 20 characters predictable random string, response status &lt;code&gt;418&lt;/code&gt; and a &lt;code&gt;cache-control&lt;/code&gt; header with the value &lt;code&gt;max-age=2, s-maxage=3&lt;/code&gt;. The response will be delivered with a 2 seconds delay before the first byte of the body, to mimic a slow web application:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;GET http://dummy-api.varnish-software.com/foo?random-content=10&amp;amp;predictable-content=20&amp;amp;response-status=418&amp;amp;body-delay=2&amp;amp;max-age=2&amp;amp;s-maxage=3
+&lt;pre&gt;&lt;code class=&#34;language-http&#34;&gt;GET http://dummy-api.varnish-software.com/foo?random-content=10&amp;amp;predictable-content=20&amp;amp;response-status=418&amp;amp;body-delay=2&amp;amp;max-age=2&amp;amp;s-maxage=3
 
 HTTP/1.1 418
 Cache-control: max-age=2, s-maxage=3
@@ -768,12 +775,12 @@ Transfer-Encoding: chunked
     &amp;quot;response-status&amp;quot;: 418,
     &amp;quot;s-maxage&amp;quot;: 3,
     &amp;quot;uri&amp;quot;: &amp;quot;/foo&amp;quot;
-}   
+}
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;The following is a &lt;code&gt;POST&lt;/code&gt; request to &lt;code&gt;dummy-api.varnish-software.com&lt;/code&gt; and path &lt;code&gt;/someurl&lt;/code&gt;, where the response status should be &lt;code&gt;201&lt;/code&gt;, the &lt;code&gt;cache-control&lt;/code&gt; header should be set to &lt;code&gt;must-revalidate&lt;/code&gt; and the &lt;code&gt;content-length&lt;/code&gt; header should be set instead of using &lt;code&gt;chunked&lt;/code&gt; &lt;code&gt;transfer-encoding&lt;/code&gt;:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;POST http://dummy-api.varnish-software.com/someurl?must-revalidate&amp;amp;response-status=201&amp;amp;content-length
+&lt;pre&gt;&lt;code class=&#34;language-http&#34;&gt;POST http://dummy-api.varnish-software.com/someurl?must-revalidate&amp;amp;response-status=201&amp;amp;content-length
 
 HTTP/1.1 201 Created
 Cache-control: must-revalidate
@@ -808,7 +815,7 @@ Server: Dummy API
 
 &lt;p&gt;The buit in help text is available with the &lt;code&gt;help&lt;/code&gt; request header or query parameter:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;GET http://dummy-api.varnish-software.com/?help
+&lt;pre&gt;&lt;code class=&#34;language-http&#34;&gt;GET http://dummy-api.varnish-software.com/?help
 
 HTTP/1.1 200 OK
 Connection: close
@@ -816,7 +823,7 @@ Content-Type: text/plain
 Date: Sat, 02 May 2015 19:59:39 GMT
 Server: Dummy API
 Transfer-Encoding: chunked
-
+    
 Dummy API
 =========
 
@@ -852,10 +859,10 @@ response-status = {int}          Set the response status
     
     <item>
       <title>Remote console on HP ProLiant MicroServer G7 N54L</title>
-      <link>http://www.espenbraastad.no/post/remote-console-on-hp-proliant-microserver-g7-n54l/</link>
+      <link>http://www.espenbraastad.no/posts/remote-console-on-hp-proliant-microserver-g7-n54l/</link>
       <pubDate>Sat, 30 Aug 2014 20:48:00 +0100</pubDate>
       
-      <guid>http://www.espenbraastad.no/post/remote-console-on-hp-proliant-microserver-g7-n54l/</guid>
+      <guid>http://www.espenbraastad.no/posts/remote-console-on-hp-proliant-microserver-g7-n54l/</guid>
       <description>&lt;p&gt;I bought the &lt;a href=&#34;http://www8.hp.com/us/en/products/proliant-servers/product-detail.html?oid=6280786&#34;&gt;HP ProLiant MicroServer G7 N54L&lt;/a&gt; a while ago. I threw in a &lt;a href=&#34;http://www8.hp.com/us/en/products/oas/product-detail.html?oid=4275612&#34;&gt;HP MicroServer Remote Access Card Kit&lt;/a&gt; to get remote console and power management. While the power management, web UI and CLI (over ssh) works fine out of the box, the remote console (KVM) does not. What happens is that the KVM client shows the following &lt;code&gt;Out of range&lt;/code&gt; message:&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/outofrange.png&#34; alt=&#34;Out of range&#34; /&gt;&lt;/p&gt;
@@ -865,16 +872,16 @@ response-status = {int}          Set the response status
 &lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/bios1.png&#34; alt=&#34;BIOS 1&#34; /&gt;
 &lt;img src=&#34;http://www.espenbraastad.no/img/bios2.png&#34; alt=&#34;BIOS 2&#34; /&gt;&lt;/p&gt;
 
-&lt;p&gt;Flip from &amp;ldquo;Always enabled&amp;rdquo; (default) to &amp;ldquo;Auto Detect&amp;rdquo;. Save and quit. Then, make sure that your monitor is connected to the VGA port on the RAC instead of the embedded VGA port.&lt;/p&gt;
+&lt;p&gt;Flip from &lt;code&gt;Always enabled&lt;/code&gt; (default) to &lt;code&gt;Auto Detect&lt;/code&gt;. Save and quit. Then, make sure that your monitor is connected to the VGA port on the RAC instead of the embedded VGA port.&lt;/p&gt;
 </description>
     </item>
     
     <item>
       <title>Altibox, TV- og datatrafikk over samme nettverkskabel</title>
-      <link>http://www.espenbraastad.no/post/altibox-tv-and-data-over-the-same-ethernet-cable/</link>
+      <link>http://www.espenbraastad.no/posts/altibox-tv-and-data-over-the-same-ethernet-cable/</link>
       <pubDate>Thu, 22 May 2014 22:41:00 +0100</pubDate>
       
-      <guid>http://www.espenbraastad.no/post/altibox-tv-and-data-over-the-same-ethernet-cable/</guid>
+      <guid>http://www.espenbraastad.no/posts/altibox-tv-and-data-over-the-same-ethernet-cable/</guid>
       <description>&lt;p&gt;Altibox leverer en hjemmesentral hvor man henter ut TV-signal og internettilgang fra to (eller flere) forskjellige RJ45-porter. Som trådløs router har hjemmesentralen kun et minimum av funksjonalitet, og man skal ikke være en veldig avansert bruker før man vil rekonfigurere hjemmesentralen som en bridge og heller ha en egen trådløs router på baksiden. Dette gir også mening dersom boligen har flere etasjer, og hjemmesentralen ikke er kraftig nok til å levere god nok trådløs dekning.&lt;/p&gt;
 
 &lt;p&gt;Denne posten viser hvordan TV og datatrafikk kan sendes via èn nettverkskabel til et annet sted i boligen ved hjelp av to stk Mikrotik 951G-2HnD. RB951G-2HnD er en fleksibel trådløs router (2,4 GHz) med 5 stk 1 Gbps-porter beregnet på hjemmebruk. Utstyret kobles som skjemaet under viser.&lt;/p&gt;
@@ -925,17 +932,17 @@ Port 5: TV ut
     
     <item>
       <title>Temperature trend monitoring at home</title>
-      <link>http://www.espenbraastad.no/post/temperature-trend-monitoring-at-home/</link>
+      <link>http://www.espenbraastad.no/posts/temperature-trend-monitoring-at-home/</link>
       <pubDate>Wed, 19 Feb 2014 23:32:00 +0100</pubDate>
       
-      <guid>http://www.espenbraastad.no/post/temperature-trend-monitoring-at-home/</guid>
+      <guid>http://www.espenbraastad.no/posts/temperature-trend-monitoring-at-home/</guid>
       <description>
 
 &lt;h2 id=&#34;background&#34;&gt;Background&lt;/h2&gt;
 
-&lt;p&gt;I’ve got balanced ventilation in my apartment. It works OK, but I don’t fully understand how it behaves if knobs are pushed and pots are turned, and I’m definitely not sure if its performance is as good as I should expect.&lt;/p&gt;
+&lt;p&gt;I&amp;rsquo;ve got balanced ventilation in my apartment. It works OK, but I don&amp;rsquo;t fully understand how it behaves if knobs are pushed and pots are turned, and I&amp;rsquo;m definitely not sure if its performance is as good as I should expect.&lt;/p&gt;
 
-&lt;p&gt;I’m going to do some measurements to see how the system reacts to changes in the outside temperature and tuning of the various settings. The first parameter to measure is the temperature in the air intake, exhaust air and some of the ventilation valves in the different rooms in the apartment.&lt;/p&gt;
+&lt;p&gt;I&amp;rsquo;m going to do some measurements to see how the system reacts to changes in the outside temperature and tuning of the various settings. The first parameter to measure is the temperature in the air intake, exhaust air and some of the ventilation valves in the different rooms in the apartment.&lt;/p&gt;
 
 &lt;h2 id=&#34;hardware&#34;&gt;Hardware&lt;/h2&gt;
 
@@ -960,7 +967,7 @@ Port 5: TV ut
 
 &lt;p&gt;Munin is written in Perl and is available in the repositories of most Linux distributions. Installation is easy:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;# Fedora / Redhat / CentOS
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;# Fedora / Redhat / CentOS
 sudo yum install munin munin-node
 
 # Debian / Ubuntu
@@ -985,7 +992,7 @@ sudo apt-get install munin munin-node
 
 &lt;p&gt;Data loaning configuration example and result:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;[sensor;ventilation]
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;[sensor;ventilation]
     address 127.0.0.1
     use_node_name no
     temp.update no
@@ -1019,13 +1026,13 @@ sudo apt-get install munin munin-node
     
     <item>
       <title>CentOS/RHEL/SL 6: root filesystem on tmpfs, UPDATE #2</title>
-      <link>http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs-update2/</link>
+      <link>http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs-update2/</link>
       <pubDate>Sun, 23 Jun 2013 21:44:19 +0100</pubDate>
       
-      <guid>http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs-update2/</guid>
+      <guid>http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs-update2/</guid>
       <description>
 
-&lt;p&gt;In a &lt;a href=&#34;http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs&#34;&gt;previous post&lt;/a&gt;, I’ve explained how to boot EL6 from memory without having / needing a physical disk.&lt;/p&gt;
+&lt;p&gt;In a &lt;a href=&#34;http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs&#34;&gt;previous post&lt;/a&gt;, I’ve explained how to boot EL6 from memory without having / needing a physical disk.&lt;/p&gt;
 
 &lt;p&gt;A bright reader, Jeff, came up with an alternative method. This alternative method does not involve dd’ing the image into a loop device, but instead copying the contents of the disk image directly into tmpfs. The result is higher write/read performance and generally lower memory requirements. The latter because unused disk space does not consume memory, which is important to consider when choosing the method to use in production systems.&lt;/p&gt;
 
@@ -1042,7 +1049,7 @@ sudo apt-get install munin munin-node
 
 &lt;h2 id=&#34;build-the-disk-image&#34;&gt;Build the disk image&lt;/h2&gt;
 
-&lt;pre&gt;&lt;code&gt;$ sudo yum install livecd-tools
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ sudo yum install livecd-tools
 $ sudo livecd-creator --config=centos64-pxe.ks --fslabel=centos64-pxe
 $ sudo livecd-iso-to-pxeboot centos64-pxe.iso
 &lt;/code&gt;&lt;/pre&gt;
@@ -1053,7 +1060,7 @@ $ sudo livecd-iso-to-pxeboot centos64-pxe.iso
 
 &lt;p&gt;Boot it using DHCP, iPXE and the following iPXE script:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;#!ipxe 
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;#!ipxe 
 initrd http://example.com/initrd0.img
 kernel http://example.com/vmlinuz0 initrd=/initrd0.img root=/centos64-pxe.iso rootfstype=auto rw liveimg toram size=4096
 boot
@@ -1061,7 +1068,7 @@ boot
 
 &lt;p&gt;Note the size boot parameter. The patch will set the tmpfs size (in MB) according to this parameter. If the parameter is not set, 2048 is used as a default. The size can be changed runtime using mount, for example:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;$ sudo mount -o remount,size=10G,rw /dev/root
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ sudo mount -o remount,size=10G,rw /dev/root
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;h2 id=&#34;difference-in-memory-usage&#34;&gt;Difference in memory usage&lt;/h2&gt;
@@ -1072,7 +1079,7 @@ boot
 
 &lt;p&gt;The important thing to notice here is that the file system already have allocated 4 GB of memory. This is because the file system already is consuming the amount of memory equivalent to the given size of the file system, independently on the actual disk space being consumed by the files currently in the file system.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;[root@lab-e ~]# free -m
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;[root@lab-e ~]# free -m
              total       used       free     shared    buffers     cached
 Mem:          7956       4272       3683          0          6       4135
 &lt;/code&gt;&lt;/pre&gt;
@@ -1083,7 +1090,7 @@ Mem:          7956       4272       3683          0          6       4135
 
 &lt;p&gt;The memory footprint of the file system is equivalent of the size of the current files in the file system, which means that free disk space does not consume memory. In some scenarios, this may be a far better approach in terms of resource cost. You may however very well overbook too much, so be careful to leave sufficient memory available for new files to be added. If the file system tries to use more memory than what’s currently available, your system will crash.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;             total       used       free     shared    buffers     cached
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;             total       used       free     shared    buffers     cached
 Mem:          7956       1179       6777          0          0       1001
 &lt;/code&gt;&lt;/pre&gt;
 
@@ -1093,52 +1100,52 @@ Mem:          7956       1179       6777          0          0       1001
 
 &lt;h3 id=&#34;previous-method-1&#34;&gt;Previous method&lt;/h3&gt;
 
-&lt;pre&gt;&lt;code&gt;[root@lab-a ~]# time dd if=/dev/zero of=/foobar bs=1M count=2000 ; time sync
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;[root@lab-a ~]# time dd if=/dev/zero of=/foobar bs=1M count=2000 ; time sync
 2000+0 records in
 2000+0 records out
 2097152000 bytes (2.1 GB) copied, 2.45832 s, 853 MB/s
 
-real    0m2.480s
-user    0m0.003s
-sys 0m2.002s
+real	0m2.480s
+user	0m0.003s
+sys	0m2.002s
 
-real    0m0.245s
-user    0m0.000s
-sys 0m0.037s
+real	0m0.245s
+user	0m0.000s
+sys	0m0.037s
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;h3 id=&#34;this-method-1&#34;&gt;This method&lt;/h3&gt;
 
-&lt;pre&gt;&lt;code&gt;[root@lab-e ~]# time dd if=/dev/zero of=/foobar bs=1M count=2000 ; time sync
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;[root@lab-e ~]# time dd if=/dev/zero of=/foobar bs=1M count=2000 ; time sync
 2000+0 records in
 2000+0 records out
 2097152000 bytes (2.1 GB) copied, 0.823305 s, 2.5 GB/s
 
-real    0m0.825s
-user    0m0.002s
-sys 0m0.821s
+real	0m0.825s
+user	0m0.002s
+sys	0m0.821s
 
-real    0m0.001s
-user    0m0.000s
-sys 0m0.002s
+real	0m0.001s
+user	0m0.000s
+sys	0m0.002s
 &lt;/code&gt;&lt;/pre&gt;
 </description>
     </item>
     
     <item>
       <title>CentOS/RHEL/SL 6: root filesystem on tmpfs, UPDATE</title>
-      <link>http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs-update/</link>
+      <link>http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs-update/</link>
       <pubDate>Thu, 21 Mar 2013 09:57:00 +0100</pubDate>
       
-      <guid>http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs-update/</guid>
+      <guid>http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs-update/</guid>
       <description>&lt;p&gt;In EL6.4, the file &lt;code&gt;/usr/share/dracut/modules.d/90dmsquash-live/dmsquash-live-root&lt;/code&gt; was updated so that the &lt;a href=&#34;http://www.espenbraastad.no/post/el6-rootfs-on-tmpfs&#34;&gt;previous patch&lt;/a&gt; no longer works as it should. I’ve updated the patch, and here it is:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;--- original    2013-03-20 16:25:23.698846581 +0100
+&lt;pre&gt;&lt;code class=&#34;language-diff&#34;&gt;--- original    2013-03-20 16:25:23.698846581 +0100
 +++ new 2013-03-21 08:58:11.175339694 +0100
 @@ -24,6 +24,8 @@
  getarg readonly_overlay &amp;amp;&amp;amp; readonly_overlay=&amp;quot;--readonly&amp;quot; || readonly_overlay=&amp;quot;&amp;quot;
  overlay=$(getarg overlay)
-
+ 
 +getarg toram &amp;amp;&amp;amp; toram=&amp;quot;yes&amp;quot;
 +
  # FIXME: we need to be able to hide the plymouth splash for the check really
@@ -1147,19 +1154,19 @@ sys 0m0.002s
 @@ -132,7 +134,10 @@
      BASE_LOOPDEV=$( losetup -f )
      losetup -r $BASE_LOOPDEV $EXT3FS
-
+ 
 -    do_live_from_base_loop
 +    # Create overlay only if toram is not set
 +    if [ -z &amp;quot;$toram&amp;quot; ] ; then
 +        do_live_from_base_loop
 +    fi
  fi
-
+ 
  # we might have an embedded ext3 on squashfs to use as rootfs (compressed live)
 @@ -163,13 +168,66 @@
-
+ 
      umount -l /squashfs
-
+ 
 -    do_live_from_base_loop
 +    # Create overlay only if toram is not set
 +    if [ -z &amp;quot;$toram&amp;quot; ] ; then
@@ -1214,7 +1221,7 @@ sys 0m0.002s
 +    printf &#39;/bin/mount -o rw %s %s\n&#39; &amp;quot;$ROOTFS_LOOPDEV&amp;quot; &amp;quot;$NEWROOT&amp;quot; &amp;gt; /mount/01-$$-live.sh
 +    exit 0
  fi
-
+ 
  if [ -b &amp;quot;$OSMIN_LOOPDEV&amp;quot; ]; then
      # set up the devicemapper snapshot device, which will merge
      # the normal live fs image, and the delta, into a minimzied fs image
@@ -1223,25 +1230,25 @@ sys 0m0.002s
 +        echo &amp;quot;0 $( blockdev --getsz $BASE_LOOPDEV ) snapshot $BASE_LOOPDEV $OSMIN_LOOPDEV p 8&amp;quot; | dmsetup create --readonly live-osimg-min
 +    fi
  fi
-
+ 
  ROOTFLAGS=&amp;quot;$(getarg rootflags)&amp;quot;
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;It may be easier to download it from &lt;a href=&#34;http://www.espenbraastad.no/resources/patch.sl64.txt&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;It may be easier to download it from &lt;a href=&#34;http://www.espenbraastad.no/files/patch.sl64.txt&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
 </description>
     </item>
     
     <item>
       <title>KVM/Xen and libvirt: currentMemory, memory and ballooning. Where did my memory go?</title>
-      <link>http://www.espenbraastad.no/post/memory-ballooning/</link>
+      <link>http://www.espenbraastad.no/posts/memory-ballooning/</link>
       <pubDate>Mon, 24 Sep 2012 16:58:32 +0100</pubDate>
       
-      <guid>http://www.espenbraastad.no/post/memory-ballooning/</guid>
+      <guid>http://www.espenbraastad.no/posts/memory-ballooning/</guid>
       <description>&lt;p&gt;KVM and Xen provide a method to change the amount of memory in use by guests at runtime. The method is called memory ballooning [&lt;a href=&#34;http://www.linux-kvm.org/page/FAQ#Is_dynamic_memory_management_for_guests_supported.3F&#34;&gt;1&lt;/a&gt;, &lt;a href=&#34;http://rwmj.wordpress.com/2010/07/17/virtio-balloon&#34;&gt;2&lt;/a&gt;], and it must be supported by the guest operating system to work.&lt;/p&gt;
 
 &lt;p&gt;In libvirt, memory allocation (and hence the ballooning capability) for a guest can be configured using the &lt;code&gt;memory&lt;/code&gt;, &lt;code&gt;currentMemory&lt;/code&gt; and &lt;code&gt;memballoon&lt;/code&gt; tags:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;&amp;lt;domain type=&#39;kvm&#39;&amp;gt;
+&lt;pre&gt;&lt;code class=&#34;language-xml&#34;&gt;&amp;lt;domain type=&#39;kvm&#39;&amp;gt;
   [...]
   &amp;lt;memory unit=&#39;KiB&#39;&amp;gt;16777216&amp;lt;/memory&amp;gt;
   &amp;lt;currentMemory unit=&#39;KiB&#39;&amp;gt;1048576&amp;lt;/currentMemory&amp;gt;
@@ -1256,7 +1263,7 @@ sys 0m0.002s
 
 &lt;p&gt;The command line tool &lt;code&gt;virsh&lt;/code&gt; can later be used on the host to see the current memory configuration for each guest:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;[root@host ~]# virsh dominfo guest
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;[root@host ~]# virsh dominfo guest
 Id:             -
 Name:           guest
 UUID:           4f610a1f-7539-47cf-8299-9534500b340d
@@ -1290,101 +1297,150 @@ Managed save:   no
     
     <item>
       <title>Filebin available on http://filebin.net</title>
-      <link>http://www.espenbraastad.no/post/filebin-available/</link>
+      <link>http://www.espenbraastad.no/posts/filebin-available/</link>
       <pubDate>Fri, 27 Jul 2012 22:10:29 +0100</pubDate>
       
-      <guid>http://www.espenbraastad.no/post/filebin-available/</guid>
-      <description>&lt;p&gt;&lt;a href=&#34;http://filebin.net&#34;&gt;Filebin.net&lt;/a&gt; was created to try out the new &lt;a href=&#34;http://www.w3.org/TR/FileAPI/&#34;&gt;File API&lt;/a&gt; features in HTML5.&lt;/p&gt;
+      <guid>http://www.espenbraastad.no/posts/filebin-available/</guid>
+      <description>&lt;p&gt;&lt;a href=&#34;https://filebin.net&#34;&gt;Filebin.net&lt;/a&gt; was created to try out the new &lt;a href=&#34;http://www.w3.org/TR/FileAPI/&#34;&gt;File API&lt;/a&gt; features in HTML5.&lt;/p&gt;
 
 &lt;p&gt;Filebin is a web application that is somewhat similar to a pastebin, except that it&amp;rsquo;s for files. It is written in Python, and the code is available on &lt;a href=&#34;http://github.com/espebra/filebin&#34;&gt;Github&lt;/a&gt;.&lt;/p&gt;
 </description>
     </item>
     
     <item>
-      <title>KVM with iPXE in RHEL6</title>
-      <link>http://www.espenbraastad.no/post/kvm-with-ipxe-in-rhel6/</link>
-      <pubDate>Wed, 02 Nov 2011 22:29:50 +0100</pubDate>
+      <title>CentOS/RHEL/SL 6: root filesystem on tmpfs</title>
+      <link>http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs/</link>
+      <pubDate>Mon, 30 Apr 2012 21:44:19 +0100</pubDate>
       
-      <guid>http://www.espenbraastad.no/post/kvm-with-ipxe-in-rhel6/</guid>
-      <description>&lt;p&gt;A while ago I discovered the amazing &lt;a href=&#34;http://ipxe.org&#34;&gt;iPXE&lt;/a&gt; project. It is a complete PXE implementation with lots of nifty features, based on the &lt;a href=&#34;http://etherboot.org/&#34;&gt;gPXE&lt;/a&gt; project. Redhat ships the gPXE firmware for qemu and KVM, and you might want to use iPXE instead as the iPXE project currently seems to be more active. The major features (copied from &lt;a href=&#34;http://ipxe.org&#34;&gt;ipxe.org&lt;/a&gt;):&lt;/p&gt;
+      <guid>http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs/</guid>
+      <description>&lt;p&gt;UPDATE: The patch below has been updated &lt;a href=&#34;http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs-update&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;There are several scenarios where conventional hard drives are not really needed. Examples are HPC cluster nodes, virtualization nodes, home theater streaming PCs, silent desktops, internet cafés and embedded systems. Hard drives tend to fail, they are slow, they consume power, they generate heat and noise, and they are quite expensive if you need/want something faster and more reliable than SATA.&lt;/p&gt;
+
+&lt;p&gt;This post will show how to run CentOS 6 directly from tmpfs backed by memory, without using the (standard) 512 MB writable overlay. The procedure should be similar for RHEL and Scientific Linux 6.&lt;/p&gt;
+
+&lt;p&gt;The resulting boot process will be:&lt;/p&gt;
 
 &lt;ul&gt;
-&lt;li&gt;boot from a web server via HTTP&lt;/li&gt;
-&lt;li&gt;boot from an iSCSI SAN&lt;/li&gt;
-&lt;li&gt;boot from a Fibre Channel SAN via FCoE&lt;/li&gt;
-&lt;li&gt;boot from an AoE SAN&lt;/li&gt;
-&lt;li&gt;boot from a wireless network&lt;/li&gt;
-&lt;li&gt;boot from a wide-area network&lt;/li&gt;
-&lt;li&gt;boot from an Infiniband network&lt;/li&gt;
-&lt;li&gt;control the boot process with a script&lt;/li&gt;
+&lt;li&gt;Boot a node off a PXE enabled DHCP server.&lt;/li&gt;
+&lt;li&gt;Chainload into &lt;a href=&#34;http://blog.braastad.org/?p=128&#34;&gt;iPXE&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Download vmlinuz and a rather large initrd containing the entire filesystem over ftp/http(s). Try to avoid &lt;a href=&#34;http://en.wikipedia.org/wiki/Trivial_File_Transfer_Protocol&#34;&gt;TFTP&lt;/a&gt; when downloading the initrd because of its file size limitation and slow transfer speeds.&lt;/li&gt;
+&lt;li&gt;Once downloaded, the kernel will start and the initrd will be mounted.&lt;/li&gt;
+&lt;li&gt;The modified dracut scripts in the initrd will create a tmpfs partition in memory with the same size as your filesystem image included in the initrd.&lt;/li&gt;
+&lt;li&gt;Your entire filesystem image will be copied to the tmpfs partition and attached to a loop device.&lt;/li&gt;
+&lt;li&gt;This loop device will be used as the new root device, and the boot process continues as usual.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;First, download the source code:&lt;/p&gt;
+&lt;p&gt;This is a screenshot from an ongoing boot process:
+&lt;img src=&#34;http://www.espenbraastad.no/img/centos6-from-tmpfs1.png&#34; alt=&#34;Boot process&#34; /&gt;&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;espen@luft:~$ mkdir ~/git
-espen@luft:~$ cd ~/git
-espen@luft:~/git$ git clone git://git.ipxe.org/ipxe.git
-Cloning into ipxe...
-remote: Counting objects: 33376, done.
-remote: Compressing objects: 100% (9193/9193), done.
-remote: Total 33376 (delta 24642), reused 30782 (delta 22666)
-Receiving objects: 100% (33376/33376), 8.02 MiB | 1.94 MiB/s, done.
-Resolving deltas: 100% (24642/24642), done.
-espen@luft:~/git$ cd ipxe/
-espen@luft:~/git/ipxe$
+&lt;p&gt;Now to the procedure:&lt;/p&gt;
+
+&lt;p&gt;First, create a custom kickstart file. I&amp;rsquo;ve included the specialties below:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;bootloader --location=mbr --append=&amp;quot;toram&amp;quot;
+clearpart --all
+firstboot --disabled
+install
+lang en_US.UTF-8
+network --bootproto dhcp --device eth0 --onboot yes
+part / --fstype=ext4 --size=2048
+reboot
+zerombr
+
+%packages
+patch
+
+%post
+cat &amp;gt; /etc/fstab &amp;lt;&amp;lt; END 
+tmpfs      /         tmpfs   defaults         0 0
+devpts     /dev/pts  devpts  gid=5,mode=620   0 0
+tmpfs      /dev/shm  tmpfs   defaults         0 0
+proc       /proc     proc    defaults         0 0
+sysfs      /sys      sysfs   defaults         0 0
+END
+
+# The patch is base64 encoded to avoid having to escape it manually.
+cat &amp;gt; /root/dmsquash-live-root.base64 &amp;lt;&amp;lt; EOF_patch
+MjFhMjIKPiBnZXRhcmcgdG9yYW0gJiYgdG9yYW09InllcyIKMTM0YzEzNSwxMzgKPCAgICAgZG9f
+bGl2ZV9mcm9tX2Jhc2VfbG9vcAotLS0KPiAgICAgIyBDcmVhdGUgb3ZlcmxheSBvbmx5IGlmIHRv
+cmFtIGlzIG5vdCBzZXQKPiAgICAgaWYgWyAteiAiJHRvcmFtIiBdIDsgdGhlbgo+ICAgICAgICAg
+ZG9fbGl2ZV9mcm9tX2Jhc2VfbG9vcAo+ICAgICBmaQoxNjNjMTY3LDIxMwo8ICAgICBkb19saXZl
+X2Zyb21fYmFzZV9sb29wCi0tLQo+ICAgICAjIENyZWF0ZSBvdmVybGF5IG9ubHkgaWYgdG9yYW0g
+aXMgbm90IHNldAo+ICAgICBpZiBbIC16ICIkdG9yYW0iIF0gOyB0aGVuCj4gICAgICAgICBkb19s
+aXZlX2Zyb21fYmFzZV9sb29wCj4gICAgIGZpCj4gZmkKPiAKPiAjIEkgdGhlIGtlcm5lbCBwYXJh
+bWV0ZXIgdG9yYW0gaXMgc2V0LCBjcmVhdGUgYSB0bXBmcyBkZXZpY2UgYW5kIGNvcHkgdGhlIAo+
+ICMgZmlsZXN5c3RlbSB0byBpdC4gQ29udGludWUgdGhlIGJvb3QgcHJvY2VzcyB3aXRoIHRoaXMg
+dG1wZnMgZGV2aWNlIGFzCj4gIyBhIHdyaXRhYmxlIHJvb3QgZGV2aWNlLgo+IGlmIFsgLW4gIiR0
+b3JhbSIgXSA7IHRoZW4KPiAgICAgYmxvY2tzPSQoIGJsb2NrZGV2IC0tZ2V0c3ogJEJBU0VfTE9P
+UERFViApCj4gCj4gICAgIGVjaG8gIkNyZWF0ZSB0bXBmcyAoJGJsb2NrcyBibG9ja3MpIGZvciB0
+aGUgcm9vdCBmaWxlc3lzdGVtLi4uIgo+ICAgICBta2RpciAtcCAvaW1hZ2UKPiAgICAgbW91bnQg
+LW4gLXQgdG1wZnMgLW8gbnJfYmxvY2tzPSRibG9ja3MgdG1wZnMgL2ltYWdlCj4gCj4gICAgIGVj
+aG8gIkNvcHkgZmlsZXN5c3RlbSBpbWFnZSB0byB0bXBmcy4uLiAodGhpcyBtYXkgdGFrZSBhIGZl
+dyBtaW51dGVzKSIKPiAgICAgZGQgaWY9JEJBU0VfTE9PUERFViBvZj0vaW1hZ2Uvcm9vdGZzLmlt
+Zwo+IAo+ICAgICBST09URlNfTE9PUERFVj0kKCBsb3NldHVwIC1mICkKPiAgICAgZWNobyAiQ3Jl
+YXRlIGxvb3AgZGV2aWNlIGZvciB0aGUgcm9vdCBmaWxlc3lzdGVtOiAkUk9PVEZTX0xPT1BERVYi
+Cj4gICAgIGxvc2V0dXAgJFJPT1RGU19MT09QREVWIC9pbWFnZS9yb290ZnMuaW1nCj4gCj4gICAg
+IGVjaG8gIkl0J3MgdGltZSB0byBjbGVhbiB1cC4uICIKPiAKPiAgICAgZWNobyAiID4gVW1vdW50
+aW5nIGltYWdlcyIKPiAgICAgdW1vdW50IC1sIC9pbWFnZQo+ICAgICB1bW91bnQgLWwgL2Rldi8u
+aW5pdHJhbWZzL2xpdmUKPiAKPiAgICAgZWNobyAiID4gRGV0YWNoICRPU01JTl9MT09QREVWIgo+
+ICAgICBsb3NldHVwIC1kICRPU01JTl9MT09QREVWCj4gCj4gICAgIGVjaG8gIiA+IERldGFjaCAk
+T1NNSU5fU1FVQVNIRURfTE9PUERFViIKPiAgICAgbG9zZXR1cCAtZCAkT1NNSU5fU1FVQVNIRURf
+TE9PUERFVgo+ICAgICAKPiAgICAgZWNobyAiID4gRGV0YWNoICRCQVNFX0xPT1BERVYiCj4gICAg
+IGxvc2V0dXAgLWQgJEJBU0VfTE9PUERFVgo+ICAgICAKPiAgICAgZWNobyAiID4gRGV0YWNoICRT
+UVVBU0hFRF9MT09QREVWIgo+ICAgICBsb3NldHVwIC1kICRTUVVBU0hFRF9MT09QREVWCj4gCj4g
+ICAgIGVjaG8gIlJvb3QgZmlsZXN5c3RlbSBpcyBub3cgb24gJFJPT1RGU19MT09QREVWLiIKPiAg
+ICAgZWNobwo+IAo+ICAgICBsbiAtcyAkUk9PVEZTX0xPT1BERVYgL2Rldi9yb290Cj4gICAgIHBy
+aW50ZiAnL2Jpbi9tb3VudCAtbyBydyAlcyAlc1xuJyAiJFJPT1RGU19MT09QREVWIiAiJE5FV1JP
+T1QiID4gL21vdW50LzAxLSQkLWxpdmUuc2gKPiAgICAgZXhpdCAwCjE2OWMyMTksMjIxCjwgICAg
+IGVjaG8gIjAgJCggYmxvY2tkZXYgLS1nZXRzeiAkQkFTRV9MT09QREVWICkgc25hcHNob3QgJEJB
+U0VfTE9PUERFViAkT1NNSU5fTE9PUERFViBwIDgiIHwgZG1zZXR1cCBjcmVhdGUgLS1yZWFkb25s
+eSBsaXZlLW9zaW1nLW1pbgotLS0KPiAgICAgaWYgWyAteiAiJHRvcmFtIiBdIDsgdGhlbgo+ICAg
+ICAgICAgZWNobyAiMCAkKCBibG9ja2RldiAtLWdldHN6ICRCQVNFX0xPT1BERVYgKSBzbmFwc2hv
+dCAkQkFTRV9MT09QREVWICRPU01JTl9MT09QREVWIHAgOCIgfCBkbXNldHVwIGNyZWF0ZSAtLXJl
+YWRvbmx5IGxpdmUtb3NpbWctbWluCj4gICAgIGZpCg==
+EOF_patch
+
+cat /root/dmsquash-live-root.base64 | base64 -d &amp;gt; /root/dmsquash-live-root.patch
+
+patch /usr/share/dracut/modules.d/90dmsquash-live/dmsquash-live-root /root/dmsquash-live-root.patch
+
+ls /lib/modules | while read kernel; do
+  echo &amp;quot; &amp;gt; Update initramfs for kernel ${kernel}&amp;quot;
+  initrdfile=&amp;quot;/boot/initramfs-${kernel}.img&amp;quot;
+
+  /sbin/dracut -f $initrdfile $kernel
+done
+%end
+
+%post --nochroot
+
+echo &amp;quot;Copy initramfs outside the chroot:&amp;quot;
+ls $INSTALL_ROOT/lib/modules | while read kernel; do
+  src=&amp;quot;$INSTALL_ROOT/boot/initramfs-${kernel}.img&amp;quot;
+  dst=&amp;quot;$LIVE_ROOT/isolinux/initrd0.img&amp;quot;
+  echo &amp;quot; &amp;gt; $src -&amp;gt; $dst&amp;quot;
+  cp -f $src $dst
+done
+%end
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;Then change the general configuration file (&lt;em&gt;src/config/general.h&lt;/em&gt;) to suit your needs. Use the &lt;strong&gt;#define&lt;/strong&gt; and &lt;strong&gt;#undef&lt;/strong&gt; to activate and deactivate various features such as VLAN support, DHCP support, etc. Below is a small part of &lt;a href=&#34;https://github.com/ipxe/ipxe/blob/master/src/config/general.h&#34;&gt;the header file&lt;/a&gt; for you to see.&lt;/p&gt;
+&lt;p&gt;&lt;b&gt;Explaination:&lt;/b&gt; The post script will apply a patch to &lt;i&gt;/usr/share/dracut/modules.d/90dmsquash-live/dmsquash-live-root&lt;/i&gt; before regenerating the initramfs. This patch will add support for the &amp;lsquo;toram&amp;rsquo; boot parameter. Then, the initramfs is being copied to the isolinux directory outside the filesystem image.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;[...]
-#define IWMGMT_CMD   /* Wireless interface management commands */
-#define FCMGMT_CMD   /* Fibre Channel management commands */
-#define ROUTE_CMD    /* Routing table management commands */
-#define IMAGE_CMD    /* Image management commands */
-#define DHCP_CMD     /* DHCP management commands */
-#define SANBOOT_CMD  /* SAN boot commands */
-#define LOGIN_CMD    /* Login command */
-#undef  TIME_CMD     /* Time commands */
-#undef  DIGEST_CMD   /* Image crypto digest commands */
-#undef  LOTEST_CMD   /* Loopback testing commands */
-#undef  VLAN_CMD     /* VLAN commands */
-#undef  PXE_CMD      /* PXE commands */
-#undef  REBOOT_CMD   /* Reboot command */
-[...]
+&lt;p&gt;Second, use &lt;i&gt;livecd-creator&lt;/i&gt; and &lt;i&gt;livecd-iso-to-pxeboot&lt;/i&gt; from the &lt;i&gt;livecd-tools&lt;/i&gt; package to convert the kickstart file into a bootable vmlinuz and initrd:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ sudo livecd-creator --config=centos6.ks fslabel=centos6
+$ sudo livecd-iso-to-pxeboot centos6.iso
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;Now it&amp;rsquo;s time compile the firmware.&lt;/p&gt;
+&lt;p&gt;The commands above will create &lt;i&gt;tftpboot/vmlinuz0&lt;/i&gt; and &lt;i&gt;tftpboot/initrd0.img&lt;/i&gt;. Put these files on your boot server and create a suitable PXE configuration. &lt;i&gt;livecd-iso-to-pxeboot&lt;/i&gt; will create &lt;i&gt;tftpboot/pxelinux.cfg/default&lt;/i&gt; which can be used as a template.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;espen@luft:~/git/ipxe$ cd src/
-espen@luft:~/git/ipxe/src$ make bin/virtio-net.rom
-  [DEPS] arch/i386/drivers/net/undirom.c
-  [DEPS] arch/i386/drivers/net/undipreload.c
-  [DEPS] arch/i386/drivers/net/undionly.c
-  [DEPS] arch/i386/drivers/net/undinet.c
-[...]
-  [BIN] bin/virtio-net.rom.bin
-  [ZINFO] bin/virtio-net.rom.zinfo
-  [ZBIN] bin/virtio-net.rom.zbin
-  [FINISH] bin/virtio-net.rom
-[...]
-espen@luft:~/git/ipxe/src$
-&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now you are ready to boot one or multiple CentOS 6 in-memory instances over the network!&lt;/p&gt;
 
-&lt;p&gt;The firmware compiled successfully, and it is ready to use. Log onto the RHEL 6 node, and verify that you have installed the package &lt;strong&gt;gpxe-roms-qemu&lt;/strong&gt; (&lt;strong&gt;qemu-kvm&lt;/strong&gt; currently depends on &lt;strong&gt;gpxe-roms-qemu&lt;/strong&gt;). The directory &lt;em&gt;/usr/share/gpxe/&lt;/em&gt; contains the gPXE boot roms from this package.&lt;/p&gt;
+&lt;p&gt;Another screenshot:
+&lt;img src=&#34;http://www.espenbraastad.no/img/centos6-from-tmpfs-details.png&#34; alt=&#34;losetup&#34; /&gt;&lt;/p&gt;
 
-&lt;p&gt;To use your custom iPXE boot firmware instead, you can build a new rpm package that contains the new rom - or you can simply replace &lt;em&gt;/usr/share/gpxe/virtio-net.rom&lt;/em&gt; [gPXE] with your &lt;em&gt;~/git/ipxe/src/bin/virtio-net.rom&lt;/em&gt; [iPXE]. As least you will have iPXE boot firmware until the &lt;strong&gt;qemu-roms-qemu&lt;/strong&gt; package is updated ;)&lt;/p&gt;
-
-&lt;p&gt;Make sure that your virtual machines are using the &lt;strong&gt;&lt;a href=&#34;http://wiki.libvirt.org/page/Virtio&#34;&gt;virtio&lt;/a&gt;&lt;/strong&gt; network device driver, and you are all set:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;[...]
-&amp;lt;interface type=&#39;bridge&#39;&amp;gt;
-  [...]
-  &amp;lt;model type=&#39;virtio&#39;/&amp;gt;
-&amp;lt;/interface&amp;gt;
-[...]
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Your virtual machines will now be booted using the iPXE boot firmware. Have a look at the &lt;a href=&#34;http://ipxe.org/scripting&#34;&gt;iPXE scripting documentation&lt;/a&gt; for more inspiration!&lt;/p&gt;
+&lt;p&gt;Feature request &lt;a href=&#34;http://article.gmane.org/gmane.linux.kernel.initramfs/2588&#34;&gt;upstream&lt;/a&gt;.&lt;/p&gt;
 </description>
     </item>
     
