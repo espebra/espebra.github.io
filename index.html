@@ -53,8 +53,7 @@
 				</div>
 				<div class="p-2 align-self-center">
 
-					This is where I post my <a href="/posts">public notes</a> on various projects, often related to IT operations. Some of my projects are also available in <a href="https://github.com/espebra/">Github</a>.
-					<footer class="blockquote-footer">Espen Braastad</footer>
+					Older posts are in the <a href="/posts">archive</a>. Some of my projects are available in <a href="https://github.com/espebra/">Github</a>.
 				</div>
 			</div>
 		</div>
@@ -84,7 +83,7 @@
 
 <p>A build host is needed to prepare the image to boot from. The build host should run CentOS 7 x86_64, and have the following packages installed:</p>
 
-<pre><code class="language-bash">yum install libvirt virt-builder guestfish
+<pre><code class="language-bash">yum install libvirt libguestfs-tools guestfish
 </code></pre>
 
 <p>Make sure the libvirt daemon is running:</p>
