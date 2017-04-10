@@ -64,7 +64,7 @@
 	<div class="col-md-12">
 		<h1>CentOS 7 root filesystem on tmpfs</h1>
 		<small class="text-muted">
-			Published Friday, January 6, 2017 (800 words, 4 minutes to read).
+			Published Friday, January 6, 2017 (700 words, 4 minutes to read).
 			<a href="#comments">
 				<span class="disqus-comment-count" data-disqus-identifier="CentOS 7 root filesystem on tmpfs"></span>
 			</a>
@@ -169,19 +169,17 @@ error() {
 /bin/busybox --install /bin
 
 mkdir -p /proc
-mount -n -t proc none /proc
+mount -t proc proc /proc
 
 mkdir -p /sys
-mount -n -t sysfs none /sys
+mount -t sysfs sysfs /sys
+
 mkdir -p /sys/dev
-
 mkdir -p /var/run
-
 mkdir -p /dev
-mount -n -t tmpfs -o mode=0755 mdev /dev
 
 mkdir -p /dev/pts
-mount -n -t devpts devpts /dev/pts
+mount -t devpts devpts /dev/pts
 
 # Populate /dev
 echo /bin/mdev &gt; /proc/sys/kernel/hotplug
