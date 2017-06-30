@@ -248,8 +248,9 @@ I&rsquo;m going to do some measurements to see how the system reacts to changes 
 				</a>
 			</small>
 			<p>
-				In a previous post, I’ve explained how to boot EL6 from memory without having / needing a physical disk.
-A bright reader, Jeff, came up with an alternative method. This alternative method does not involve dd’ing the image into a loop device, but instead copying the contents of the disk image directly into tmpfs. The result is higher write/read performance and generally lower memory requirements. The latter because unused disk space does not consume memory, which is important to consider when choosing the method to use in production systems.... <a href="http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs-update2/">read more</a>
+				Update 2017-06-30: Please see the updated guide which is more generic.
+In a previous post, I’ve explained how to boot EL6 from memory without having / needing a physical disk.
+A bright reader, Jeff, came up with an alternative method. This alternative method does not involve dd’ing the image into a loop device, but instead copying the contents of the disk image directly into tmpfs. The result is higher write/read performance and generally lower memory requirements.... <a href="http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs-update2/">read more</a>
 			</p>
 		</div>
 	</div>
@@ -267,7 +268,8 @@ A bright reader, Jeff, came up with an alternative method. This alternative meth
 				</a>
 			</small>
 			<p>
-				In EL6.4, the file /usr/share/dracut/modules.d/90dmsquash-live/dmsquash-live-root was updated so that the previous patch no longer works as it should. I’ve updated the patch, and here it is:
+				Update 2017-06-30: Please see the updated guide which is more generic.
+In EL6.4, the file /usr/share/dracut/modules.d/90dmsquash-live/dmsquash-live-root was updated so that the previous patch no longer works as it should. I’ve updated the patch, and here it is:
 --- original 2013-03-20 16:25:23.698846581 +0100 +++ new 2013-03-21 08:58:11.175339694 +0100 @@ -24,6 +24,8 @@ getarg readonly_overlay &amp;&amp; readonly_overlay=&quot;--readonly&quot; || readonly_overlay=&quot;&quot; overlay=$(getarg overlay) +getarg toram &amp;&amp; toram=&quot;yes&quot; + # FIXME: we need to be able to hide the plymouth splash for the check really [ -e $livedev ] &amp; fs=$(blkid -s TYPE -o value $livedev) if [ &quot;$fs&quot; = &quot;iso9660&quot; -o &quot;$fs&quot; = &quot;udf&quot; ]; then @@ -132,7 +134,10 @@ BASE_LOOPDEV=$( losetup -f ) losetup -r $BASE_LOOPDEV $EXT3FS - do_live_from_base_loop + # Create overlay only if toram is not set + if [ -z &quot;$toram&quot; ] ; then + do_live_from_base_loop + fi fi # we might have an embedded ext3 on squashfs to use as rootfs (compressed live) @@ -163,13 +168,66 @@ umount -l /squashfs - do_live_from_base_loop + # Create overlay only if toram is not set + if [ -z &quot;$toram&quot; ] ; then + do_live_from_base_loop + fi +fi + +# If the kernel parameter toram is set, create a tmpfs device and copy the +# filesystem to it.... <a href="http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs-update/">read more</a>
 			</p>
 		</div>
@@ -325,9 +327,9 @@ Filebin is a web application that is somewhat similar to a pastebin, except that
 				</a>
 			</small>
 			<p>
-				UPDATE: The patch below has been updated here.
-There are several scenarios where conventional hard drives are not really needed. Examples are HPC cluster nodes, virtualization nodes, home theater streaming PCs, silent desktops, internet cafés and embedded systems. Hard drives tend to fail, they are slow, they consume power, they generate heat and noise, and they are quite expensive if you need/want something faster and more reliable than SATA.
-This post will show how to run CentOS 6 directly from tmpfs backed by memory, without using the (standard) 512 MB writable overlay.... <a href="http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs/">read more</a>
+				Update 2017-06-30: Please see the updated guide which is more generic.
+UPDATE: The patch below has been updated here.
+There are several scenarios where conventional hard drives are not really needed. Examples are HPC cluster nodes, virtualization nodes, home theater streaming PCs, silent desktops, internet cafés and embedded systems. Hard drives tend to fail, they are slow, they consume power, they generate heat and noise, and they are quite expensive if you need/want something faster and more reliable than SATA.... <a href="http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs/">read more</a>
 			</p>
 		</div>
 	</div>

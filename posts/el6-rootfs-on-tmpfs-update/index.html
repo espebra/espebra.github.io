@@ -57,7 +57,9 @@
 		</small>
 		
 		<p>
-			<p>In EL6.4, the file <code>/usr/share/dracut/modules.d/90dmsquash-live/dmsquash-live-root</code> was updated so that the <a href="/post/el6-rootfs-on-tmpfs">previous patch</a> no longer works as it should. I’ve updated the patch, and here it is:</p>
+			<p><em>Update 2017-06-30: Please see the <a href="/posts/centos-7-rootfs-on-tmpfs/">updated guide</a> which is more generic.</em></p>
+
+<p>In EL6.4, the file <code>/usr/share/dracut/modules.d/90dmsquash-live/dmsquash-live-root</code> was updated so that the <a href="/post/el6-rootfs-on-tmpfs">previous patch</a> no longer works as it should. I’ve updated the patch, and here it is:</p>
 
 <pre><code class="language-diff">--- original    2013-03-20 16:25:23.698846581 +0100
 +++ new 2013-03-21 08:58:11.175339694 +0100
