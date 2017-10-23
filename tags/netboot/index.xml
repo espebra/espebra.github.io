@@ -9,6 +9,174 @@
     <atom:link href="http://www.espenbraastad.no/tags/netboot/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
+      <title>ZFS NAS using CentOS 7 from tmpfs</title>
+      <link>http://www.espenbraastad.no/posts/zfs-nas-on-tmpfs/</link>
+      <pubDate>Tue, 24 Oct 2017 00:20:20 +0100</pubDate>
+      
+      <guid>http://www.espenbraastad.no/posts/zfs-nas-on-tmpfs/</guid>
+      <description>
+
+&lt;p&gt;Following up on the &lt;a href=&#34;http://www.espenbraastad.no/posts/centos-7-rootfs-on-tmpfs/&#34;&gt;CentOS 7 root filesystem on tmpfs&lt;/a&gt; post, here comes a guide on how to run a ZFS enabled CentOS 7 NAS server (with the operating system) from tmpfs.&lt;/p&gt;
+
+&lt;h2 id=&#34;hardware&#34;&gt;Hardware&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;HP ProLiant MicroServer&lt;/li&gt;
+&lt;li&gt;HP ProLiant MicroServer Remote Access Card&lt;/li&gt;
+&lt;li&gt;AMD Turion&amp;trade; II Neo N54L Dual-Core Processor&lt;/li&gt;
+&lt;li&gt;2x 8 GB 1333 MHZ ECC memory modules&lt;/li&gt;
+&lt;li&gt;4x 4 TB SATA hard drives (HGST, Western Digital and Seagate)&lt;/li&gt;
+&lt;li&gt;Built-in Broadcom Limited NetXtreme BCM5723 Gigabit Ethernet adapter&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;preparing-the-build-environment&#34;&gt;Preparing the build environment&lt;/h2&gt;
+
+&lt;p&gt;The disk image is built in macOS using &lt;a href=&#34;https://www.packer.io&#34;&gt;Packer&lt;/a&gt; and &lt;a href=&#34;https://www.virtualbox.org/&#34;&gt;VirtualBox&lt;/a&gt;. Virtualbox is installed using the appropriate platform package that is downloaded from &lt;a href=&#34;https://www.virtualbox.org/wiki/Downloads&#34;&gt;their website&lt;/a&gt;, and Packer is installed using brew:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ brew install packer
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;building-the-disk-image&#34;&gt;Building the disk image&lt;/h2&gt;
+
+&lt;p&gt;Three files are needed in order to build the disk image; a Packer template file, an Anaconda kickstart file and a shell script that is used to configure the disk image after installation. The following files can be used as examples:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.espenbraastad.no/files/template.json&#34;&gt;&lt;code&gt;template.json&lt;/code&gt;&lt;/a&gt; (Packer template example file)&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.espenbraastad.no/files/ks.cfg&#34;&gt;&lt;code&gt;ks.cfg&lt;/code&gt;&lt;/a&gt; (Anaconda kickstart example file)&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.espenbraastad.no/files/provision.sh&#34;&gt;&lt;code&gt;provision.sh&lt;/code&gt;&lt;/a&gt; (Provision shell script example file)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Create some directories:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ mkdir ~work/centos-7-zfs/
+$ mkdir ~work/centos-7-zfs/http/
+$ mkdir ~work/centos-7-zfs/scripts/
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Copy the files to these directories:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ cp template.json ~work/centos-7-zfs/
+$ cp ks.cfg ~work/centos-7-zfs/http/
+$ cp provision.sh ~work/centos-7-zfs/scripts/
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Modify each of the files to fit your environment.&lt;/p&gt;
+
+&lt;p&gt;Start the build process using Packer:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ cd ~work/centos-7-zfs/
+$ packer build template.json
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This will download the CentOS 7 ISO file, start an HTTP server to serve the kickstart file and start a virtual machine using Virtualbox:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/packer-installer.png&#34; alt=&#34;Packer installer screenshot&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The virtual machine will boot into Anaconda and run through the installation process as specified in the kickstart file:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/anaconda-installer.png&#34; alt=&#34;Anaconda installer screenshot&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;When the installation process is complete, the disk image will be available in the &lt;code&gt;output-virtualbox-iso&lt;/code&gt; folder with the &lt;a href=&#34;https://en.wikipedia.org/wiki/VMDK&#34;&gt;&lt;code&gt;vmdk&lt;/code&gt;&lt;/a&gt; extension.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/packer-installer-done.png&#34; alt=&#34;Packer done screenshot&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The disk image is now ready to be put in initramfs.&lt;/p&gt;
+
+&lt;h2 id=&#34;putting-the-disk-image-in-initramfs&#34;&gt;Putting the disk image in initramfs&lt;/h2&gt;
+
+&lt;p&gt;This section is quite similar to the previous blog post &lt;a href=&#34;http://www.espenbraastad.no/posts/centos-7-rootfs-on-tmpfs/&#34;&gt;CentOS 7 root filesystem on tmpfs&lt;/a&gt; but with minor differences. For simplicity reasons it is executed on a host running CentOS 7.&lt;/p&gt;
+
+&lt;p&gt;Create the build directories:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ mkdir /work
+$ mkdir /work/newroot
+$ mkdir /work/result
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Export the files from the disk image to one of the directories we created earlier:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ export LIBGUESTFS_BACKEND=direct
+$ guestfish --ro -a packer-virtualbox-iso-1508790384-disk001.vmdk -i copy-out / /work/newroot/
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Modify &lt;code&gt;/etc/fstab&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ cat &amp;gt; /work/newroot/etc/fstab &amp;lt;&amp;lt; EOF
+tmpfs       /         tmpfs    defaults,noatime 0 0
+none        /dev      devtmpfs defaults         0 0
+devpts      /dev/pts  devpts   gid=5,mode=620   0 0
+tmpfs       /dev/shm  tmpfs    defaults         0 0
+proc        /proc     proc     defaults         0 0
+sysfs       /sys      sysfs    defaults         0 0
+EOF
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Disable selinux:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;echo &amp;quot;SELINUX=disabled&amp;quot; &amp;gt; /work/newroot/etc/selinux/config
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Disable clearing the screen on login failure to make it possible to read any error messages:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;mkdir /work/newroot/etc/systemd/system/getty@.service.d
+cat &amp;gt; /work/newroot/etc/systemd/system/getty@.service.d/noclear.conf &amp;lt;&amp;lt; EOF
+[Service]
+TTYVTDisallocate=no
+EOF
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Now jump to the &lt;strong&gt;Initramfs&lt;/strong&gt; and &lt;strong&gt;Result&lt;/strong&gt; sections in the &lt;a href=&#34;http://www.espenbraastad.no/posts/centos-7-rootfs-on-tmpfs/&#34;&gt;CentOS 7 root filesystem on tmpfs&lt;/a&gt; and follow those steps until the end when the result is a &lt;code&gt;vmlinuz&lt;/code&gt; and &lt;code&gt;initramfs&lt;/code&gt; file.&lt;/p&gt;
+
+&lt;h2 id=&#34;zfs-configuration&#34;&gt;ZFS configuration&lt;/h2&gt;
+
+&lt;p&gt;The first time the NAS server boots on the disk image, the ZFS storage pool and volumes will have to be configured. Refer to the &lt;a href=&#34;https://docs.oracle.com/cd/E19253-01/819-5461/gaynr/index.html&#34;&gt;ZFS documentation&lt;/a&gt; for information on how to do this, and use the following command only as guidelines.&lt;/p&gt;
+
+&lt;p&gt;Create the storage pool:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ sudo zpool create data mirror sda sdb mirror sdc sdd
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Create the volumes:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ sudo zfs create data/documents
+$ sudo zfs create data/games
+$ sudo zfs create data/movies
+$ sudo zfs create data/music
+$ sudo zfs create data/pictures
+$ sudo zfs create data/upload
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Share some volumes using NFS:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;zfs set sharenfs=on data/documents
+zfs set sharenfs=on data/games
+zfs set sharenfs=on data/music
+zfs set sharenfs=on data/pictures
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Print the storage pool status:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ sudo zpool status
+  pool: data
+ state: ONLINE
+  scan: scrub repaired 0B in 20h22m with 0 errors on Sun Oct  1 21:04:14 2017
+config:
+
+	NAME        STATE     READ WRITE CKSUM
+	data        ONLINE       0     0     0
+	  mirror-0  ONLINE       0     0     0
+	    sdd     ONLINE       0     0     0
+	    sdc     ONLINE       0     0     0
+	  mirror-1  ONLINE       0     0     0
+	    sda     ONLINE       0     0     0
+	    sdb     ONLINE       0     0     0
+
+errors: No known data errors
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
+    
+    <item>
       <title>CentOS 7 root filesystem on tmpfs</title>
       <link>http://www.espenbraastad.no/posts/centos-7-rootfs-on-tmpfs/</link>
       <pubDate>Fri, 06 Jan 2017 21:34:20 +0100</pubDate>
