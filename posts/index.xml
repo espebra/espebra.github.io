@@ -13,9 +13,8 @@
       <link>/posts/filebin-moved-to-hetzner/</link>
       <pubDate>Tue, 21 Nov 2023 23:00:00 +0100</pubDate>
       <guid>/posts/filebin-moved-to-hetzner/</guid>
-      <description>About the move Yesterday, on the 20th of November 2023, the hosting of the filebin.net service was moved from Redpill Linpro in Norway to Hetzner in Germany.
-Some history Filebin was a hobby project that let me learn the HTML5 File API. The end result made it easy to share photos and videos with friends and family, which was difficult at the time for non technical people.
-The first version of filebin.</description>
+      <description>About the move Yesterday, on the 20th of November 2023, the hosting of the filebin.net service was moved from Redpill Linpro in Norway to Hetzner in Germany. Shout out to Redpill Linpro for providing free hosting for 11 years!
+Some history Filebin was a hobby project that let me learn the HTML5 File API. The end result made it easy to share photos and videos with friends and family, which was difficult at the time for non technical people.</description>
     </item>
     <item>
       <title>ZFS NAS using CentOS 7 from tmpfs</title>
