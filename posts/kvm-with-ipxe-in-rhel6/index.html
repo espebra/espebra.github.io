@@ -10,25 +10,12 @@
 	<title>KVM with iPXE in RHEL6</title>
 	
 	
-	<link rel="stylesheet" href="http://www.espenbraastad.no//bootstrap/css/bootstrap.min.css">
-	<link rel="stylesheet" href="http://www.espenbraastad.no//font-awesome/css/font-awesome.min.css">
+	<link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
 	<link rel="stylesheet" href="/custom.css">
 	
 	
 	<link rel="stylesheet" href="/prism/prism.css">
-	
-	
-	<link href="" rel="alternate" type="application/rss+xml" title="Espen Braastad" />
-	
-	<script>
-		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-		
-		ga('create', 'UA-59220530-1', 'auto');
-		ga('send', 'pageview');
-	</script>
 </head>
 <body>
 
@@ -58,7 +45,6 @@
 		
 		<p>
 			<p>A while ago I discovered the amazing <a href="http://ipxe.org">iPXE</a> project. It is a complete PXE implementation with lots of nifty features, based on the <a href="http://etherboot.org/">gPXE</a> project. Redhat ships the gPXE firmware for qemu and KVM, and you might want to use iPXE instead as the iPXE project currently seems to be more active. The major features (copied from <a href="http://ipxe.org">ipxe.org</a>):</p>
-
 <ul>
 <li>boot from a web server via HTTP</li>
 <li>boot from an iSCSI SAN</li>
@@ -69,73 +55,58 @@
 <li>boot from an Infiniband network</li>
 <li>control the boot process with a script</li>
 </ul>
-
 <p>First, download the source code:</p>
-
-<pre><code class="language-bash">espen@luft:~$ mkdir ~/git
-espen@luft:~$ cd ~/git
-espen@luft:~/git$ git clone git://git.ipxe.org/ipxe.git
-Cloning into ipxe...
-remote: Counting objects: 33376, done.
-remote: Compressing objects: 100% (9193/9193), done.
-remote: Total 33376 (delta 24642), reused 30782 (delta 22666)
-Receiving objects: 100% (33376/33376), 8.02 MiB | 1.94 MiB/s, done.
-Resolving deltas: 100% (24642/24642), done.
-espen@luft:~/git$ cd ipxe/
-espen@luft:~/git/ipxe$
-</code></pre>
-
-<p>Then change the general configuration file (<em>src/config/general.h</em>) to suit your needs. Use the <strong>#define</strong> and <strong>#undef</strong> to activate and deactivate various features such as VLAN support, DHCP support, etc. Below is a small part of <a href="https://github.com/ipxe/ipxe/blob/master/src/config/general.h">the header file</a> for you to see.</p>
-
-<pre><code class="language-bash">[...]
-#define IWMGMT_CMD   /* Wireless interface management commands */
-#define FCMGMT_CMD   /* Fibre Channel management commands */
-#define ROUTE_CMD    /* Routing table management commands */
-#define IMAGE_CMD    /* Image management commands */
-#define DHCP_CMD     /* DHCP management commands */
-#define SANBOOT_CMD  /* SAN boot commands */
-#define LOGIN_CMD    /* Login command */
-#undef  TIME_CMD     /* Time commands */
-#undef  DIGEST_CMD   /* Image crypto digest commands */
-#undef  LOTEST_CMD   /* Loopback testing commands */
-#undef  VLAN_CMD     /* VLAN commands */
-#undef  PXE_CMD      /* PXE commands */
-#undef  REBOOT_CMD   /* Reboot command */
-[...]
-</code></pre>
-
-<p>Now it&rsquo;s time compile the firmware.</p>
-
-<pre><code class="language-bash">espen@luft:~/git/ipxe$ cd src/
-espen@luft:~/git/ipxe/src$ make bin/virtio-net.rom
-  [DEPS] arch/i386/drivers/net/undirom.c
-  [DEPS] arch/i386/drivers/net/undipreload.c
-  [DEPS] arch/i386/drivers/net/undionly.c
-  [DEPS] arch/i386/drivers/net/undinet.c
-[...]
-  [BIN] bin/virtio-net.rom.bin
-  [ZINFO] bin/virtio-net.rom.zinfo
-  [ZBIN] bin/virtio-net.rom.zbin
-  [FINISH] bin/virtio-net.rom
-[...]
-espen@luft:~/git/ipxe/src$
-</code></pre>
-
-<p>The firmware compiled successfully, and it is ready to use. Log onto the RHEL 6 node, and verify that you have installed the package <strong>gpxe-roms-qemu</strong> (<strong>qemu-kvm</strong> currently depends on <strong>gpxe-roms-qemu</strong>). The directory <em>/usr/share/gpxe/</em> contains the gPXE boot roms from this package.</p>
-
-<p>To use your custom iPXE boot firmware instead, you can build a new rpm package that contains the new rom - or you can simply replace <em>/usr/share/gpxe/virtio-net.rom</em> [gPXE] with your <em>~/git/ipxe/src/bin/virtio-net.rom</em> [iPXE]. As least you will have iPXE boot firmware until the <strong>qemu-roms-qemu</strong> package is updated ;)</p>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>espen@luft:~$ mkdir ~/git
+</span></span><span style="display:flex;"><span>espen@luft:~$ cd ~/git
+</span></span><span style="display:flex;"><span>espen@luft:~/git$ git clone git://git.ipxe.org/ipxe.git
+</span></span><span style="display:flex;"><span>Cloning into ipxe...
+</span></span><span style="display:flex;"><span>remote: Counting objects: 33376, <span style="color:#66d9ef">done</span>.
+</span></span><span style="display:flex;"><span>remote: Compressing objects: 100% <span style="color:#f92672">(</span>9193/9193<span style="color:#f92672">)</span>, <span style="color:#66d9ef">done</span>.
+</span></span><span style="display:flex;"><span>remote: Total <span style="color:#ae81ff">33376</span> <span style="color:#f92672">(</span>delta 24642<span style="color:#f92672">)</span>, reused <span style="color:#ae81ff">30782</span> <span style="color:#f92672">(</span>delta 22666<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>Receiving objects: 100% <span style="color:#f92672">(</span>33376/33376<span style="color:#f92672">)</span>, 8.02 MiB | 1.94 MiB/s, <span style="color:#66d9ef">done</span>.
+</span></span><span style="display:flex;"><span>Resolving deltas: 100% <span style="color:#f92672">(</span>24642/24642<span style="color:#f92672">)</span>, <span style="color:#66d9ef">done</span>.
+</span></span><span style="display:flex;"><span>espen@luft:~/git$ cd ipxe/
+</span></span><span style="display:flex;"><span>espen@luft:~/git/ipxe$
+</span></span></code></pre></div><p>Then change the general configuration file (<!-- raw HTML omitted -->src/config/general.h<!-- raw HTML omitted -->) to suit your needs. Use the <!-- raw HTML omitted -->#define<!-- raw HTML omitted --> and <!-- raw HTML omitted -->#undef<!-- raw HTML omitted --> to activate and deactivate various features such as VLAN support, DHCP support, etc. Below is a small part of <a href="https://github.com/ipxe/ipxe/blob/master/src/config/general.h">the header file</a> for you to see.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#f92672">[</span>...<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define IWMGMT_CMD   /* Wireless interface management commands */</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define FCMGMT_CMD   /* Fibre Channel management commands */</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define ROUTE_CMD    /* Routing table management commands */</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define IMAGE_CMD    /* Image management commands */</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define DHCP_CMD     /* DHCP management commands */</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define SANBOOT_CMD  /* SAN boot commands */</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define LOGIN_CMD    /* Login command */</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#undef  TIME_CMD     /* Time commands */</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#undef  DIGEST_CMD   /* Image crypto digest commands */</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#undef  LOTEST_CMD   /* Loopback testing commands */</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#undef  VLAN_CMD     /* VLAN commands */</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#undef  PXE_CMD      /* PXE commands */</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#undef  REBOOT_CMD   /* Reboot command */</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>...<span style="color:#f92672">]</span>
+</span></span></code></pre></div><p>Now it&rsquo;s time compile the firmware.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>espen@luft:~/git/ipxe$ cd src/
+</span></span><span style="display:flex;"><span>espen@luft:~/git/ipxe/src$ make bin/virtio-net.rom
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">[</span>DEPS<span style="color:#f92672">]</span> arch/i386/drivers/net/undirom.c
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">[</span>DEPS<span style="color:#f92672">]</span> arch/i386/drivers/net/undipreload.c
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">[</span>DEPS<span style="color:#f92672">]</span> arch/i386/drivers/net/undionly.c
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">[</span>DEPS<span style="color:#f92672">]</span> arch/i386/drivers/net/undinet.c
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>...<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">[</span>BIN<span style="color:#f92672">]</span> bin/virtio-net.rom.bin
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">[</span>ZINFO<span style="color:#f92672">]</span> bin/virtio-net.rom.zinfo
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">[</span>ZBIN<span style="color:#f92672">]</span> bin/virtio-net.rom.zbin
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">[</span>FINISH<span style="color:#f92672">]</span> bin/virtio-net.rom
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>...<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>espen@luft:~/git/ipxe/src$
+</span></span></code></pre></div><p>The firmware compiled successfully, and it is ready to use. Log onto the RHEL 6 node, and verify that you have installed the package <!-- raw HTML omitted -->gpxe-roms-qemu<!-- raw HTML omitted --> (<!-- raw HTML omitted -->qemu-kvm<!-- raw HTML omitted --> currently depends on <!-- raw HTML omitted -->gpxe-roms-qemu<!-- raw HTML omitted -->). The directory <!-- raw HTML omitted -->/usr/share/gpxe/<!-- raw HTML omitted --> contains the gPXE boot roms from this package.</p>
+<p>To use your custom iPXE boot firmware instead, you can build a new rpm package that contains the new rom - or you can simply replace <!-- raw HTML omitted -->/usr/share/gpxe/virtio-net.rom<!-- raw HTML omitted --> [gPXE] with your <!-- raw HTML omitted -->~/git/ipxe/src/bin/virtio-net.rom<!-- raw HTML omitted --> [iPXE]. As least you will have iPXE boot firmware until the <!-- raw HTML omitted -->qemu-roms-qemu<!-- raw HTML omitted --> package is updated ;)</p>
 <p>Make sure that your virtual machines are using the <a href="http://wiki.libvirt.org/page/Virtio">virtio</a> network device driver, and you are all set:</p>
-
-<pre><code class="language-xml">[...]
-&lt;interface type='bridge'&gt;
-  [...]
-  &lt;model type='virtio'/&gt;
-&lt;/interface&gt;
-[...]
-</code></pre>
-
-<p>Your virtual machines will now be booted using the iPXE boot firmware. Have a look at the <a href="http://ipxe.org/scripting">iPXE scripting documentation</a> for more inspiration!</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-xml" data-lang="xml"><span style="display:flex;"><span>[...]
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&lt;interface</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;bridge&#39;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>  [...]
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;model</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;virtio&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&lt;/interface&gt;</span>
+</span></span><span style="display:flex;"><span>[...]
+</span></span></code></pre></div><p>Your virtual machines will now be booted using the iPXE boot firmware. Have a look at the <a href="http://ipxe.org/scripting">iPXE scripting documentation</a> for more inspiration!</p>
 
 		</p>
         </div>
@@ -145,7 +116,7 @@ espen@luft:~/git/ipxe/src$
 		<div id="disqus_thread"></div>
 <script type="text/javascript">
 	 
-	var disqus_shortname = 'espenbraastad';
+	var disqus_shortname = '';
 	var disqus_identifier = 'KVM with iPXE in RHEL6';
 
      
@@ -162,9 +133,9 @@ espen@luft:~/git/ipxe/src$
 
 </div>
 
-<script id="dsq-count-scr" src="//espenbraastad.disqus.com/count.js" async></script>
-<script src="http://www.espenbraastad.no//prism/prism.js"></script>
-<script src="http://www.espenbraastad.no//jquery.min.js"></script>
+<script id="dsq-count-scr" src="//.disqus.com/count.js" async></script>
+<script src="/prism/prism.js"></script>
+<script src="/jquery.min.js"></script>
 <script>
 	 
 	$(function() { $('table').addClass('table table-responsive'); })

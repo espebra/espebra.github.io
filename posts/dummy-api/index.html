@@ -10,25 +10,12 @@
 	<title>Dummy API</title>
 	
 	
-	<link rel="stylesheet" href="http://www.espenbraastad.no//bootstrap/css/bootstrap.min.css">
-	<link rel="stylesheet" href="http://www.espenbraastad.no//font-awesome/css/font-awesome.min.css">
+	<link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
 	<link rel="stylesheet" href="/custom.css">
 	
 	
 	<link rel="stylesheet" href="/prism/prism.css">
-	
-	
-	<link href="" rel="alternate" type="application/rss+xml" title="Espen Braastad" />
-	
-	<script>
-		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-		
-		ga('create', 'UA-59220530-1', 'auto');
-		ga('send', 'pageview');
-	</script>
 </head>
 <body>
 
@@ -57,127 +44,115 @@
 		</small>
 		
 		<p>
-			<p><em>Update: Dummy API has been <a href="http://www.espenbraastad.no/posts/dummy-api-rewrite-in-go/">rewritten in Go</a>.</em></p>
-
+			<p><em>Update: Dummy API has been <a href="/posts/dummy-api-rewrite-in-go/">rewritten in Go</a>.</em></p>
 <p>The purpose of Dummy API to act as a performant, simple and flexible HTTP API to use when testing API gateway performance. Put it behing a API gateway and generate responses to it from a set of consumers/clients. The Dummy API will read the request headers and query parameters and generate the responses accordingly. Some examples are custom cache-control header, response status and response delays.</p>
-
-<p><img src="/img/dummy-api.png" alt="Dummy API" /></p>
-
+<p><img src="/img/dummy-api.png" alt="Dummy API"></p>
 <p>The following is a <code>GET</code> request to host <code>dummy-api.varnish-software.com</code> and path <code>/foo</code>, where the response should contain a 10 characters random string, 20 characters predictable random string, response status <code>418</code> and a <code>cache-control</code> header with the value <code>max-age=2, s-maxage=3</code>. The response will be delivered with a 2 seconds delay before the first byte of the body, to mimic a slow web application:</p>
-
-<pre><code class="language-http">GET http://dummy-api.varnish-software.com/foo?random-content=10&amp;predictable-content=20&amp;response-status=418&amp;body-delay=2&amp;max-age=2&amp;s-maxage=3
-
-HTTP/1.1 418
-Cache-control: max-age=2, s-maxage=3
-Connection: close
-Content-Type: application/json
-Date: Sun, 03 May 2015 15:12:36 GMT
-Server: Dummy API
-Transfer-Encoding: chunked
-
-{
-    &quot;body-delay&quot;: 2,
-    &quot;host&quot;: &quot;dummy-api.varnish-software.com&quot;,
-    &quot;max-age&quot;: 2,
-    &quot;method&quot;: &quot;GET&quot;,
-    &quot;predictable-content&quot;: &quot;Q1qxI72mD3wFAGTtPlJx&quot;,
-    &quot;random-content&quot;: &quot;NlYhricCPZ&quot;,
-    &quot;request-headers&quot;: {
-        &quot;accept&quot;: &quot;*/*&quot;,
-        &quot;accept-encoding&quot;: &quot;gzip, deflate&quot;,
-        &quot;host&quot;: &quot;dummy-api.varnish-software.com&quot;,
-        &quot;user-agent&quot;: &quot;HTTPie/0.8.0&quot;
-    },
-    &quot;request-parameters&quot;: {
-        &quot;body-delay&quot;: &quot;2&quot;,
-        &quot;max-age&quot;: &quot;2&quot;,
-        &quot;predictable-content&quot;: &quot;20&quot;,
-        &quot;random-content&quot;: &quot;10&quot;,
-        &quot;response-status&quot;: &quot;418&quot;,
-        &quot;s-maxage&quot;: &quot;3\n&quot;
-    },
-    &quot;response-status&quot;: 418,
-    &quot;s-maxage&quot;: 3,
-    &quot;uri&quot;: &quot;/foo&quot;
-}
-</code></pre>
-
-<p>The following is a <code>POST</code> request to <code>dummy-api.varnish-software.com</code> and path <code>/someurl</code>, where the response status should be <code>201</code>, the <code>cache-control</code> header should be set to <code>must-revalidate</code> and the <code>content-length</code> header should be set instead of using <code>chunked</code> <code>transfer-encoding</code>:</p>
-
-<pre><code class="language-http">POST http://dummy-api.varnish-software.com/someurl?must-revalidate&amp;response-status=201&amp;content-length
-
-HTTP/1.1 201 Created
-Cache-control: must-revalidate
-Connection: close
-Content-Type: application/json
-Content-length: 458
-Date: Sun, 03 May 2015 15:13:43 GMT
-Server: Dummy API
-
-{
-    &quot;content-length&quot;: true,
-    &quot;host&quot;: &quot;dummy-api.varnish-software.com&quot;,
-    &quot;method&quot;: &quot;POST&quot;,
-    &quot;must-revalidate&quot;: true,
-    &quot;request-headers&quot;: {
-        &quot;accept&quot;: &quot;application/json&quot;,
-        &quot;accept-encoding&quot;: &quot;gzip, deflate&quot;,
-        &quot;content-length&quot;: &quot;14&quot;,
-        &quot;content-type&quot;: &quot;application/json; charset=utf-8&quot;,
-        &quot;host&quot;: &quot;dummy-api.varnish-software.com&quot;,
-        &quot;user-agent&quot;: &quot;HTTPie/0.8.0&quot;
-    },
-    &quot;request-parameters&quot;: {
-        &quot;content-length&quot;: true,
-        &quot;must-revalidate&quot;: true,
-        &quot;response-status&quot;: &quot;201&quot;
-    },
-    &quot;response-status&quot;: 201,
-    &quot;uri&quot;: &quot;/someurl&quot;
-}
-</code></pre>
-
-<p>The buit in help text is available with the <code>help</code> request header or query parameter:</p>
-
-<pre><code class="language-http">GET http://dummy-api.varnish-software.com/?help
-
-HTTP/1.1 200 OK
-Connection: close
-Content-Type: text/plain
-Date: Sat, 02 May 2015 19:59:39 GMT
-Server: Dummy API
-Transfer-Encoding: chunked
-    
-Dummy API
-=========
-
-The following request headers and query parameters will make an impact on the response.
-
-Delay
------
-header-delay = {float}           Delay to first header byte
-body-delay = {float}             Delay to first body byte
-
-Cache-control
--------------
-max-age = {int}                  Set the response max-age value
-s-maxage = {int}                 Set the response s-maxage value
-must-revalidate                  Set must-revalidate
-public                           Set public
-private                          Set private
-no-store                         Set no-store
-no-cache                         Set no-cache
-no-transform                     Set no-transform
-
-Misc
-----
-content-length                   Set the content-length header, otherwise chunked transfer encoding is used
-random-content = {int}           Add random string to the response of given length
-predictable-content = {int}      Add predictable string to the response of given length
-response-status = {int}          Set the response status
-</code></pre>
-
-<p>The Dummy API is written in Lua and is available for download at <a href="https://github.com/espebra/dummy-api">Github</a>. It will run on the <a href="http://openresty.org/">OpenResty</a> web application server.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-http" data-lang="http"><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">GET http://dummy-api.varnish-software.com/foo?random-content=10&amp;predictable-content=20&amp;response-status=418&amp;body-delay=2&amp;max-age=2&amp;s-maxage=3
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">HTTP</span><span style="color:#f92672">/</span><span style="color:#ae81ff">1.1</span> <span style="color:#ae81ff">418</span>
+</span></span><span style="display:flex;"><span>Cache-control<span style="color:#f92672">:</span> <span style="color:#ae81ff">max-age=2, s-maxage=3</span>
+</span></span><span style="display:flex;"><span>Connection<span style="color:#f92672">:</span> <span style="color:#ae81ff">close</span>
+</span></span><span style="display:flex;"><span>Content-Type<span style="color:#f92672">:</span> <span style="color:#ae81ff">application/json</span>
+</span></span><span style="display:flex;"><span>Date<span style="color:#f92672">:</span> <span style="color:#ae81ff">Sun, 03 May 2015 15:12:36 GMT</span>
+</span></span><span style="display:flex;"><span>Server<span style="color:#f92672">:</span> <span style="color:#ae81ff">Dummy API</span>
+</span></span><span style="display:flex;"><span>Transfer-Encoding<span style="color:#f92672">:</span> <span style="color:#ae81ff">chunked</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;body-delay&#34;</span>: <span style="color:#ae81ff">2</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;host&#34;</span>: <span style="color:#e6db74">&#34;dummy-api.varnish-software.com&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;max-age&#34;</span>: <span style="color:#ae81ff">2</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;method&#34;</span>: <span style="color:#e6db74">&#34;GET&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;predictable-content&#34;</span>: <span style="color:#e6db74">&#34;Q1qxI72mD3wFAGTtPlJx&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;random-content&#34;</span>: <span style="color:#e6db74">&#34;NlYhricCPZ&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;request-headers&#34;</span>: {
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;accept&#34;</span>: <span style="color:#e6db74">&#34;*/*&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;accept-encoding&#34;</span>: <span style="color:#e6db74">&#34;gzip, deflate&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;host&#34;</span>: <span style="color:#e6db74">&#34;dummy-api.varnish-software.com&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;user-agent&#34;</span>: <span style="color:#e6db74">&#34;HTTPie/0.8.0&#34;</span>
+</span></span><span style="display:flex;"><span>    },
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;request-parameters&#34;</span>: {
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;body-delay&#34;</span>: <span style="color:#e6db74">&#34;2&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;max-age&#34;</span>: <span style="color:#e6db74">&#34;2&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;predictable-content&#34;</span>: <span style="color:#e6db74">&#34;20&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;random-content&#34;</span>: <span style="color:#e6db74">&#34;10&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;response-status&#34;</span>: <span style="color:#e6db74">&#34;418&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;s-maxage&#34;</span>: <span style="color:#e6db74">&#34;3\n&#34;</span>
+</span></span><span style="display:flex;"><span>    },
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;response-status&#34;</span>: <span style="color:#ae81ff">418</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;s-maxage&#34;</span>: <span style="color:#ae81ff">3</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;uri&#34;</span>: <span style="color:#e6db74">&#34;/foo&#34;</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>The following is a <code>POST</code> request to <code>dummy-api.varnish-software.com</code> and path <code>/someurl</code>, where the response status should be <code>201</code>, the <code>cache-control</code> header should be set to <code>must-revalidate</code> and the <code>content-length</code> header should be set instead of using <code>chunked</code> <code>transfer-encoding</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-http" data-lang="http"><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">POST http://dummy-api.varnish-software.com/someurl?must-revalidate&amp;response-status=201&amp;content-length
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">HTTP</span><span style="color:#f92672">/</span><span style="color:#ae81ff">1.1</span> <span style="color:#ae81ff">201</span> <span style="color:#a6e22e">Created</span>
+</span></span><span style="display:flex;"><span>Cache-control<span style="color:#f92672">:</span> <span style="color:#ae81ff">must-revalidate</span>
+</span></span><span style="display:flex;"><span>Connection<span style="color:#f92672">:</span> <span style="color:#ae81ff">close</span>
+</span></span><span style="display:flex;"><span>Content-Type<span style="color:#f92672">:</span> <span style="color:#ae81ff">application/json</span>
+</span></span><span style="display:flex;"><span>Content-length<span style="color:#f92672">:</span> <span style="color:#ae81ff">458</span>
+</span></span><span style="display:flex;"><span>Date<span style="color:#f92672">:</span> <span style="color:#ae81ff">Sun, 03 May 2015 15:13:43 GMT</span>
+</span></span><span style="display:flex;"><span>Server<span style="color:#f92672">:</span> <span style="color:#ae81ff">Dummy API</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;content-length&#34;</span>: <span style="color:#66d9ef">true</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;host&#34;</span>: <span style="color:#e6db74">&#34;dummy-api.varnish-software.com&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;method&#34;</span>: <span style="color:#e6db74">&#34;POST&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;must-revalidate&#34;</span>: <span style="color:#66d9ef">true</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;request-headers&#34;</span>: {
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;accept&#34;</span>: <span style="color:#e6db74">&#34;application/json&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;accept-encoding&#34;</span>: <span style="color:#e6db74">&#34;gzip, deflate&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;content-length&#34;</span>: <span style="color:#e6db74">&#34;14&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;content-type&#34;</span>: <span style="color:#e6db74">&#34;application/json; charset=utf-8&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;host&#34;</span>: <span style="color:#e6db74">&#34;dummy-api.varnish-software.com&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;user-agent&#34;</span>: <span style="color:#e6db74">&#34;HTTPie/0.8.0&#34;</span>
+</span></span><span style="display:flex;"><span>    },
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;request-parameters&#34;</span>: {
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;content-length&#34;</span>: <span style="color:#66d9ef">true</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;must-revalidate&#34;</span>: <span style="color:#66d9ef">true</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;response-status&#34;</span>: <span style="color:#e6db74">&#34;201&#34;</span>
+</span></span><span style="display:flex;"><span>    },
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;response-status&#34;</span>: <span style="color:#ae81ff">201</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;uri&#34;</span>: <span style="color:#e6db74">&#34;/someurl&#34;</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>The buit in help text is available with the <code>help</code> request header or query parameter:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-http" data-lang="http"><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">GET http://dummy-api.varnish-software.com/?help
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">HTTP</span><span style="color:#f92672">/</span><span style="color:#ae81ff">1.1</span> <span style="color:#ae81ff">200</span> <span style="color:#a6e22e">OK</span>
+</span></span><span style="display:flex;"><span>Connection<span style="color:#f92672">:</span> <span style="color:#ae81ff">close</span>
+</span></span><span style="display:flex;"><span>Content-Type<span style="color:#f92672">:</span> <span style="color:#ae81ff">text/plain</span>
+</span></span><span style="display:flex;"><span>Date<span style="color:#f92672">:</span> <span style="color:#ae81ff">Sat, 02 May 2015 19:59:39 GMT</span>
+</span></span><span style="display:flex;"><span>Server<span style="color:#f92672">:</span> <span style="color:#ae81ff">Dummy API</span>
+</span></span><span style="display:flex;"><span>Transfer-Encoding<span style="color:#f92672">:</span> <span style="color:#ae81ff">chunked</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#ae81ff"> </span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">Dummy</span> <span style="color:#ae81ff">API</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">=========</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">The</span> <span style="color:#960050;background-color:#1e0010">following</span> <span style="color:#960050;background-color:#1e0010">request</span> <span style="color:#960050;background-color:#1e0010">headers</span> <span style="color:#960050;background-color:#1e0010">and</span> <span style="color:#960050;background-color:#1e0010">query</span> <span style="color:#960050;background-color:#1e0010">parameters</span> <span style="color:#960050;background-color:#1e0010">will</span> <span style="color:#960050;background-color:#1e0010">make</span> <span style="color:#960050;background-color:#1e0010">an</span> <span style="color:#960050;background-color:#1e0010">impact</span> <span style="color:#960050;background-color:#1e0010">on</span> <span style="color:#960050;background-color:#1e0010">the</span> <span style="color:#960050;background-color:#1e0010">response.</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">Delay</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">-----</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">header-delay </span><span style="color:#f92672">=</span><span style="color:#e6db74"> {float}           Delay to first header byte</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">body-delay </span><span style="color:#f92672">=</span><span style="color:#e6db74"> {float}             Delay to first body byte</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">Cache-control</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">-------------</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">max-age </span><span style="color:#f92672">=</span><span style="color:#e6db74"> {int}                  Set the response max-age value</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">s-maxage </span><span style="color:#f92672">=</span><span style="color:#e6db74"> {int}                 Set the response s-maxage value</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">must-revalidate</span>                  <span style="color:#960050;background-color:#1e0010">Set</span> <span style="color:#960050;background-color:#1e0010">must-revalidate</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">public</span>                           <span style="color:#960050;background-color:#1e0010">Set</span> <span style="color:#960050;background-color:#1e0010">public</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">private</span>                          <span style="color:#960050;background-color:#1e0010">Set</span> <span style="color:#960050;background-color:#1e0010">private</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">no-store</span>                         <span style="color:#960050;background-color:#1e0010">Set</span> <span style="color:#960050;background-color:#1e0010">no-store</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">no-cache</span>                         <span style="color:#960050;background-color:#1e0010">Set</span> <span style="color:#960050;background-color:#1e0010">no-cache</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">no-transform</span>                     <span style="color:#960050;background-color:#1e0010">Set</span> <span style="color:#960050;background-color:#1e0010">no-transform</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">Misc</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">----</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">content-length</span>                   <span style="color:#960050;background-color:#1e0010">Set</span> <span style="color:#960050;background-color:#1e0010">the</span> <span style="color:#960050;background-color:#1e0010">content-length</span> <span style="color:#960050;background-color:#1e0010">header,</span> <span style="color:#960050;background-color:#1e0010">otherwise</span> <span style="color:#960050;background-color:#1e0010">chunked</span> <span style="color:#960050;background-color:#1e0010">transfer</span> <span style="color:#960050;background-color:#1e0010">encoding</span> <span style="color:#960050;background-color:#1e0010">is</span> <span style="color:#960050;background-color:#1e0010">used</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">random-content </span><span style="color:#f92672">=</span><span style="color:#e6db74"> {int}           Add random string to the response of given length</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">predictable-content </span><span style="color:#f92672">=</span><span style="color:#e6db74"> {int}      Add predictable string to the response of given length</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">response-status </span><span style="color:#f92672">=</span><span style="color:#e6db74"> {int}          Set the response status</span>
+</span></span></code></pre></div><p>The Dummy API is written in Lua and is available for download at <a href="https://github.com/espebra/dummy-api">Github</a>. It will run on the <a href="http://openresty.org/">OpenResty</a> web application server.</p>
 
 		</p>
         </div>
@@ -187,7 +162,7 @@ response-status = {int}          Set the response status
 		<div id="disqus_thread"></div>
 <script type="text/javascript">
 	 
-	var disqus_shortname = 'espenbraastad';
+	var disqus_shortname = '';
 	var disqus_identifier = 'Dummy API';
 
      
@@ -204,9 +179,9 @@ response-status = {int}          Set the response status
 
 </div>
 
-<script id="dsq-count-scr" src="//espenbraastad.disqus.com/count.js" async></script>
-<script src="http://www.espenbraastad.no//prism/prism.js"></script>
-<script src="http://www.espenbraastad.no//jquery.min.js"></script>
+<script id="dsq-count-scr" src="//.disqus.com/count.js" async></script>
+<script src="/prism/prism.js"></script>
+<script src="/jquery.min.js"></script>
 <script>
 	 
 	$(function() { $('table').addClass('table table-responsive'); })

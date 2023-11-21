@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Categories on Espen Braastad</title>
+    <link>/categories/</link>
+    <description>Recent content in Categories on Espen Braastad</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 24 Oct 2017 00:20:20 +0100</lastBuildDate>
+    <atom:link href="/categories/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>netbooting</title>
+      <link>/categories/netbooting/</link>
+      <pubDate>Tue, 24 Oct 2017 00:20:20 +0100</pubDate>
+      <guid>/categories/netbooting/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Development</title>
+      <link>/categories/development/</link>
+      <pubDate>Sun, 29 May 2016 20:40:48 +0200</pubDate>
+      <guid>/categories/development/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>filebin</title>
+      <link>/categories/filebin/</link>
+      <pubDate>Sun, 29 May 2016 20:40:48 +0200</pubDate>
+      <guid>/categories/filebin/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>GoLang</title>
+      <link>/categories/golang/</link>
+      <pubDate>Sun, 29 May 2016 20:40:48 +0200</pubDate>
+      <guid>/categories/golang/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Ergonomics</title>
+      <link>/categories/ergonomics/</link>
+      <pubDate>Wed, 16 Sep 2015 22:56:54 +0200</pubDate>
+      <guid>/categories/ergonomics/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Varnish</title>
+      <link>/categories/varnish/</link>
+      <pubDate>Thu, 07 May 2015 10:55:56 +0200</pubDate>
+      <guid>/categories/varnish/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>API</title>
+      <link>/categories/api/</link>
+      <pubDate>Sat, 02 May 2015 21:42:21 +0200</pubDate>
+      <guid>/categories/api/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>mikrotik</title>
+      <link>/categories/mikrotik/</link>
+      <pubDate>Sat, 30 Aug 2014 20:48:00 +0100</pubDate>
+      <guid>/categories/mikrotik/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>sensors</title>
+      <link>/categories/sensors/</link>
+      <pubDate>Wed, 19 Feb 2014 23:32:00 +0100</pubDate>
+      <guid>/categories/sensors/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>sysadm</title>
+      <link>/categories/sysadm/</link>
+      <pubDate>Mon, 24 Sep 2012 16:58:32 +0100</pubDate>
+      <guid>/categories/sysadm/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>monitoring</title>
+      <link>/categories/monitoring/</link>
+      <pubDate>Mon, 16 Aug 2010 20:15:00 +0100</pubDate>
+      <guid>/categories/monitoring/</guid>
+      <description></description>
+    </item>
+  </channel>
+</rss>

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
 <head>
-	<meta name="generator" content="Hugo 0.18.1" />
+	<meta name="generator" content="Hugo 0.120.4">
 	<link href="http://gmpg.org/xfn/11" rel="profile">
 	<meta http-equiv="content-type" content="text/html; charset=utf-8">
 	
@@ -11,25 +11,12 @@
 	<title>Espen Braastad</title>
 	
 	
-	<link rel="stylesheet" href="http://www.espenbraastad.no//bootstrap/css/bootstrap.min.css">
-	<link rel="stylesheet" href="http://www.espenbraastad.no//font-awesome/css/font-awesome.min.css">
+	<link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
 	<link rel="stylesheet" href="/custom.css">
 	
 	
 	<link rel="stylesheet" href="/prism/prism.css">
-	
-	
-	<link href="http://www.espenbraastad.no/index.xml" rel="alternate" type="application/rss+xml" title="Espen Braastad" />
-	
-	<script>
-		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-		
-		ga('create', 'UA-59220530-1', 'auto');
-		ga('send', 'pageview');
-	</script>
 </head>
 <body>
 
@@ -62,175 +49,16 @@
 	<div class="container">
 		<div class="row">
 	<div class="col-md-12">
-		<h1>ZFS NAS using CentOS 7 from tmpfs</h1>
+		<h1>Posts</h1>
 		<small class="text-muted">
-			Published Tuesday, October 24, 2017 (700 words, 4 minutes to read).
+			Published Tuesday, October 24, 2017 (100 words, 0 minutes to read).
 			<a href="#comments">
-				<span class="disqus-comment-count" data-disqus-identifier="ZFS NAS using CentOS 7 from tmpfs"></span>
+				<span class="disqus-comment-count" data-disqus-identifier="Posts"></span>
 			</a>
 		</small>
 		
 		<p>
 			
-
-<p>Following up on the <a href="/posts/centos-7-rootfs-on-tmpfs/">CentOS 7 root filesystem on tmpfs</a> post, here comes a guide on how to run a ZFS enabled CentOS 7 NAS server (with the operating system) from tmpfs.</p>
-
-<h2 id="hardware">Hardware</h2>
-
-<ul>
-<li>HP ProLiant MicroServer</li>
-<li>HP ProLiant MicroServer Remote Access Card</li>
-<li>AMD Turion&trade; II Neo N54L Dual-Core Processor</li>
-<li>2x 8 GB 1333 MHZ ECC memory modules</li>
-<li>4x 4 TB SATA hard drives (HGST, Western Digital and Seagate)</li>
-<li>Built-in Broadcom Limited NetXtreme BCM5723 Gigabit Ethernet adapter</li>
-</ul>
-
-<h2 id="preparing-the-build-environment">Preparing the build environment</h2>
-
-<p>The disk image is built in macOS using <a href="https://www.packer.io">Packer</a> and <a href="https://www.virtualbox.org/">VirtualBox</a>. Virtualbox is installed using the appropriate platform package that is downloaded from <a href="https://www.virtualbox.org/wiki/Downloads">their website</a>, and Packer is installed using brew:</p>
-
-<pre><code class="language-bash">$ brew install packer
-</code></pre>
-
-<h2 id="building-the-disk-image">Building the disk image</h2>
-
-<p>Three files are needed in order to build the disk image; a Packer template file, an Anaconda kickstart file and a shell script that is used to configure the disk image after installation. The following files can be used as examples:</p>
-
-<ul>
-<li><a href="/files/template.json"><code>template.json</code></a> (Packer template example file)</li>
-<li><a href="/files/ks.cfg"><code>ks.cfg</code></a> (Anaconda kickstart example file)</li>
-<li><a href="/files/provision.sh"><code>provision.sh</code></a> (Provision shell script example file)</li>
-</ul>
-
-<p>Create some directories:</p>
-
-<pre><code class="language-bash">$ mkdir ~work/centos-7-zfs/
-$ mkdir ~work/centos-7-zfs/http/
-$ mkdir ~work/centos-7-zfs/scripts/
-</code></pre>
-
-<p>Copy the files to these directories:</p>
-
-<pre><code class="language-bash">$ cp template.json ~work/centos-7-zfs/
-$ cp ks.cfg ~work/centos-7-zfs/http/
-$ cp provision.sh ~work/centos-7-zfs/scripts/
-</code></pre>
-
-<p>Modify each of the files to fit your environment.</p>
-
-<p>Start the build process using Packer:</p>
-
-<pre><code class="language-bash">$ cd ~work/centos-7-zfs/
-$ packer build template.json
-</code></pre>
-
-<p>This will download the CentOS 7 ISO file, start an HTTP server to serve the kickstart file and start a virtual machine using Virtualbox:</p>
-
-<p><img src="/img/packer-installer.png" alt="Packer installer screenshot" /></p>
-
-<p>The virtual machine will boot into Anaconda and run through the installation process as specified in the kickstart file:</p>
-
-<p><img src="/img/anaconda-installer.png" alt="Anaconda installer screenshot" /></p>
-
-<p>When the installation process is complete, the disk image will be available in the <code>output-virtualbox-iso</code> folder with the <a href="https://en.wikipedia.org/wiki/VMDK"><code>vmdk</code></a> extension.</p>
-
-<p><img src="/img/packer-installer-done.png" alt="Packer done screenshot" /></p>
-
-<p>The disk image is now ready to be put in initramfs.</p>
-
-<h2 id="putting-the-disk-image-in-initramfs">Putting the disk image in initramfs</h2>
-
-<p>This section is quite similar to the previous blog post <a href="/posts/centos-7-rootfs-on-tmpfs/">CentOS 7 root filesystem on tmpfs</a> but with minor differences. For simplicity reasons it is executed on a host running CentOS 7.</p>
-
-<p>Create the build directories:</p>
-
-<pre><code class="language-bash">$ mkdir /work
-$ mkdir /work/newroot
-$ mkdir /work/result
-</code></pre>
-
-<p>Export the files from the disk image to one of the directories we created earlier:</p>
-
-<pre><code class="language-bash">$ export LIBGUESTFS_BACKEND=direct
-$ guestfish --ro -a packer-virtualbox-iso-1508790384-disk001.vmdk -i copy-out / /work/newroot/
-</code></pre>
-
-<p>Modify <code>/etc/fstab</code>:</p>
-
-<pre><code class="language-bash">$ cat &gt; /work/newroot/etc/fstab &lt;&lt; EOF
-tmpfs       /         tmpfs    defaults,noatime 0 0
-none        /dev      devtmpfs defaults         0 0
-devpts      /dev/pts  devpts   gid=5,mode=620   0 0
-tmpfs       /dev/shm  tmpfs    defaults         0 0
-proc        /proc     proc     defaults         0 0
-sysfs       /sys      sysfs    defaults         0 0
-EOF
-</code></pre>
-
-<p>Disable selinux:</p>
-
-<pre><code class="language-bash">echo &quot;SELINUX=disabled&quot; &gt; /work/newroot/etc/selinux/config
-</code></pre>
-
-<p>Disable clearing the screen on login failure to make it possible to read any error messages:</p>
-
-<pre><code class="language-bash">mkdir /work/newroot/etc/systemd/system/getty@.service.d
-cat &gt; /work/newroot/etc/systemd/system/getty@.service.d/noclear.conf &lt;&lt; EOF
-[Service]
-TTYVTDisallocate=no
-EOF
-</code></pre>
-
-<p>Now jump to the <strong>Initramfs</strong> and <strong>Result</strong> sections in the <a href="/posts/centos-7-rootfs-on-tmpfs/">CentOS 7 root filesystem on tmpfs</a> and follow those steps until the end when the result is a <code>vmlinuz</code> and <code>initramfs</code> file.</p>
-
-<h2 id="zfs-configuration">ZFS configuration</h2>
-
-<p>The first time the NAS server boots on the disk image, the ZFS storage pool and volumes will have to be configured. Refer to the <a href="https://docs.oracle.com/cd/E19253-01/819-5461/gaynr/index.html">ZFS documentation</a> for information on how to do this, and use the following command only as guidelines.</p>
-
-<p>Create the storage pool:</p>
-
-<pre><code class="language-bash">$ sudo zpool create data mirror sda sdb mirror sdc sdd
-</code></pre>
-
-<p>Create the volumes:</p>
-
-<pre><code class="language-bash">$ sudo zfs create data/documents
-$ sudo zfs create data/games
-$ sudo zfs create data/movies
-$ sudo zfs create data/music
-$ sudo zfs create data/pictures
-$ sudo zfs create data/upload
-</code></pre>
-
-<p>Share some volumes using NFS:</p>
-
-<pre><code class="language-bash">zfs set sharenfs=on data/documents
-zfs set sharenfs=on data/games
-zfs set sharenfs=on data/music
-zfs set sharenfs=on data/pictures
-</code></pre>
-
-<p>Print the storage pool status:</p>
-
-<pre><code class="language-bash">$ sudo zpool status
-  pool: data
- state: ONLINE
-  scan: scrub repaired 0B in 20h22m with 0 errors on Sun Oct  1 21:04:14 2017
-config:
-
-	NAME        STATE     READ WRITE CKSUM
-	data        ONLINE       0     0     0
-	  mirror-0  ONLINE       0     0     0
-	    sdd     ONLINE       0     0     0
-	    sdc     ONLINE       0     0     0
-	  mirror-1  ONLINE       0     0     0
-	    sda     ONLINE       0     0     0
-	    sdb     ONLINE       0     0     0
-
-errors: No known data errors
-</code></pre>
-
 		</p>
         </div>
 
@@ -239,8 +67,8 @@ errors: No known data errors
 		<div id="disqus_thread"></div>
 <script type="text/javascript">
 	 
-	var disqus_shortname = 'espenbraastad';
-	var disqus_identifier = 'ZFS NAS using CentOS 7 from tmpfs';
+	var disqus_shortname = '';
+	var disqus_identifier = 'Posts';
 
      
 	(function() {
@@ -256,9 +84,9 @@ errors: No known data errors
 
 	</div>
 
-<script id="dsq-count-scr" src="//espenbraastad.disqus.com/count.js" async></script>
-<script src="http://www.espenbraastad.no//prism/prism.js"></script>
-<script src="http://www.espenbraastad.no//jquery.min.js"></script>
+<script id="dsq-count-scr" src="//.disqus.com/count.js" async></script>
+<script src="/prism/prism.js"></script>
+<script src="/jquery.min.js"></script>
 <script>
 	 
 	$(function() { $('table').addClass('table table-responsive'); })

@@ -1,187 +1,19 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Virt Builder on Espen Braastad</title>
-    <link>http://www.espenbraastad.no/tags/virt-builder/index.xml</link>
-    <description>Recent content in Virt Builder on Espen Braastad</description>
+    <title>virt-builder on Espen Braastad</title>
+    <link>/tags/virt-builder/</link>
+    <description>Recent content in virt-builder on Espen Braastad</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <atom:link href="http://www.espenbraastad.no/tags/virt-builder/index.xml" rel="self" type="application/rss+xml" />
-    
+    <lastBuildDate>Fri, 06 Jan 2017 21:34:20 +0100</lastBuildDate>
+    <atom:link href="/tags/virt-builder/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>CentOS 7 root filesystem on tmpfs</title>
-      <link>http://www.espenbraastad.no/posts/centos-7-rootfs-on-tmpfs/</link>
+      <link>/posts/centos-7-rootfs-on-tmpfs/</link>
       <pubDate>Fri, 06 Jan 2017 21:34:20 +0100</pubDate>
-      
-      <guid>http://www.espenbraastad.no/posts/centos-7-rootfs-on-tmpfs/</guid>
-      <description>
-
-&lt;p&gt;Several years ago I wrote a &lt;a href=&#34;http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs/&#34;&gt;series&lt;/a&gt; &lt;a href=&#34;http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs-update/&#34;&gt;of&lt;/a&gt; &lt;a href=&#34;http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs-update2/&#34;&gt;posts&lt;/a&gt; on how to run EL6 with its root filesystem on tmpfs. This post is a continuation of that series, and explains step by step how to run CentOS 7 with its root filesystem in memory. It should apply to RHEL, Ubuntu, Debian and other Linux distributions as well. The post is a bit terse to focus on the concept, and several of the steps have potential for improvements.&lt;/p&gt;
-
-&lt;p&gt;The following is a screen recording from a host running CentOS 7 in tmpfs:&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&#34;http://www.espenbraastad.no/img/centos7-in-tmpfs.gif&#34; alt=&#34;Sensor&#34; /&gt;&lt;/p&gt;
-
-&lt;h2 id=&#34;build-environment&#34;&gt;Build environment&lt;/h2&gt;
-
-&lt;p&gt;A build host is needed to prepare the image to boot from. The build host should run CentOS 7 x86_64, and have the following packages installed:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;yum install libvirt libguestfs-tools guestfish
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Make sure the libvirt daemon is running:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;systemctl start libvirtd
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Create some directories that will be used later, however feel free to relocate these to somewhere else:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;mkdir -p /work/initramfs/bin
-mkdir -p /work/newroot
-mkdir -p /work/result
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2 id=&#34;disk-image&#34;&gt;Disk image&lt;/h2&gt;
-
-&lt;p&gt;For simplicity reasons we&amp;rsquo;ll fetch our rootfs from a pre-built disk image, but it is possible to build a &lt;a href=&#34;https://www.redpill-linpro.com/sysadvent/2016/12/14/use-virt-manager-to-build-disk-images.html&#34;&gt;custom disk image using virt-manager&lt;/a&gt;. I expect that most people would like to create their own disk image from scratch, but this is outside the scope of this post.&lt;/p&gt;
-
-&lt;p&gt;Use &lt;code&gt;virt-builder&lt;/code&gt; to download a pre-built CentOS 7.3 disk image and set the root password:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;virt-builder centos-7.3 -o /work/disk.img --root-password password:changeme
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Export the files from the disk image to one of the directories we created earlier:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;guestfish --ro -a /work/disk.img -i copy-out / /work/newroot/
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Clear fstab since it contains mount entries that no longer apply:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;echo &amp;gt; /work/newroot/etc/fstab
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;SELinux will complain about incorrect disk label at boot, so let&amp;rsquo;s just disable it right away. Production environments should have SELinux enabled.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;echo &amp;quot;SELINUX=disabled&amp;quot; &amp;gt; /work/newroot/etc/selinux/config
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Disable clearing the screen on login failure to make it possible to read any error messages:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;mkdir /work/newroot/etc/systemd/system/getty@.service.d
-cat &amp;gt; /work/newroot/etc/systemd/system/getty@.service.d/noclear.conf &amp;lt;&amp;lt; EOF
-[Service]
-TTYVTDisallocate=no
-EOF
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2 id=&#34;initramfs&#34;&gt;Initramfs&lt;/h2&gt;
-
-&lt;p&gt;We&amp;rsquo;ll create our custom initramfs from scratch. The boot procedure will be, simply put:&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;Fetch kernel and a custom initramfs.&lt;/li&gt;
-&lt;li&gt;Execute kernel.&lt;/li&gt;
-&lt;li&gt;Mount the initramfs as the temporary root filesystem (for the kernel).&lt;/li&gt;
-&lt;li&gt;Execute &lt;code&gt;/init&lt;/code&gt; (in the initramfs).&lt;/li&gt;
-&lt;li&gt;Create a &lt;code&gt;tmpfs&lt;/code&gt; mount point.&lt;/li&gt;
-&lt;li&gt;Extract our CentOS 7 root filesystem to the &lt;code&gt;tmpfs&lt;/code&gt; mount point.&lt;/li&gt;
-&lt;li&gt;Execute &lt;code&gt;switch_root&lt;/code&gt; to boot on the CentOS 7 root filesystem.&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;The initramfs will be based on &lt;a href=&#34;https://www.busybox.net/&#34;&gt;BusyBox&lt;/a&gt;. Download a pre-built binary or compile it from source, put the binary in the &lt;code&gt;initramfs/bin&lt;/code&gt; directory. In this post I&amp;rsquo;ll just download a pre-built binary:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;wget -O /work/initramfs/bin/busybox https://www.busybox.net/downloads/binaries/1.26.1-defconfig-multiarch/busybox-x86_64
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Make sure that &lt;code&gt;busybox&lt;/code&gt; has the execute bit set:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;chmod +x /work/initramfs/bin/busybox
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Create the file &lt;code&gt;/work/initramfs/init&lt;/code&gt; with the following contents:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;#!/bin/busybox sh
-
-# Dump to sh if something fails
-error() {
-	echo &amp;quot;Jumping into the shell...&amp;quot;
-	setsid cttyhack sh
-}
-
-# Populate /bin with binaries from busybox
-/bin/busybox --install /bin
-
-mkdir -p /proc
-mount -t proc proc /proc
-
-mkdir -p /sys
-mount -t sysfs sysfs /sys
-
-mkdir -p /sys/dev
-mkdir -p /var/run
-mkdir -p /dev
-
-mkdir -p /dev/pts
-mount -t devpts devpts /dev/pts
-
-# Populate /dev
-echo /bin/mdev &amp;gt; /proc/sys/kernel/hotplug
-mdev -s
-
-mkdir -p /newroot
-mount -t tmpfs -o size=1500m tmpfs /newroot || error
-
-echo &amp;quot;Extracting rootfs... &amp;quot;
-xz -d -c -f rootfs.tar.xz | tar -x -f - -C /newroot || error
-
-mount --move /sys /newroot/sys
-mount --move /proc /newroot/proc
-mount --move /dev /newroot/dev
-
-exec switch_root /newroot /sbin/init || error
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Make sure it is executable:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;chmod +x /work/initramfs/init
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Create the root filesystem archive using &lt;code&gt;tar&lt;/code&gt;. The following command also uses xz compression to reduce the final size of the archive (from approximately 1 GB to 270 MB):&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;cd /work/newroot
-tar cJf /work/initramfs/rootfs.tar.xz .
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Create &lt;code&gt;initramfs.gz&lt;/code&gt; using:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;cd /work/initramfs
-find . -print0 | cpio --null -ov --format=newc | gzip -9 &amp;gt; /work/result/initramfs.gz
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Copy the kernel directly from the root filesystem using:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;cp /work/newroot/boot/vmlinuz-*x86_64 /work/result/vmlinuz
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2 id=&#34;result&#34;&gt;Result&lt;/h2&gt;
-
-&lt;p&gt;The &lt;code&gt;/work/result&lt;/code&gt; directory now contains two files with file sizes similar to the following:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;ls -lh /work/result/
-total 277M
--rw-r--r-- 1 root root 272M Jan  6 23:42 initramfs.gz
--rwxr-xr-x 1 root root 5.2M Jan  6 23:42 vmlinuz
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;These files can be loaded directly in GRUB from disk, or using &lt;a href=&#34;http://ipxe.org/&#34;&gt;iPXE&lt;/a&gt; over HTTP using a script similar to:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;#!ipxe
-kernel http://example.com/vmlinuz
-initrd http://example.com/initramfs.gz
-boot
-&lt;/code&gt;&lt;/pre&gt;
-</description>
+      <guid>/posts/centos-7-rootfs-on-tmpfs/</guid>
+      <description>Several years ago I wrote a series of posts on how to run EL6 with its root filesystem on tmpfs. This post is a continuation of that series, and explains step by step how to run CentOS 7 with its root filesystem in memory. It should apply to RHEL, Ubuntu, Debian and other Linux distributions as well. The post is a bit terse to focus on the concept, and several of the steps have potential for improvements.</description>
     </item>
-    
   </channel>
 </rss>

@@ -10,25 +10,12 @@
 	<title>CentOS 7 root filesystem on tmpfs</title>
 	
 	
-	<link rel="stylesheet" href="http://www.espenbraastad.no//bootstrap/css/bootstrap.min.css">
-	<link rel="stylesheet" href="http://www.espenbraastad.no//font-awesome/css/font-awesome.min.css">
+	<link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
 	<link rel="stylesheet" href="/custom.css">
 	
 	
 	<link rel="stylesheet" href="/prism/prism.css">
-	
-	
-	<link href="" rel="alternate" type="application/rss+xml" title="Espen Braastad" />
-	
-	<script>
-		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-		
-		ga('create', 'UA-59220530-1', 'auto');
-		ga('send', 'pageview');
-	</script>
 </head>
 <body>
 
@@ -57,70 +44,36 @@
 		</small>
 		
 		<p>
-			
-
-<p>Several years ago I wrote a <a href="/posts/el6-rootfs-on-tmpfs/">series</a> <a href="/posts/el6-rootfs-on-tmpfs-update/">of</a> <a href="/posts/el6-rootfs-on-tmpfs-update2/">posts</a> on how to run EL6 with its root filesystem on tmpfs. This post is a continuation of that series, and explains step by step how to run CentOS 7 with its root filesystem in memory. It should apply to RHEL, Ubuntu, Debian and other Linux distributions as well. The post is a bit terse to focus on the concept, and several of the steps have potential for improvements.</p>
-
+			<p>Several years ago I wrote a <a href="/posts/el6-rootfs-on-tmpfs/">series</a> <a href="/posts/el6-rootfs-on-tmpfs-update/">of</a> <a href="/posts/el6-rootfs-on-tmpfs-update2/">posts</a> on how to run EL6 with its root filesystem on tmpfs. This post is a continuation of that series, and explains step by step how to run CentOS 7 with its root filesystem in memory. It should apply to RHEL, Ubuntu, Debian and other Linux distributions as well. The post is a bit terse to focus on the concept, and several of the steps have potential for improvements.</p>
 <p>The following is a screen recording from a host running CentOS 7 in tmpfs:</p>
-
-<p><img src="/img/centos7-in-tmpfs.gif" alt="Sensor" /></p>
-
+<p><img src="/img/centos7-in-tmpfs.gif" alt="Sensor"></p>
 <h2 id="build-environment">Build environment</h2>
-
 <p>A build host is needed to prepare the image to boot from. The build host should run CentOS 7 x86_64, and have the following packages installed:</p>
-
-<pre><code class="language-bash">yum install libvirt libguestfs-tools guestfish
-</code></pre>
-
-<p>Make sure the libvirt daemon is running:</p>
-
-<pre><code class="language-bash">systemctl start libvirtd
-</code></pre>
-
-<p>Create some directories that will be used later, however feel free to relocate these to somewhere else:</p>
-
-<pre><code class="language-bash">mkdir -p /work/initramfs/bin
-mkdir -p /work/newroot
-mkdir -p /work/result
-</code></pre>
-
-<h2 id="disk-image">Disk image</h2>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>yum install libvirt libguestfs-tools guestfish
+</span></span></code></pre></div><p>Make sure the libvirt daemon is running:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>systemctl start libvirtd
+</span></span></code></pre></div><p>Create some directories that will be used later, however feel free to relocate these to somewhere else:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>mkdir -p /work/initramfs/bin
+</span></span><span style="display:flex;"><span>mkdir -p /work/newroot
+</span></span><span style="display:flex;"><span>mkdir -p /work/result
+</span></span></code></pre></div><h2 id="disk-image">Disk image</h2>
 <p>For simplicity reasons we&rsquo;ll fetch our rootfs from a pre-built disk image, but it is possible to build a <a href="https://www.redpill-linpro.com/sysadvent/2016/12/14/use-virt-manager-to-build-disk-images.html">custom disk image using virt-manager</a>. I expect that most people would like to create their own disk image from scratch, but this is outside the scope of this post.</p>
-
 <p>Use <code>virt-builder</code> to download a pre-built CentOS 7.3 disk image and set the root password:</p>
-
-<pre><code class="language-bash">virt-builder centos-7.3 -o /work/disk.img --root-password password:changeme
-</code></pre>
-
-<p>Export the files from the disk image to one of the directories we created earlier:</p>
-
-<pre><code class="language-bash">guestfish --ro -a /work/disk.img -i copy-out / /work/newroot/
-</code></pre>
-
-<p>Clear fstab since it contains mount entries that no longer apply:</p>
-
-<pre><code class="language-bash">echo &gt; /work/newroot/etc/fstab
-</code></pre>
-
-<p>SELinux will complain about incorrect disk label at boot, so let&rsquo;s just disable it right away. Production environments should have SELinux enabled.</p>
-
-<pre><code class="language-bash">echo &quot;SELINUX=disabled&quot; &gt; /work/newroot/etc/selinux/config
-</code></pre>
-
-<p>Disable clearing the screen on login failure to make it possible to read any error messages:</p>
-
-<pre><code class="language-bash">mkdir /work/newroot/etc/systemd/system/getty@.service.d
-cat &gt; /work/newroot/etc/systemd/system/getty@.service.d/noclear.conf &lt;&lt; EOF
-[Service]
-TTYVTDisallocate=no
-EOF
-</code></pre>
-
-<h2 id="initramfs">Initramfs</h2>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>virt-builder centos-7.3 -o /work/disk.img --root-password password:changeme
+</span></span></code></pre></div><p>Export the files from the disk image to one of the directories we created earlier:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>guestfish --ro -a /work/disk.img -i copy-out / /work/newroot/
+</span></span></code></pre></div><p>Clear fstab since it contains mount entries that no longer apply:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>echo &gt; /work/newroot/etc/fstab
+</span></span></code></pre></div><p>SELinux will complain about incorrect disk label at boot, so let&rsquo;s just disable it right away. Production environments should have SELinux enabled.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>echo <span style="color:#e6db74">&#34;SELINUX=disabled&#34;</span> &gt; /work/newroot/etc/selinux/config
+</span></span></code></pre></div><p>Disable clearing the screen on login failure to make it possible to read any error messages:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>mkdir /work/newroot/etc/systemd/system/getty@.service.d
+</span></span><span style="display:flex;"><span>cat &gt; /work/newroot/etc/systemd/system/getty@.service.d/noclear.conf <span style="color:#e6db74">&lt;&lt; EOF
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">[Service]
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">TTYVTDisallocate=no
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">EOF</span>
+</span></span></code></pre></div><h2 id="initramfs">Initramfs</h2>
 <p>We&rsquo;ll create our custom initramfs from scratch. The boot procedure will be, simply put:</p>
-
 <ol>
 <li>Fetch kernel and a custom initramfs.</li>
 <li>Execute kernel.</li>
@@ -130,100 +83,72 @@ EOF
 <li>Extract our CentOS 7 root filesystem to the <code>tmpfs</code> mount point.</li>
 <li>Execute <code>switch_root</code> to boot on the CentOS 7 root filesystem.</li>
 </ol>
-
 <p>The initramfs will be based on <a href="https://www.busybox.net/">BusyBox</a>. Download a pre-built binary or compile it from source, put the binary in the <code>initramfs/bin</code> directory. In this post I&rsquo;ll just download a pre-built binary:</p>
-
-<pre><code class="language-bash">wget -O /work/initramfs/bin/busybox https://www.busybox.net/downloads/binaries/1.26.1-defconfig-multiarch/busybox-x86_64
-</code></pre>
-
-<p>Make sure that <code>busybox</code> has the execute bit set:</p>
-
-<pre><code class="language-bash">chmod +x /work/initramfs/bin/busybox
-</code></pre>
-
-<p>Create the file <code>/work/initramfs/init</code> with the following contents:</p>
-
-<pre><code class="language-bash">#!/bin/busybox sh
-
-# Dump to sh if something fails
-error() {
-	echo &quot;Jumping into the shell...&quot;
-	setsid cttyhack sh
-}
-
-# Populate /bin with binaries from busybox
-/bin/busybox --install /bin
-
-mkdir -p /proc
-mount -t proc proc /proc
-
-mkdir -p /sys
-mount -t sysfs sysfs /sys
-
-mkdir -p /sys/dev
-mkdir -p /var/run
-mkdir -p /dev
-
-mkdir -p /dev/pts
-mount -t devpts devpts /dev/pts
-
-# Populate /dev
-echo /bin/mdev &gt; /proc/sys/kernel/hotplug
-mdev -s
-
-mkdir -p /newroot
-mount -t tmpfs -o size=1500m tmpfs /newroot || error
-
-echo &quot;Extracting rootfs... &quot;
-xz -d -c -f rootfs.tar.xz | tar -x -f - -C /newroot || error
-
-mount --move /sys /newroot/sys
-mount --move /proc /newroot/proc
-mount --move /dev /newroot/dev
-
-exec switch_root /newroot /sbin/init || error
-</code></pre>
-
-<p>Make sure it is executable:</p>
-
-<pre><code class="language-bash">chmod +x /work/initramfs/init
-</code></pre>
-
-<p>Create the root filesystem archive using <code>tar</code>. The following command also uses xz compression to reduce the final size of the archive (from approximately 1 GB to 270 MB):</p>
-
-<pre><code class="language-bash">cd /work/newroot
-tar cJf /work/initramfs/rootfs.tar.xz .
-</code></pre>
-
-<p>Create <code>initramfs.gz</code> using:</p>
-
-<pre><code class="language-bash">cd /work/initramfs
-find . -print0 | cpio --null -ov --format=newc | gzip -9 &gt; /work/result/initramfs.gz
-</code></pre>
-
-<p>Copy the kernel directly from the root filesystem using:</p>
-
-<pre><code class="language-bash">cp /work/newroot/boot/vmlinuz-*x86_64 /work/result/vmlinuz
-</code></pre>
-
-<h2 id="result">Result</h2>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>wget -O /work/initramfs/bin/busybox https://www.busybox.net/downloads/binaries/1.26.1-defconfig-multiarch/busybox-x86_64
+</span></span></code></pre></div><p>Make sure that <code>busybox</code> has the execute bit set:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>chmod +x /work/initramfs/bin/busybox
+</span></span></code></pre></div><p>Create the file <code>/work/initramfs/init</code> with the following contents:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e">#!/bin/busybox sh
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Dump to sh if something fails</span>
+</span></span><span style="display:flex;"><span>error<span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>	echo <span style="color:#e6db74">&#34;Jumping into the shell...&#34;</span>
+</span></span><span style="display:flex;"><span>	setsid cttyhack sh
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Populate /bin with binaries from busybox</span>
+</span></span><span style="display:flex;"><span>/bin/busybox --install /bin
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>mkdir -p /proc
+</span></span><span style="display:flex;"><span>mount -t proc proc /proc
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>mkdir -p /sys
+</span></span><span style="display:flex;"><span>mount -t sysfs sysfs /sys
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>mkdir -p /sys/dev
+</span></span><span style="display:flex;"><span>mkdir -p /var/run
+</span></span><span style="display:flex;"><span>mkdir -p /dev
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>mkdir -p /dev/pts
+</span></span><span style="display:flex;"><span>mount -t devpts devpts /dev/pts
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Populate /dev</span>
+</span></span><span style="display:flex;"><span>echo /bin/mdev &gt; /proc/sys/kernel/hotplug
+</span></span><span style="display:flex;"><span>mdev -s
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>mkdir -p /newroot
+</span></span><span style="display:flex;"><span>mount -t tmpfs -o size<span style="color:#f92672">=</span>1500m tmpfs /newroot <span style="color:#f92672">||</span> error
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>echo <span style="color:#e6db74">&#34;Extracting rootfs... &#34;</span>
+</span></span><span style="display:flex;"><span>xz -d -c -f rootfs.tar.xz | tar -x -f - -C /newroot <span style="color:#f92672">||</span> error
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>mount --move /sys /newroot/sys
+</span></span><span style="display:flex;"><span>mount --move /proc /newroot/proc
+</span></span><span style="display:flex;"><span>mount --move /dev /newroot/dev
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>exec switch_root /newroot /sbin/init <span style="color:#f92672">||</span> error
+</span></span></code></pre></div><p>Make sure it is executable:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>chmod +x /work/initramfs/init
+</span></span></code></pre></div><p>Create the root filesystem archive using <code>tar</code>. The following command also uses xz compression to reduce the final size of the archive (from approximately 1 GB to 270 MB):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>cd /work/newroot
+</span></span><span style="display:flex;"><span>tar cJf /work/initramfs/rootfs.tar.xz .
+</span></span></code></pre></div><p>Create <code>initramfs.gz</code> using:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>cd /work/initramfs
+</span></span><span style="display:flex;"><span>find . -print0 | cpio --null -ov --format<span style="color:#f92672">=</span>newc | gzip -9 &gt; /work/result/initramfs.gz
+</span></span></code></pre></div><p>Copy the kernel directly from the root filesystem using:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>cp /work/newroot/boot/vmlinuz-*x86_64 /work/result/vmlinuz
+</span></span></code></pre></div><h2 id="result">Result</h2>
 <p>The <code>/work/result</code> directory now contains two files with file sizes similar to the following:</p>
-
-<pre><code class="language-bash">ls -lh /work/result/
-total 277M
--rw-r--r-- 1 root root 272M Jan  6 23:42 initramfs.gz
--rwxr-xr-x 1 root root 5.2M Jan  6 23:42 vmlinuz
-</code></pre>
-
-<p>These files can be loaded directly in GRUB from disk, or using <a href="http://ipxe.org/">iPXE</a> over HTTP using a script similar to:</p>
-
-<pre><code class="language-bash">#!ipxe
-kernel http://example.com/vmlinuz
-initrd http://example.com/initramfs.gz
-boot
-</code></pre>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ls -lh /work/result/
+</span></span><span style="display:flex;"><span>total 277M
+</span></span><span style="display:flex;"><span>-rw-r--r-- <span style="color:#ae81ff">1</span> root root 272M Jan  <span style="color:#ae81ff">6</span> 23:42 initramfs.gz
+</span></span><span style="display:flex;"><span>-rwxr-xr-x <span style="color:#ae81ff">1</span> root root 5.2M Jan  <span style="color:#ae81ff">6</span> 23:42 vmlinuz
+</span></span></code></pre></div><p>These files can be loaded directly in GRUB from disk, or using <a href="http://ipxe.org/">iPXE</a> over HTTP using a script similar to:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e">#!ipxe
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>kernel http://example.com/vmlinuz
+</span></span><span style="display:flex;"><span>initrd http://example.com/initramfs.gz
+</span></span><span style="display:flex;"><span>boot
+</span></span></code></pre></div>
 		</p>
         </div>
 
@@ -232,7 +157,7 @@ boot
 		<div id="disqus_thread"></div>
 <script type="text/javascript">
 	 
-	var disqus_shortname = 'espenbraastad';
+	var disqus_shortname = '';
 	var disqus_identifier = 'CentOS 7 root filesystem on tmpfs';
 
      
@@ -249,9 +174,9 @@ boot
 
 </div>
 
-<script id="dsq-count-scr" src="//espenbraastad.disqus.com/count.js" async></script>
-<script src="http://www.espenbraastad.no//prism/prism.js"></script>
-<script src="http://www.espenbraastad.no//jquery.min.js"></script>
+<script id="dsq-count-scr" src="//.disqus.com/count.js" async></script>
+<script src="/prism/prism.js"></script>
+<script src="/jquery.min.js"></script>
 <script>
 	 
 	$(function() { $('table').addClass('table table-responsive'); })

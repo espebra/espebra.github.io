@@ -10,25 +10,12 @@
 	<title>Varnish goes upstack with varnish modules and varnish configuration language</title>
 	
 	
-	<link rel="stylesheet" href="http://www.espenbraastad.no//bootstrap/css/bootstrap.min.css">
-	<link rel="stylesheet" href="http://www.espenbraastad.no//font-awesome/css/font-awesome.min.css">
+	<link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
 	<link rel="stylesheet" href="/custom.css">
 	
 	
 	<link rel="stylesheet" href="/prism/prism.css">
-	
-	
-	<link href="" rel="alternate" type="application/rss+xml" title="Espen Braastad" />
-	
-	<script>
-		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-		
-		ga('create', 'UA-59220530-1', 'auto');
-		ga('send', 'pageview');
-	</script>
 </head>
 <body>
 
@@ -57,289 +44,203 @@
 		</small>
 		
 		<p>
-			
-
-<p><em>This post was first published at <a href="http://highscalability.com/blog/2015/5/6/varnish-goes-upstack-with-varnish-modules-and-varnish-config.html">High Scalability</a>.</em></p>
-
+			<p><em>This post was first published at <a href="http://highscalability.com/blog/2015/5/6/varnish-goes-upstack-with-varnish-modules-and-varnish-config.html">High Scalability</a>.</em></p>
 <p>Varnish Software has just released Varnish API Engine, a high performance HTTP API Gateway which handles authentication, authorization and throttling all built on top of Varnish Cache. The Varnish API Engine can easily extend your current set of APIs with a uniform access control layer that has built in caching abilities for high volume read operations, and it provides real-time metrics.</p>
-
 <p>Varnish API Engine is built using well known components like memcached, SQLite and most importantly Varnish Cache. The management API is written in Python. A core part of the product is written as an application on top of Varnish using VCL (Varnish Configuration Language) and VMODs (Varnish Modules) for extended functionality.</p>
-
 <p>We would like to use this as an opportunity to show how you can create your own flexible yet still high performance applications in VCL with the help of VMODs.</p>
-
 <h2 id="vmods">VMODs</h2>
-
 <p>VCL is the language used to configure Varnish Cache. When varnishd loads a VCL configuration file, it will convert it into C code, compile it and then load it dynamically. It is therefore possible to extend functionality of VCL by inlining C code directly into the VCL configuration file, but the preferred way to do it since Varnish Cache 3 has been to use Varnish Modules, or VMODs for short, instead.</p>
-
 <p>The typical request flow in a stack containing Varnish Cache is:</p>
-
-<p><img src="/img/normal-workflow.png" alt="normal-workflow" /></p>
-
+<p><img src="/img/normal-workflow.png" alt="normal-workflow"></p>
 <p>The client sends HTTP requests which are received and processed by Varnish Cache. Varnish Cache will decide to look up the requests in cache or not, and eventually it may fetch the content from the backend. This works very well, but we can do so much more.</p>
-
 <p>The VCL language is designed for performance, and as such does not provide loops or external calls natively. VMODs, on the other hand, are free of these restrictions. This is great for flexibility, but places the responsibility for ensuring performance and avoiding delays on the VMOD code and behaviour.</p>
-
 <p>The API Engine design illustrates how the powerful combination of VCL and custom VMODs can be used to build new applications. In Varnish API Engine, the request flow is:</p>
-
-<p><img src="/img/vmod-workflow.png" alt="Fig showing workflow with sqlite and memcached VMODs" /></p>
-
+<p><img src="/img/vmod-workflow.png" alt="Fig showing workflow with sqlite and memcached VMODs"></p>
 <p>Each request is matched against a ruleset using the SQLite VMOD and a set of Memcached counters using the memcached VMOD. The request is denied if one of the checks fail, for example if authentication failed or if one of the request limits have been exceeded.</p>
-
 <h2 id="example-application">Example application</h2>
-
 <p>The following example is a very simple version of some of the concepts used in the Varnish API Engine. We will create a small application written in VCL that will look up the requested URL in a database containing throttling rules and enforce them on a per IP basis.</p>
-
 <p>Since testing and maintainability is crucial when developing an application, we will use Varnish&rsquo;s integrated testing tool: <code>varnishtest</code>. Varnishtest is a powerful testing tool which is used to test all aspects of Varnish Cache. Varnishtest&rsquo;s simple interface means that developers and operation engineers can leverage it to test their VCL/VMOD configurations.</p>
-
 <p>Varnishtest reads a file describing a set of mock servers, clients, and varnish instances. The clients perform requests that go via varnish, to the server. Expectations can be set on content, headers, HTTP response codes and more. With <code>varnishtest</code> we can quickly test our example application, and verify that our requests are passed or blocked as per the defined expectations.</p>
-
 <p>First we need a database with our throttle rules. Using the sqlite3 command, we create the database in <code>/tmp/rules.db3</code> and add a couple of rules.</p>
-
-<pre><code class="language-bash">$ sqlite3 /tmp/rules.db3 &quot;CREATE TABLE t (rule text, path text);&quot;
-$ sqlite3 /tmp/rules.db3 &quot;INSERT INTO t (rule, path) VALUES ('3r5', '/search');&quot;
-$ sqlite3 /tmp/rules.db3 &quot;INSERT INTO t (rule, path) VALUES ('15r3600', '/login');&quot;
-</code></pre>
-
-<p>These rules will allow 3 requests per 5 seconds to <code>/search</code> and 15 requests per hour to <code>/login</code>. The idea is to enforce these rules on a per IP basis.</p>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ sqlite3 /tmp/rules.db3 <span style="color:#e6db74">&#34;CREATE TABLE t (rule text, path text);&#34;</span>
+</span></span><span style="display:flex;"><span>$ sqlite3 /tmp/rules.db3 <span style="color:#e6db74">&#34;INSERT INTO t (rule, path) VALUES (&#39;3r5&#39;, &#39;/search&#39;);&#34;</span>
+</span></span><span style="display:flex;"><span>$ sqlite3 /tmp/rules.db3 <span style="color:#e6db74">&#34;INSERT INTO t (rule, path) VALUES (&#39;15r3600&#39;, &#39;/login&#39;);&#34;</span>
+</span></span></code></pre></div><p>These rules will allow 3 requests per 5 seconds to <code>/search</code> and 15 requests per hour to <code>/login</code>. The idea is to enforce these rules on a per IP basis.</p>
 <p>For the sake of simplicity, we’ll write the tests and VCL configuration in the same file, <a href="/files/throttle.vtc">throttle.vtc</a>. It is, however, possible to include separate VCL configuration files using include statements in the test files, to separate VCL configuration and the different tests.</p>
-
 <p>The first line in the file is optionally used to set the name or the title of the test.</p>
-
-<pre><code class="language-bash">varnishtest &quot;Simple throttling with SQLite and Memcached&quot;
-</code></pre>
-
-<p>Our test environment consists of one backend, called s1. We will first expect one request to a URL without a rule in the database.</p>
-
-<pre><code class="language-bash">server s1 {
-    rxreq
-    expect req.url == &quot;/&quot;
-    txresp
-</code></pre>
-
-<p>We then expect 4 requests to <code>/search</code> to arrive according to our following expectations. Note that the query parameters are slightly different, making all of these unique requests.</p>
-
-<pre><code class="language-bash">    rxreq
-    expect req.url == &quot;/search?id=123&amp;type=1&quot;
-    expect req.http.path == &quot;/search&quot;
-    expect req.http.rule == &quot;3r5&quot;
-    expect req.http.requests == &quot;3&quot;
-    expect req.http.period == &quot;5&quot;
-    expect req.http.counter == &quot;1&quot;
-    txresp
-  
-    rxreq
-    expect req.url == &quot;/search?id=123&amp;type=2&quot;
-    expect req.http.path == &quot;/search&quot;
-    expect req.http.rule == &quot;3r5&quot;
-    expect req.http.requests == &quot;3&quot;
-    expect req.http.period == &quot;5&quot;
-    expect req.http.counter == &quot;2&quot;
-    txresp
-  
-    rxreq
-    expect req.url == &quot;/search?id=123&amp;type=3&quot;
-    expect req.http.path == &quot;/search&quot;
-    expect req.http.rule == &quot;3r5&quot;
-    expect req.http.requests == &quot;3&quot;
-    expect req.http.period == &quot;5&quot;
-    expect req.http.counter == &quot;3&quot;
-    txresp
-  
-    rxreq
-    expect req.url == &quot;/search?id=123&amp;type=4&quot;
-    expect req.http.path == &quot;/search&quot;
-    expect req.http.rule == &quot;3r5&quot;
-    expect req.http.requests == &quot;3&quot;
-    expect req.http.period == &quot;5&quot;
-    expect req.http.counter == &quot;1&quot;
-    txresp
-} -start
-</code></pre>
-
-<p>Now it is time to write the mini-application in VCL. Our test environment consists of one varnish instance, called v1. Initially, the VCL version marker and the VMOD imports are added.</p>
-
-<pre><code class="language-bash">varnish v1 -vcl+backend {
-    vcl 4.0;
-    import std;
-    import sqlite3;
-    import memcached;
-</code></pre>
-
-<p>VMODs are usually configured in <code>vcl_init</code>, and this is true for sqlite3 and memcached as well. For sqlite3, we set the path to the database and the field delimiter to use on multi column results. The memcached VMOD can have a wide variety of configuration options supported by <a href="http://docs.libmemcached.org/libmemcached_configuration.html">libmemcached</a>.</p>
-
-<pre><code class="language-bash">    sub vcl_init {
-        sqlite3.open(&quot;/tmp/rules.db3&quot;, &quot;|;&quot;);
-        memcached.servers(&quot;--SERVER=localhost --BINARY-PROTOCOL&quot;);
-    }
-</code></pre>
-
-<p>In <code>vcl_recv</code>, the incoming HTTP requests are received. We start by extracting the request path without query parameters and potential dangerous characters. This is important since the path will be part of the SQL query later. The following regex will match <code>req.url</code> from the beginning of the line up until any of the characters ? &amp; ;  “  ‘ or whitespace.</p>
-
-<pre><code class="language-bash">    sub vcl_recv {
-        set req.http.path = regsub(req.url, {&quot;^([^?&amp;;&quot;' ]+).*&quot;}, &quot;\1&quot;);
-</code></pre>
-
-<p>The use of <code>{&quot; &quot;}</code> in the regular expression enables handling of the &ldquo; character in the regular expression rule. The path we just extracted is used when the rule is looked up in the database. The response, if any, is stored in <code>req.http.rule</code>.</p>
-
-<pre><code class="language-bash">        set req.http.rule = sqlite3.exec(&quot;SELECT rule FROM t WHERE path='&quot; + req.http.path + &quot;' LIMIT 1&quot;);
-</code></pre>
-
-<p>If we get a response, it will be on the format <code>RnT</code>, where <code>R</code> is the amount of requests allowed over a period of <code>T</code> seconds. Since this is a string, we need to apply more regex to separate those.</p>
-
-<pre><code class="language-bash">        set req.http.requests = regsub(req.http.rule, &quot;^([0-9]+)r.*$&quot;, &quot;\1&quot;);
-        set req.http.period = regsub(req.http.rule, &quot;^[0-9]+r([0-9]+)$&quot;, &quot;\1&quot;);
-</code></pre>
-
-<p>We do throttling on this request only if we got proper values from the previous regex filters.</p>
-
-<pre><code class="language-bash">        if (req.http.requests != &quot;&quot; &amp;&amp; req.http.period != &quot;&quot;) {
-</code></pre>
-
-<p>Increment or create a Memcached counter unique for this <code>client.ip</code> and path with the value 1. The expiry time we specify is equal to the period in the throttle rule set in the database. This way, the throttle rules can be flexible regarding time period. The return value is the new value of the counter, which corresponds to the amount of requests this <code>client.ip</code> has done this path in the current time period.</p>
-
-<pre><code class="language-bash">           set req.http.counter = memcached.incr_set(
-               req.http.path + &quot;-&quot; + client.ip, 1, 1, std.integer(req.http.period, 0));
-</code></pre>
-
-<p>Check if the counter is higher than the limit set in the database. If it is, then abort the request here with a <code>429</code> response code.</p>
-
-<pre><code class="language-bash">            if (std.integer(req.http.counter, 0) &gt; std.integer(req.http.requests, 0)) {
-                 return (synth(429, &quot;Too many requests&quot;));
-            }
-        }
-    }
-</code></pre>
-
-<p>In <code>vcl_deliver</code> we set response headers showing the throttle limit and status for each request which might be helpful for the consumers.</p>
-
-<pre><code class="language-bash">    sub vcl_deliver {
-        if (req.http.requests &amp;&amp; req.http.counter &amp;&amp; req.http.period) {
-            set resp.http.X-RateLimit-Limit = req.http.requests;
-            set resp.http.X-RateLimit-Counter = req.http.counter;
-            set resp.http.X-RateLimit-Period = req.http.period;
-        }
-    }
-</code></pre>
-
-<p>Errors will get the same headers set in <code>vcl_synth</code>.</p>
-
-<pre><code class="language-bash">    sub vcl_synth {
-        if (req.http.requests &amp;&amp; req.http.counter &amp;&amp; req.http.period) {
-            set resp.http.X-RateLimit-Limit = req.http.requests;
-            set resp.http.X-RateLimit-Counter = req.http.counter;
-            set resp.http.X-RateLimit-Period = req.http.period;
-        }
-    }
-} -start
-</code></pre>
-
-<p>The configuration is complete, and it is time to add some clients to verify that the configuration is correct. First we send a request that we expect to be unthrottled, meaning that there are no throttle rules in the database for this URL.</p>
-
-<pre><code class="language-bash">client c1 {
-    txreq -url &quot;/&quot;
-    rxresp
-    expect resp.status == 200
-    expect resp.http.X-RateLimit-Limit == &lt;undef&gt;
-    expect resp.http.X-RateLimit-Counter == &lt;undef&gt;
-    expect resp.http.X-RateLimit-Period == &lt;undef&gt;
-} -run
-</code></pre>
-
-<p>The next client sends requests to a URL that we know is a match in the throttle database, and we expect the rate-limit headers to be set. The throttle rule for <code>/search</code> is <code>3r5</code>, which means that the three first requests within a 5 second period should succeed (with return code <code>200</code>) while the fourth request should be throttled (with return code <code>429</code>).</p>
-
-<pre><code class="language-bash">client c2 {
-    txreq -url &quot;/search?id=123&amp;type=1&quot;
-    rxresp
-    expect resp.status == 200
-    expect resp.http.X-RateLimit-Limit == &quot;3&quot;
-    expect resp.http.X-RateLimit-Counter == &quot;1&quot;
-    expect resp.http.X-RateLimit-Period == &quot;5&quot;
-  
-    txreq -url &quot;/search?id=123&amp;type=2&quot;
-    rxresp
-    expect resp.status == 200
-    expect resp.http.X-RateLimit-Limit == &quot;3&quot;
-    expect resp.http.X-RateLimit-Counter == &quot;2&quot;
-    expect resp.http.X-RateLimit-Period == &quot;5&quot;
-  
-    txreq -url &quot;/search?id=123&amp;type=3&quot;
-    rxresp
-    expect resp.status == 200
-    expect resp.http.X-RateLimit-Limit == &quot;3&quot;
-    expect resp.http.X-RateLimit-Counter == &quot;3&quot;
-    expect resp.http.X-RateLimit-Period == &quot;5&quot;
-  
-    txreq -url &quot;/search?id=123&amp;type=4&quot;
-    rxresp
-    expect resp.status == 429
-    expect resp.http.X-RateLimit-Limit == &quot;3&quot;
-    expect resp.http.X-RateLimit-Counter == &quot;4&quot;
-    expect resp.http.X-RateLimit-Period == &quot;5&quot;
-} -run
-</code></pre>
-
-<p>At this point, we know that requests are being throttled. To verify that new requests are allowed after the time limit is up, we add a delay here before we send the next and last request. This request should succeed since we are in a new throttle window.</p>
-
-<pre><code class="language-bash">delay 5;
- 
-client c3 {
-   txreq -url &quot;/search?id=123&amp;type=4&quot;
-   rxresp
-   expect resp.status == 200
-   expect resp.http.X-RateLimit-Limit == &quot;3&quot;
-   expect resp.http.X-RateLimit-Counter == &quot;1&quot;
-   expect resp.http.X-RateLimit-Period == &quot;5&quot;
-} -run
-</code></pre>
-
-<p>To execute the test file, make sure the memcached service is running locally and execute:</p>
-
-<pre><code class="language-bash">$ varnishtest example.vtc
-#     top  TEST example.vtc passed (6.533)
-</code></pre>
-
-<p>Add <code>-v</code> for verbose mode to get more information from the test run.</p>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>varnishtest <span style="color:#e6db74">&#34;Simple throttling with SQLite and Memcached&#34;</span>
+</span></span></code></pre></div><p>Our test environment consists of one backend, called s1. We will first expect one request to a URL without a rule in the database.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>server s1 <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    rxreq
+</span></span><span style="display:flex;"><span>    expect req.url <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;/&#34;</span>
+</span></span><span style="display:flex;"><span>    txresp
+</span></span></code></pre></div><p>We then expect 4 requests to <code>/search</code> to arrive according to our following expectations. Note that the query parameters are slightly different, making all of these unique requests.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>    rxreq
+</span></span><span style="display:flex;"><span>    expect req.url <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;/search?id=123&amp;type=1&#34;</span>
+</span></span><span style="display:flex;"><span>    expect req.http.path <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;/search&#34;</span>
+</span></span><span style="display:flex;"><span>    expect req.http.rule <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;3r5&#34;</span>
+</span></span><span style="display:flex;"><span>    expect req.http.requests <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;3&#34;</span>
+</span></span><span style="display:flex;"><span>    expect req.http.period <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;5&#34;</span>
+</span></span><span style="display:flex;"><span>    expect req.http.counter <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;1&#34;</span>
+</span></span><span style="display:flex;"><span>    txresp
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>    rxreq
+</span></span><span style="display:flex;"><span>    expect req.url <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;/search?id=123&amp;type=2&#34;</span>
+</span></span><span style="display:flex;"><span>    expect req.http.path <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;/search&#34;</span>
+</span></span><span style="display:flex;"><span>    expect req.http.rule <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;3r5&#34;</span>
+</span></span><span style="display:flex;"><span>    expect req.http.requests <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;3&#34;</span>
+</span></span><span style="display:flex;"><span>    expect req.http.period <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;5&#34;</span>
+</span></span><span style="display:flex;"><span>    expect req.http.counter <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;2&#34;</span>
+</span></span><span style="display:flex;"><span>    txresp
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>    rxreq
+</span></span><span style="display:flex;"><span>    expect req.url <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;/search?id=123&amp;type=3&#34;</span>
+</span></span><span style="display:flex;"><span>    expect req.http.path <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;/search&#34;</span>
+</span></span><span style="display:flex;"><span>    expect req.http.rule <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;3r5&#34;</span>
+</span></span><span style="display:flex;"><span>    expect req.http.requests <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;3&#34;</span>
+</span></span><span style="display:flex;"><span>    expect req.http.period <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;5&#34;</span>
+</span></span><span style="display:flex;"><span>    expect req.http.counter <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;3&#34;</span>
+</span></span><span style="display:flex;"><span>    txresp
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>    rxreq
+</span></span><span style="display:flex;"><span>    expect req.url <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;/search?id=123&amp;type=4&#34;</span>
+</span></span><span style="display:flex;"><span>    expect req.http.path <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;/search&#34;</span>
+</span></span><span style="display:flex;"><span>    expect req.http.rule <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;3r5&#34;</span>
+</span></span><span style="display:flex;"><span>    expect req.http.requests <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;3&#34;</span>
+</span></span><span style="display:flex;"><span>    expect req.http.period <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;5&#34;</span>
+</span></span><span style="display:flex;"><span>    expect req.http.counter <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;1&#34;</span>
+</span></span><span style="display:flex;"><span>    txresp
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span> -start
+</span></span></code></pre></div><p>Now it is time to write the mini-application in VCL. Our test environment consists of one varnish instance, called v1. Initially, the VCL version marker and the VMOD imports are added.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>varnish v1 -vcl+backend <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    vcl 4.0;
+</span></span><span style="display:flex;"><span>    import std;
+</span></span><span style="display:flex;"><span>    import sqlite3;
+</span></span><span style="display:flex;"><span>    import memcached;
+</span></span></code></pre></div><p>VMODs are usually configured in <code>vcl_init</code>, and this is true for sqlite3 and memcached as well. For sqlite3, we set the path to the database and the field delimiter to use on multi column results. The memcached VMOD can have a wide variety of configuration options supported by <!-- raw HTML omitted -->libmemcached<!-- raw HTML omitted -->.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>    sub vcl_init <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>        sqlite3.open<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;/tmp/rules.db3&#34;</span>, <span style="color:#e6db74">&#34;|;&#34;</span><span style="color:#f92672">)</span>;
+</span></span><span style="display:flex;"><span>        memcached.servers<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;--SERVER=localhost --BINARY-PROTOCOL&#34;</span><span style="color:#f92672">)</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span></code></pre></div><p>In <code>vcl_recv</code>, the incoming HTTP requests are received. We start by extracting the request path without query parameters and potential dangerous characters. This is important since the path will be part of the SQL query later. The following regex will match <code>req.url</code> from the beginning of the line up until any of the characters ? &amp; ;  “  ‘ or whitespace.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>    sub vcl_recv <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>        set req.http.path <span style="color:#f92672">=</span> regsub<span style="color:#f92672">(</span>req.url, <span style="color:#f92672">{</span><span style="color:#e6db74">&#34;^([^?&amp;;&#34;</span><span style="color:#960050;background-color:#1e0010">&#39;</span> <span style="color:#f92672">]</span>+<span style="color:#f92672">)</span>.*<span style="color:#e6db74">&#34;}, &#34;</span><span style="color:#ae81ff">\1</span><span style="color:#e6db74">&#34;);
+</span></span></span></code></pre></div><p>The use of <code>{&quot; &quot;}</code> in the regular expression enables handling of the &quot; character in the regular expression rule. The path we just extracted is used when the rule is looked up in the database. The response, if any, is stored in <code>req.http.rule</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>        set req.http.rule <span style="color:#f92672">=</span> sqlite3.exec<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;SELECT rule FROM t WHERE path=&#39;&#34;</span> + req.http.path + <span style="color:#e6db74">&#34;&#39; LIMIT 1&#34;</span><span style="color:#f92672">)</span>;
+</span></span></code></pre></div><p>If we get a response, it will be on the format <code>RnT</code>, where <code>R</code> is the amount of requests allowed over a period of <code>T</code> seconds. Since this is a string, we need to apply more regex to separate those.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>        set req.http.requests <span style="color:#f92672">=</span> regsub<span style="color:#f92672">(</span>req.http.rule, <span style="color:#e6db74">&#34;^([0-9]+)r.*</span>$<span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;\1&#34;</span><span style="color:#f92672">)</span>;
+</span></span><span style="display:flex;"><span>        set req.http.period <span style="color:#f92672">=</span> regsub<span style="color:#f92672">(</span>req.http.rule, <span style="color:#e6db74">&#34;^[0-9]+r([0-9]+)</span>$<span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;\1&#34;</span><span style="color:#f92672">)</span>;
+</span></span></code></pre></div><p>We do throttling on this request only if we got proper values from the previous regex filters.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>req.http.requests !<span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;</span> <span style="color:#f92672">&amp;&amp;</span> req.http.period !<span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span></code></pre></div><p>Increment or create a Memcached counter unique for this <code>client.ip</code> and path with the value 1. The expiry time we specify is equal to the period in the throttle rule set in the database. This way, the throttle rules can be flexible regarding time period. The return value is the new value of the counter, which corresponds to the amount of requests this <code>client.ip</code> has done this path in the current time period.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>           set req.http.counter <span style="color:#f92672">=</span> memcached.incr_set<span style="color:#f92672">(</span>
+</span></span><span style="display:flex;"><span>               req.http.path + <span style="color:#e6db74">&#34;-&#34;</span> + client.ip, 1, 1, std.integer<span style="color:#f92672">(</span>req.http.period, 0<span style="color:#f92672">))</span>;
+</span></span></code></pre></div><p>Check if the counter is higher than the limit set in the database. If it is, then abort the request here with a <code>429</code> response code.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>std.integer<span style="color:#f92672">(</span>req.http.counter, 0<span style="color:#f92672">)</span> &gt; std.integer<span style="color:#f92672">(</span>req.http.requests, 0<span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>                 <span style="color:#66d9ef">return</span> <span style="color:#f92672">(</span>synth<span style="color:#f92672">(</span>429, <span style="color:#e6db74">&#34;Too many requests&#34;</span><span style="color:#f92672">))</span>;
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span></code></pre></div><p>In <code>vcl_deliver</code> we set response headers showing the throttle limit and status for each request which might be helpful for the consumers.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>    sub vcl_deliver <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>req.http.requests <span style="color:#f92672">&amp;&amp;</span> req.http.counter <span style="color:#f92672">&amp;&amp;</span> req.http.period<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>            set resp.http.X-RateLimit-Limit <span style="color:#f92672">=</span> req.http.requests;
+</span></span><span style="display:flex;"><span>            set resp.http.X-RateLimit-Counter <span style="color:#f92672">=</span> req.http.counter;
+</span></span><span style="display:flex;"><span>            set resp.http.X-RateLimit-Period <span style="color:#f92672">=</span> req.http.period;
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span></code></pre></div><p>Errors will get the same headers set in <code>vcl_synth</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>    sub vcl_synth <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>req.http.requests <span style="color:#f92672">&amp;&amp;</span> req.http.counter <span style="color:#f92672">&amp;&amp;</span> req.http.period<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>            set resp.http.X-RateLimit-Limit <span style="color:#f92672">=</span> req.http.requests;
+</span></span><span style="display:flex;"><span>            set resp.http.X-RateLimit-Counter <span style="color:#f92672">=</span> req.http.counter;
+</span></span><span style="display:flex;"><span>            set resp.http.X-RateLimit-Period <span style="color:#f92672">=</span> req.http.period;
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span> -start
+</span></span></code></pre></div><p>The configuration is complete, and it is time to add some clients to verify that the configuration is correct. First we send a request that we expect to be unthrottled, meaning that there are no throttle rules in the database for this URL.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>client c1 <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    txreq -url <span style="color:#e6db74">&#34;/&#34;</span>
+</span></span><span style="display:flex;"><span>    rxresp
+</span></span><span style="display:flex;"><span>    expect resp.status <span style="color:#f92672">==</span> <span style="color:#ae81ff">200</span>
+</span></span><span style="display:flex;"><span>    expect resp.http.X-RateLimit-Limit <span style="color:#f92672">==</span> &lt;undef&gt;
+</span></span><span style="display:flex;"><span>    expect resp.http.X-RateLimit-Counter <span style="color:#f92672">==</span> &lt;undef&gt;
+</span></span><span style="display:flex;"><span>    expect resp.http.X-RateLimit-Period <span style="color:#f92672">==</span> &lt;undef&gt;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span> -run
+</span></span></code></pre></div><p>The next client sends requests to a URL that we know is a match in the throttle database, and we expect the rate-limit headers to be set. The throttle rule for <code>/search</code> is <code>3r5</code>, which means that the three first requests within a 5 second period should succeed (with return code <code>200</code>) while the fourth request should be throttled (with return code <code>429</code>).</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>client c2 <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    txreq -url <span style="color:#e6db74">&#34;/search?id=123&amp;type=1&#34;</span>
+</span></span><span style="display:flex;"><span>    rxresp
+</span></span><span style="display:flex;"><span>    expect resp.status <span style="color:#f92672">==</span> <span style="color:#ae81ff">200</span>
+</span></span><span style="display:flex;"><span>    expect resp.http.X-RateLimit-Limit <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;3&#34;</span>
+</span></span><span style="display:flex;"><span>    expect resp.http.X-RateLimit-Counter <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;1&#34;</span>
+</span></span><span style="display:flex;"><span>    expect resp.http.X-RateLimit-Period <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;5&#34;</span>
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>    txreq -url <span style="color:#e6db74">&#34;/search?id=123&amp;type=2&#34;</span>
+</span></span><span style="display:flex;"><span>    rxresp
+</span></span><span style="display:flex;"><span>    expect resp.status <span style="color:#f92672">==</span> <span style="color:#ae81ff">200</span>
+</span></span><span style="display:flex;"><span>    expect resp.http.X-RateLimit-Limit <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;3&#34;</span>
+</span></span><span style="display:flex;"><span>    expect resp.http.X-RateLimit-Counter <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;2&#34;</span>
+</span></span><span style="display:flex;"><span>    expect resp.http.X-RateLimit-Period <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;5&#34;</span>
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>    txreq -url <span style="color:#e6db74">&#34;/search?id=123&amp;type=3&#34;</span>
+</span></span><span style="display:flex;"><span>    rxresp
+</span></span><span style="display:flex;"><span>    expect resp.status <span style="color:#f92672">==</span> <span style="color:#ae81ff">200</span>
+</span></span><span style="display:flex;"><span>    expect resp.http.X-RateLimit-Limit <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;3&#34;</span>
+</span></span><span style="display:flex;"><span>    expect resp.http.X-RateLimit-Counter <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;3&#34;</span>
+</span></span><span style="display:flex;"><span>    expect resp.http.X-RateLimit-Period <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;5&#34;</span>
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>    txreq -url <span style="color:#e6db74">&#34;/search?id=123&amp;type=4&#34;</span>
+</span></span><span style="display:flex;"><span>    rxresp
+</span></span><span style="display:flex;"><span>    expect resp.status <span style="color:#f92672">==</span> <span style="color:#ae81ff">429</span>
+</span></span><span style="display:flex;"><span>    expect resp.http.X-RateLimit-Limit <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;3&#34;</span>
+</span></span><span style="display:flex;"><span>    expect resp.http.X-RateLimit-Counter <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;4&#34;</span>
+</span></span><span style="display:flex;"><span>    expect resp.http.X-RateLimit-Period <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;5&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span> -run
+</span></span></code></pre></div><p>At this point, we know that requests are being throttled. To verify that new requests are allowed after the time limit is up, we add a delay here before we send the next and last request. This request should succeed since we are in a new throttle window.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>delay 5;
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span>client c3 <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>   txreq -url <span style="color:#e6db74">&#34;/search?id=123&amp;type=4&#34;</span>
+</span></span><span style="display:flex;"><span>   rxresp
+</span></span><span style="display:flex;"><span>   expect resp.status <span style="color:#f92672">==</span> <span style="color:#ae81ff">200</span>
+</span></span><span style="display:flex;"><span>   expect resp.http.X-RateLimit-Limit <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;3&#34;</span>
+</span></span><span style="display:flex;"><span>   expect resp.http.X-RateLimit-Counter <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;1&#34;</span>
+</span></span><span style="display:flex;"><span>   expect resp.http.X-RateLimit-Period <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;5&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span> -run
+</span></span></code></pre></div><p>To execute the test file, make sure the memcached service is running locally and execute:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ varnishtest example.vtc
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#     top  TEST example.vtc passed (6.533)</span>
+</span></span></code></pre></div><p>Add <code>-v</code> for verbose mode to get more information from the test run.</p>
 <p>Requests to our application in the example will receive the following response headers. The first is a request that has been allowed, and the second is a request that has been throttled.</p>
-
-<pre><code class="language-http">$ curl -iI http://localhost/search
-HTTP/1.1 200 OK
-Age: 6
-Content-Length: 936
-X-RateLimit-Counter: 1
-X-RateLimit-Limit: 3
-X-RateLimit-Period: 5
-X-Varnish: 32770 3
-Via: 1.1 varnish-plus-v4
-
-$ curl -iI http://localhost/search
-HTTP/1.1 429 Too many requests
-Content-Length: 273
-X-RateLimit-Counter: 4
-X-RateLimit-Limit: 3
-X-RateLimit-Period: 5
-X-Varnish: 32774
-Via: 1.1 varnish-plus-v4
-</code></pre>
-
-<p>The complete <a href="/files/throttle.vtc">throttle.vtc</a> file outputs timestamp information before and after VMOD processing, to give us some data on the overhead introduced by the Memcached and SQLite queries. Running 60 requests in varnishtest on a local vm with Memcached running locally returned the following timings pr operation (in ms):</p>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-http" data-lang="http"><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">$ curl -iI http://localhost/search
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">HTTP</span><span style="color:#f92672">/</span><span style="color:#ae81ff">1.1</span> <span style="color:#ae81ff">200</span> <span style="color:#a6e22e">OK</span>
+</span></span><span style="display:flex;"><span>Age<span style="color:#f92672">:</span> <span style="color:#ae81ff">6</span>
+</span></span><span style="display:flex;"><span>Content-Length<span style="color:#f92672">:</span> <span style="color:#ae81ff">936</span>
+</span></span><span style="display:flex;"><span>X-RateLimit-Counter<span style="color:#f92672">:</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>X-RateLimit-Limit<span style="color:#f92672">:</span> <span style="color:#ae81ff">3</span>
+</span></span><span style="display:flex;"><span>X-RateLimit-Period<span style="color:#f92672">:</span> <span style="color:#ae81ff">5</span>
+</span></span><span style="display:flex;"><span>X-Varnish<span style="color:#f92672">:</span> <span style="color:#ae81ff">32770 3</span>
+</span></span><span style="display:flex;"><span>Via<span style="color:#f92672">:</span> <span style="color:#ae81ff">1.1 varnish-plus-v4</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>$ curl -iI http://localhost/search
+</span></span><span style="display:flex;"><span>HTTP/1.1 429 Too many requests
+</span></span><span style="display:flex;"><span>Content-Length: 273
+</span></span><span style="display:flex;"><span>X-RateLimit-Counter: 4
+</span></span><span style="display:flex;"><span>X-RateLimit-Limit: 3
+</span></span><span style="display:flex;"><span>X-RateLimit-Period: 5
+</span></span><span style="display:flex;"><span>X-Varnish: 32774
+</span></span><span style="display:flex;"><span>Via: 1.1 varnish-plus-v4
+</span></span></code></pre></div><p>The complete <a href="/files/throttle.vtc">throttle.vtc</a> file outputs timestamp information before and after VMOD processing, to give us some data on the overhead introduced by the Memcached and SQLite queries. Running 60 requests in varnishtest on a local vm with Memcached running locally returned the following timings pr operation (in ms):</p>
 <ul>
 <li>SQLite SELECT, max: 0.32, median: 0.08, average: 0.115</li>
 <li>Memcached incr_set(), max: 1.23, median: 0.27, average: 0.29</li>
 </ul>
-
 <p>These are by no means scientific results, but hints to performance that should for most scenarios prove to be fast enough. Performance is also about the ability to scale horizontally. The simple example provided in this article will scale horizontally with global counters in a pool of Memcached instances if needed.</p>
-
-<p><img src="/img/horizontal-scaling.png" alt="Fig showing horizontally scaled setup" /></p>
-
+<p><img src="/img/horizontal-scaling.png" alt="Fig showing horizontally scaled setup"></p>
 <h2 id="further-reading">Further reading</h2>
-
 <p>There are a number of VMODs available, and the <a href="https://www.varnish-cache.org/VMODs">VMODs Directory</a> is a good starting point. Some highlights from the directory are VMODs for cURL usage, Redis, Digest functions and various authentication modules.</p>
-
 <p>Varnish Plus, the fully supported commercial edition of Varnish Cache, is bundled with a set of high quality, support backed VMODs. For the open source edition, you can download and compile the VMODs you require manually.</p>
-
 <p>Varnish API Engine is more than VCL and VMODs. It also packs features such as key authentication, a centralized REST API for management, administration interface and real time statistics. For more information about Varnish API Engine, please contact <a href="https://www.varnish-software.com/">Varnish Software</a>.</p>
 
 		</p>
@@ -350,7 +251,7 @@ Via: 1.1 varnish-plus-v4
 		<div id="disqus_thread"></div>
 <script type="text/javascript">
 	 
-	var disqus_shortname = 'espenbraastad';
+	var disqus_shortname = '';
 	var disqus_identifier = 'Varnish goes upstack with varnish modules and varnish configuration language';
 
      
@@ -367,9 +268,9 @@ Via: 1.1 varnish-plus-v4
 
 </div>
 
-<script id="dsq-count-scr" src="//espenbraastad.disqus.com/count.js" async></script>
-<script src="http://www.espenbraastad.no//prism/prism.js"></script>
-<script src="http://www.espenbraastad.no//jquery.min.js"></script>
+<script id="dsq-count-scr" src="//.disqus.com/count.js" async></script>
+<script src="/prism/prism.js"></script>
+<script src="/jquery.min.js"></script>
 <script>
 	 
 	$(function() { $('table').addClass('table table-responsive'); })

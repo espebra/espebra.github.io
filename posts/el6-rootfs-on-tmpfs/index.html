@@ -10,25 +10,12 @@
 	<title>CentOS/RHEL/SL 6: root filesystem on tmpfs</title>
 	
 	
-	<link rel="stylesheet" href="http://www.espenbraastad.no//bootstrap/css/bootstrap.min.css">
-	<link rel="stylesheet" href="http://www.espenbraastad.no//font-awesome/css/font-awesome.min.css">
+	<link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
 	<link rel="stylesheet" href="/custom.css">
 	
 	
 	<link rel="stylesheet" href="/prism/prism.css">
-	
-	
-	<link href="" rel="alternate" type="application/rss+xml" title="Espen Braastad" />
-	
-	<script>
-		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-		
-		ga('create', 'UA-59220530-1', 'auto');
-		ga('send', 'pageview');
-	</script>
 </head>
 <body>
 
@@ -58,15 +45,10 @@
 		
 		<p>
 			<p><em>Update 2017-06-30: Please see the <a href="/posts/centos-7-rootfs-on-tmpfs/">updated guide</a> which is more generic.</em></p>
-
 <p><em>UPDATE: The patch below has been updated <a href="/posts/el6-rootfs-on-tmpfs-update">here</a>.</em></p>
-
 <p>There are several scenarios where conventional hard drives are not really needed. Examples are HPC cluster nodes, virtualization nodes, home theater streaming PCs, silent desktops, internet cafés and embedded systems. Hard drives tend to fail, they are slow, they consume power, they generate heat and noise, and they are quite expensive if you need/want something faster and more reliable than SATA.</p>
-
 <p>This post will show how to run CentOS 6 directly from tmpfs backed by memory, without using the (standard) 512 MB writable overlay. The procedure should be similar for RHEL and Scientific Linux 6.</p>
-
 <p>The resulting boot process will be:</p>
-
 <ul>
 <li>Boot a node off a PXE enabled DHCP server.</li>
 <li>Chainload into <a href="http://blog.braastad.org/?p=128">iPXE</a>.</li>
@@ -76,116 +58,103 @@
 <li>Your entire filesystem image will be copied to the tmpfs partition and attached to a loop device.</li>
 <li>This loop device will be used as the new root device, and the boot process continues as usual.</li>
 </ul>
-
 <p>This is a screenshot from an ongoing boot process:
-<img src="/img/centos6-from-tmpfs1.png" alt="Boot process" /></p>
-
+<img src="/img/centos6-from-tmpfs1.png" alt="Boot process"></p>
 <p>Now to the procedure:</p>
-
 <p>First, create a custom kickstart file. I&rsquo;ve included the specialties below:</p>
-
-<pre><code class="language-bash">bootloader --location=mbr --append=&quot;toram&quot;
-clearpart --all
-firstboot --disabled
-install
-lang en_US.UTF-8
-network --bootproto dhcp --device eth0 --onboot yes
-part / --fstype=ext4 --size=2048
-reboot
-zerombr
-
-%packages
-patch
-
-%post
-cat &gt; /etc/fstab &lt;&lt; END 
-tmpfs      /         tmpfs   defaults         0 0
-devpts     /dev/pts  devpts  gid=5,mode=620   0 0
-tmpfs      /dev/shm  tmpfs   defaults         0 0
-proc       /proc     proc    defaults         0 0
-sysfs      /sys      sysfs   defaults         0 0
-END
-
-# The patch is base64 encoded to avoid having to escape it manually.
-cat &gt; /root/dmsquash-live-root.base64 &lt;&lt; EOF_patch
-MjFhMjIKPiBnZXRhcmcgdG9yYW0gJiYgdG9yYW09InllcyIKMTM0YzEzNSwxMzgKPCAgICAgZG9f
-bGl2ZV9mcm9tX2Jhc2VfbG9vcAotLS0KPiAgICAgIyBDcmVhdGUgb3ZlcmxheSBvbmx5IGlmIHRv
-cmFtIGlzIG5vdCBzZXQKPiAgICAgaWYgWyAteiAiJHRvcmFtIiBdIDsgdGhlbgo+ICAgICAgICAg
-ZG9fbGl2ZV9mcm9tX2Jhc2VfbG9vcAo+ICAgICBmaQoxNjNjMTY3LDIxMwo8ICAgICBkb19saXZl
-X2Zyb21fYmFzZV9sb29wCi0tLQo+ICAgICAjIENyZWF0ZSBvdmVybGF5IG9ubHkgaWYgdG9yYW0g
-aXMgbm90IHNldAo+ICAgICBpZiBbIC16ICIkdG9yYW0iIF0gOyB0aGVuCj4gICAgICAgICBkb19s
-aXZlX2Zyb21fYmFzZV9sb29wCj4gICAgIGZpCj4gZmkKPiAKPiAjIEkgdGhlIGtlcm5lbCBwYXJh
-bWV0ZXIgdG9yYW0gaXMgc2V0LCBjcmVhdGUgYSB0bXBmcyBkZXZpY2UgYW5kIGNvcHkgdGhlIAo+
-ICMgZmlsZXN5c3RlbSB0byBpdC4gQ29udGludWUgdGhlIGJvb3QgcHJvY2VzcyB3aXRoIHRoaXMg
-dG1wZnMgZGV2aWNlIGFzCj4gIyBhIHdyaXRhYmxlIHJvb3QgZGV2aWNlLgo+IGlmIFsgLW4gIiR0
-b3JhbSIgXSA7IHRoZW4KPiAgICAgYmxvY2tzPSQoIGJsb2NrZGV2IC0tZ2V0c3ogJEJBU0VfTE9P
-UERFViApCj4gCj4gICAgIGVjaG8gIkNyZWF0ZSB0bXBmcyAoJGJsb2NrcyBibG9ja3MpIGZvciB0
-aGUgcm9vdCBmaWxlc3lzdGVtLi4uIgo+ICAgICBta2RpciAtcCAvaW1hZ2UKPiAgICAgbW91bnQg
-LW4gLXQgdG1wZnMgLW8gbnJfYmxvY2tzPSRibG9ja3MgdG1wZnMgL2ltYWdlCj4gCj4gICAgIGVj
-aG8gIkNvcHkgZmlsZXN5c3RlbSBpbWFnZSB0byB0bXBmcy4uLiAodGhpcyBtYXkgdGFrZSBhIGZl
-dyBtaW51dGVzKSIKPiAgICAgZGQgaWY9JEJBU0VfTE9PUERFViBvZj0vaW1hZ2Uvcm9vdGZzLmlt
-Zwo+IAo+ICAgICBST09URlNfTE9PUERFVj0kKCBsb3NldHVwIC1mICkKPiAgICAgZWNobyAiQ3Jl
-YXRlIGxvb3AgZGV2aWNlIGZvciB0aGUgcm9vdCBmaWxlc3lzdGVtOiAkUk9PVEZTX0xPT1BERVYi
-Cj4gICAgIGxvc2V0dXAgJFJPT1RGU19MT09QREVWIC9pbWFnZS9yb290ZnMuaW1nCj4gCj4gICAg
-IGVjaG8gIkl0J3MgdGltZSB0byBjbGVhbiB1cC4uICIKPiAKPiAgICAgZWNobyAiID4gVW1vdW50
-aW5nIGltYWdlcyIKPiAgICAgdW1vdW50IC1sIC9pbWFnZQo+ICAgICB1bW91bnQgLWwgL2Rldi8u
-aW5pdHJhbWZzL2xpdmUKPiAKPiAgICAgZWNobyAiID4gRGV0YWNoICRPU01JTl9MT09QREVWIgo+
-ICAgICBsb3NldHVwIC1kICRPU01JTl9MT09QREVWCj4gCj4gICAgIGVjaG8gIiA+IERldGFjaCAk
-T1NNSU5fU1FVQVNIRURfTE9PUERFViIKPiAgICAgbG9zZXR1cCAtZCAkT1NNSU5fU1FVQVNIRURf
-TE9PUERFVgo+ICAgICAKPiAgICAgZWNobyAiID4gRGV0YWNoICRCQVNFX0xPT1BERVYiCj4gICAg
-IGxvc2V0dXAgLWQgJEJBU0VfTE9PUERFVgo+ICAgICAKPiAgICAgZWNobyAiID4gRGV0YWNoICRT
-UVVBU0hFRF9MT09QREVWIgo+ICAgICBsb3NldHVwIC1kICRTUVVBU0hFRF9MT09QREVWCj4gCj4g
-ICAgIGVjaG8gIlJvb3QgZmlsZXN5c3RlbSBpcyBub3cgb24gJFJPT1RGU19MT09QREVWLiIKPiAg
-ICAgZWNobwo+IAo+ICAgICBsbiAtcyAkUk9PVEZTX0xPT1BERVYgL2Rldi9yb290Cj4gICAgIHBy
-aW50ZiAnL2Jpbi9tb3VudCAtbyBydyAlcyAlc1xuJyAiJFJPT1RGU19MT09QREVWIiAiJE5FV1JP
-T1QiID4gL21vdW50LzAxLSQkLWxpdmUuc2gKPiAgICAgZXhpdCAwCjE2OWMyMTksMjIxCjwgICAg
-IGVjaG8gIjAgJCggYmxvY2tkZXYgLS1nZXRzeiAkQkFTRV9MT09QREVWICkgc25hcHNob3QgJEJB
-U0VfTE9PUERFViAkT1NNSU5fTE9PUERFViBwIDgiIHwgZG1zZXR1cCBjcmVhdGUgLS1yZWFkb25s
-eSBsaXZlLW9zaW1nLW1pbgotLS0KPiAgICAgaWYgWyAteiAiJHRvcmFtIiBdIDsgdGhlbgo+ICAg
-ICAgICAgZWNobyAiMCAkKCBibG9ja2RldiAtLWdldHN6ICRCQVNFX0xPT1BERVYgKSBzbmFwc2hv
-dCAkQkFTRV9MT09QREVWICRPU01JTl9MT09QREVWIHAgOCIgfCBkbXNldHVwIGNyZWF0ZSAtLXJl
-YWRvbmx5IGxpdmUtb3NpbWctbWluCj4gICAgIGZpCg==
-EOF_patch
-
-cat /root/dmsquash-live-root.base64 | base64 -d &gt; /root/dmsquash-live-root.patch
-
-patch /usr/share/dracut/modules.d/90dmsquash-live/dmsquash-live-root /root/dmsquash-live-root.patch
-
-ls /lib/modules | while read kernel; do
-  echo &quot; &gt; Update initramfs for kernel ${kernel}&quot;
-  initrdfile=&quot;/boot/initramfs-${kernel}.img&quot;
-
-  /sbin/dracut -f $initrdfile $kernel
-done
-%end
-
-%post --nochroot
-
-echo &quot;Copy initramfs outside the chroot:&quot;
-ls $INSTALL_ROOT/lib/modules | while read kernel; do
-  src=&quot;$INSTALL_ROOT/boot/initramfs-${kernel}.img&quot;
-  dst=&quot;$LIVE_ROOT/isolinux/initrd0.img&quot;
-  echo &quot; &gt; $src -&gt; $dst&quot;
-  cp -f $src $dst
-done
-%end
-</code></pre>
-
-<p><b>Explaination:</b> The post script will apply a patch to <i>/usr/share/dracut/modules.d/90dmsquash-live/dmsquash-live-root</i> before regenerating the initramfs. This patch will add support for the &lsquo;toram&rsquo; boot parameter. Then, the initramfs is being copied to the isolinux directory outside the filesystem image.</p>
-
-<p>Second, use <i>livecd-creator</i> and <i>livecd-iso-to-pxeboot</i> from the <i>livecd-tools</i> package to convert the kickstart file into a bootable vmlinuz and initrd:</p>
-
-<pre><code class="language-bash">$ sudo livecd-creator --config=centos6.ks fslabel=centos6
-$ sudo livecd-iso-to-pxeboot centos6.iso
-</code></pre>
-
-<p>The commands above will create <i>tftpboot/vmlinuz0</i> and <i>tftpboot/initrd0.img</i>. Put these files on your boot server and create a suitable PXE configuration. <i>livecd-iso-to-pxeboot</i> will create <i>tftpboot/pxelinux.cfg/default</i> which can be used as a template.</p>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>bootloader --location<span style="color:#f92672">=</span>mbr --append<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;toram&#34;</span>
+</span></span><span style="display:flex;"><span>clearpart --all
+</span></span><span style="display:flex;"><span>firstboot --disabled
+</span></span><span style="display:flex;"><span>install
+</span></span><span style="display:flex;"><span>lang en_US.UTF-8
+</span></span><span style="display:flex;"><span>network --bootproto dhcp --device eth0 --onboot yes
+</span></span><span style="display:flex;"><span>part / --fstype<span style="color:#f92672">=</span>ext4 --size<span style="color:#f92672">=</span><span style="color:#ae81ff">2048</span>
+</span></span><span style="display:flex;"><span>reboot
+</span></span><span style="display:flex;"><span>zerombr
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>%packages
+</span></span><span style="display:flex;"><span>patch
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>%post
+</span></span><span style="display:flex;"><span>cat &gt; /etc/fstab <span style="color:#e6db74">&lt;&lt; END 
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">tmpfs      /         tmpfs   defaults         0 0
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">devpts     /dev/pts  devpts  gid=5,mode=620   0 0
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">tmpfs      /dev/shm  tmpfs   defaults         0 0
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">proc       /proc     proc    defaults         0 0
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">sysfs      /sys      sysfs   defaults         0 0
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">END</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># The patch is base64 encoded to avoid having to escape it manually.</span>
+</span></span><span style="display:flex;"><span>cat &gt; /root/dmsquash-live-root.base64 <span style="color:#e6db74">&lt;&lt; EOF_patch
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">MjFhMjIKPiBnZXRhcmcgdG9yYW0gJiYgdG9yYW09InllcyIKMTM0YzEzNSwxMzgKPCAgICAgZG9f
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">bGl2ZV9mcm9tX2Jhc2VfbG9vcAotLS0KPiAgICAgIyBDcmVhdGUgb3ZlcmxheSBvbmx5IGlmIHRv
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">cmFtIGlzIG5vdCBzZXQKPiAgICAgaWYgWyAteiAiJHRvcmFtIiBdIDsgdGhlbgo+ICAgICAgICAg
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">ZG9fbGl2ZV9mcm9tX2Jhc2VfbG9vcAo+ICAgICBmaQoxNjNjMTY3LDIxMwo8ICAgICBkb19saXZl
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">X2Zyb21fYmFzZV9sb29wCi0tLQo+ICAgICAjIENyZWF0ZSBvdmVybGF5IG9ubHkgaWYgdG9yYW0g
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">aXMgbm90IHNldAo+ICAgICBpZiBbIC16ICIkdG9yYW0iIF0gOyB0aGVuCj4gICAgICAgICBkb19s
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">aXZlX2Zyb21fYmFzZV9sb29wCj4gICAgIGZpCj4gZmkKPiAKPiAjIEkgdGhlIGtlcm5lbCBwYXJh
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">bWV0ZXIgdG9yYW0gaXMgc2V0LCBjcmVhdGUgYSB0bXBmcyBkZXZpY2UgYW5kIGNvcHkgdGhlIAo+
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">ICMgZmlsZXN5c3RlbSB0byBpdC4gQ29udGludWUgdGhlIGJvb3QgcHJvY2VzcyB3aXRoIHRoaXMg
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">dG1wZnMgZGV2aWNlIGFzCj4gIyBhIHdyaXRhYmxlIHJvb3QgZGV2aWNlLgo+IGlmIFsgLW4gIiR0
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">b3JhbSIgXSA7IHRoZW4KPiAgICAgYmxvY2tzPSQoIGJsb2NrZGV2IC0tZ2V0c3ogJEJBU0VfTE9P
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">UERFViApCj4gCj4gICAgIGVjaG8gIkNyZWF0ZSB0bXBmcyAoJGJsb2NrcyBibG9ja3MpIGZvciB0
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">aGUgcm9vdCBmaWxlc3lzdGVtLi4uIgo+ICAgICBta2RpciAtcCAvaW1hZ2UKPiAgICAgbW91bnQg
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">LW4gLXQgdG1wZnMgLW8gbnJfYmxvY2tzPSRibG9ja3MgdG1wZnMgL2ltYWdlCj4gCj4gICAgIGVj
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">aG8gIkNvcHkgZmlsZXN5c3RlbSBpbWFnZSB0byB0bXBmcy4uLiAodGhpcyBtYXkgdGFrZSBhIGZl
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">dyBtaW51dGVzKSIKPiAgICAgZGQgaWY9JEJBU0VfTE9PUERFViBvZj0vaW1hZ2Uvcm9vdGZzLmlt
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">Zwo+IAo+ICAgICBST09URlNfTE9PUERFVj0kKCBsb3NldHVwIC1mICkKPiAgICAgZWNobyAiQ3Jl
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">YXRlIGxvb3AgZGV2aWNlIGZvciB0aGUgcm9vdCBmaWxlc3lzdGVtOiAkUk9PVEZTX0xPT1BERVYi
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">Cj4gICAgIGxvc2V0dXAgJFJPT1RGU19MT09QREVWIC9pbWFnZS9yb290ZnMuaW1nCj4gCj4gICAg
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">IGVjaG8gIkl0J3MgdGltZSB0byBjbGVhbiB1cC4uICIKPiAKPiAgICAgZWNobyAiID4gVW1vdW50
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">aW5nIGltYWdlcyIKPiAgICAgdW1vdW50IC1sIC9pbWFnZQo+ICAgICB1bW91bnQgLWwgL2Rldi8u
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">aW5pdHJhbWZzL2xpdmUKPiAKPiAgICAgZWNobyAiID4gRGV0YWNoICRPU01JTl9MT09QREVWIgo+
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">ICAgICBsb3NldHVwIC1kICRPU01JTl9MT09QREVWCj4gCj4gICAgIGVjaG8gIiA+IERldGFjaCAk
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">T1NNSU5fU1FVQVNIRURfTE9PUERFViIKPiAgICAgbG9zZXR1cCAtZCAkT1NNSU5fU1FVQVNIRURf
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">TE9PUERFVgo+ICAgICAKPiAgICAgZWNobyAiID4gRGV0YWNoICRCQVNFX0xPT1BERVYiCj4gICAg
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">IGxvc2V0dXAgLWQgJEJBU0VfTE9PUERFVgo+ICAgICAKPiAgICAgZWNobyAiID4gRGV0YWNoICRT
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">UVVBU0hFRF9MT09QREVWIgo+ICAgICBsb3NldHVwIC1kICRTUVVBU0hFRF9MT09QREVWCj4gCj4g
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">ICAgIGVjaG8gIlJvb3QgZmlsZXN5c3RlbSBpcyBub3cgb24gJFJPT1RGU19MT09QREVWLiIKPiAg
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">ICAgZWNobwo+IAo+ICAgICBsbiAtcyAkUk9PVEZTX0xPT1BERVYgL2Rldi9yb290Cj4gICAgIHBy
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">aW50ZiAnL2Jpbi9tb3VudCAtbyBydyAlcyAlc1xuJyAiJFJPT1RGU19MT09QREVWIiAiJE5FV1JP
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">T1QiID4gL21vdW50LzAxLSQkLWxpdmUuc2gKPiAgICAgZXhpdCAwCjE2OWMyMTksMjIxCjwgICAg
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">IGVjaG8gIjAgJCggYmxvY2tkZXYgLS1nZXRzeiAkQkFTRV9MT09QREVWICkgc25hcHNob3QgJEJB
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">U0VfTE9PUERFViAkT1NNSU5fTE9PUERFViBwIDgiIHwgZG1zZXR1cCBjcmVhdGUgLS1yZWFkb25s
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">eSBsaXZlLW9zaW1nLW1pbgotLS0KPiAgICAgaWYgWyAteiAiJHRvcmFtIiBdIDsgdGhlbgo+ICAg
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">ICAgICAgZWNobyAiMCAkKCBibG9ja2RldiAtLWdldHN6ICRCQVNFX0xPT1BERVYgKSBzbmFwc2hv
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">dCAkQkFTRV9MT09QREVWICRPU01JTl9MT09QREVWIHAgOCIgfCBkbXNldHVwIGNyZWF0ZSAtLXJl
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">YWRvbmx5IGxpdmUtb3NpbWctbWluCj4gICAgIGZpCg==
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">EOF_patch</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>cat /root/dmsquash-live-root.base64 | base64 -d &gt; /root/dmsquash-live-root.patch
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>patch /usr/share/dracut/modules.d/90dmsquash-live/dmsquash-live-root /root/dmsquash-live-root.patch
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>ls /lib/modules | <span style="color:#66d9ef">while</span> read kernel; <span style="color:#66d9ef">do</span>
+</span></span><span style="display:flex;"><span>  echo <span style="color:#e6db74">&#34; &gt; Update initramfs for kernel </span><span style="color:#e6db74">${</span>kernel<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>
+</span></span><span style="display:flex;"><span>  initrdfile<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;/boot/initramfs-</span><span style="color:#e6db74">${</span>kernel<span style="color:#e6db74">}</span><span style="color:#e6db74">.img&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  /sbin/dracut -f $initrdfile $kernel
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">done</span>
+</span></span><span style="display:flex;"><span>%end
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>%post --nochroot
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>echo <span style="color:#e6db74">&#34;Copy initramfs outside the chroot:&#34;</span>
+</span></span><span style="display:flex;"><span>ls $INSTALL_ROOT/lib/modules | <span style="color:#66d9ef">while</span> read kernel; <span style="color:#66d9ef">do</span>
+</span></span><span style="display:flex;"><span>  src<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$INSTALL_ROOT<span style="color:#e6db74">/boot/initramfs-</span><span style="color:#e6db74">${</span>kernel<span style="color:#e6db74">}</span><span style="color:#e6db74">.img&#34;</span>
+</span></span><span style="display:flex;"><span>  dst<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$LIVE_ROOT<span style="color:#e6db74">/isolinux/initrd0.img&#34;</span>
+</span></span><span style="display:flex;"><span>  echo <span style="color:#e6db74">&#34; &gt; </span>$src<span style="color:#e6db74"> -&gt; </span>$dst<span style="color:#e6db74">&#34;</span>
+</span></span><span style="display:flex;"><span>  cp -f $src $dst
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">done</span>
+</span></span><span style="display:flex;"><span>%end
+</span></span></code></pre></div><p><!-- raw HTML omitted -->Explaination:<!-- raw HTML omitted --> The post script will apply a patch to <!-- raw HTML omitted -->/usr/share/dracut/modules.d/90dmsquash-live/dmsquash-live-root<!-- raw HTML omitted --> before regenerating the initramfs. This patch will add support for the &rsquo;toram&rsquo; boot parameter. Then, the initramfs is being copied to the isolinux directory outside the filesystem image.</p>
+<p>Second, use <!-- raw HTML omitted -->livecd-creator<!-- raw HTML omitted --> and <!-- raw HTML omitted -->livecd-iso-to-pxeboot<!-- raw HTML omitted --> from the <!-- raw HTML omitted -->livecd-tools<!-- raw HTML omitted --> package to convert the kickstart file into a bootable vmlinuz and initrd:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ sudo livecd-creator --config<span style="color:#f92672">=</span>centos6.ks fslabel<span style="color:#f92672">=</span>centos6
+</span></span><span style="display:flex;"><span>$ sudo livecd-iso-to-pxeboot centos6.iso
+</span></span></code></pre></div><p>The commands above will create <!-- raw HTML omitted -->tftpboot/vmlinuz0<!-- raw HTML omitted --> and <!-- raw HTML omitted -->tftpboot/initrd0.img<!-- raw HTML omitted -->. Put these files on your boot server and create a suitable PXE configuration. <!-- raw HTML omitted -->livecd-iso-to-pxeboot<!-- raw HTML omitted --> will create <!-- raw HTML omitted -->tftpboot/pxelinux.cfg/default<!-- raw HTML omitted --> which can be used as a template.</p>
 <p>Now you are ready to boot one or multiple CentOS 6 in-memory instances over the network!</p>
-
 <p>Another screenshot:
-<img src="/img/centos6-from-tmpfs-details.png" alt="losetup" /></p>
-
+<img src="/img/centos6-from-tmpfs-details.png" alt="losetup"></p>
 <p>Feature request <a href="http://article.gmane.org/gmane.linux.kernel.initramfs/2588">upstream</a>.</p>
 
 		</p>
@@ -196,7 +165,7 @@ $ sudo livecd-iso-to-pxeboot centos6.iso
 		<div id="disqus_thread"></div>
 <script type="text/javascript">
 	 
-	var disqus_shortname = 'espenbraastad';
+	var disqus_shortname = '';
 	var disqus_identifier = 'CentOS\/RHEL\/SL 6: root filesystem on tmpfs';
 
      
@@ -213,9 +182,9 @@ $ sudo livecd-iso-to-pxeboot centos6.iso
 
 </div>
 
-<script id="dsq-count-scr" src="//espenbraastad.disqus.com/count.js" async></script>
-<script src="http://www.espenbraastad.no//prism/prism.js"></script>
-<script src="http://www.espenbraastad.no//jquery.min.js"></script>
+<script id="dsq-count-scr" src="//.disqus.com/count.js" async></script>
+<script src="/prism/prism.js"></script>
+<script src="/jquery.min.js"></script>
 <script>
 	 
 	$(function() { $('table').addClass('table table-responsive'); })

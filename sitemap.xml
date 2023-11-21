@@ -1,350 +1,188 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>http://www.espenbraastad.no/posts/zfs-nas-on-tmpfs/</loc>
+    <loc>/categories/</loc>
     <lastmod>2017-10-24T00:20:20+01:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/posts/centos-7-rootfs-on-tmpfs/</loc>
+  </url><url>
+    <loc>/tags/diskless/</loc>
+    <lastmod>2017-10-24T00:20:20+01:00</lastmod>
+  </url><url>
+    <loc>/tags/el7/</loc>
+    <lastmod>2017-10-24T00:20:20+01:00</lastmod>
+  </url><url>
+    <loc>/</loc>
+    <lastmod>2017-10-24T00:20:20+01:00</lastmod>
+  </url><url>
+    <loc>/tags/initramfs/</loc>
+    <lastmod>2017-10-24T00:20:20+01:00</lastmod>
+  </url><url>
+    <loc>/tags/ipxe/</loc>
+    <lastmod>2017-10-24T00:20:20+01:00</lastmod>
+  </url><url>
+    <loc>/tags/linux/</loc>
+    <lastmod>2017-10-24T00:20:20+01:00</lastmod>
+  </url><url>
+    <loc>/tags/netboot/</loc>
+    <lastmod>2017-10-24T00:20:20+01:00</lastmod>
+  </url><url>
+    <loc>/categories/netbooting/</loc>
+    <lastmod>2017-10-24T00:20:20+01:00</lastmod>
+  </url><url>
+    <loc>/tags/packer/</loc>
+    <lastmod>2017-10-24T00:20:20+01:00</lastmod>
+  </url><url>
+    <loc>/posts/</loc>
+    <lastmod>2017-10-24T00:20:20+01:00</lastmod>
+  </url><url>
+    <loc>/tags/</loc>
+    <lastmod>2017-10-24T00:20:20+01:00</lastmod>
+  </url><url>
+    <loc>/tags/zfs/</loc>
+    <lastmod>2017-10-24T00:20:20+01:00</lastmod>
+  </url><url>
+    <loc>/posts/zfs-nas-on-tmpfs/</loc>
+    <lastmod>2017-10-24T00:20:20+01:00</lastmod>
+  </url><url>
+    <loc>/posts/centos-7-rootfs-on-tmpfs/</loc>
     <lastmod>2017-01-06T21:34:20+01:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/posts/filebin-upgrade/</loc>
+  </url><url>
+    <loc>/tags/virt-builder/</loc>
+    <lastmod>2017-01-06T21:34:20+01:00</lastmod>
+  </url><url>
+    <loc>/tags/development/</loc>
     <lastmod>2016-05-29T20:40:48+02:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/posts/gofer-notification-irc-bot/</loc>
+  </url><url>
+    <loc>/categories/development/</loc>
+    <lastmod>2016-05-29T20:40:48+02:00</lastmod>
+  </url><url>
+    <loc>/tags/filebin/</loc>
+    <lastmod>2016-05-29T20:40:48+02:00</lastmod>
+  </url><url>
+    <loc>/categories/filebin/</loc>
+    <lastmod>2016-05-29T20:40:48+02:00</lastmod>
+  </url><url>
+    <loc>/posts/filebin-upgrade/</loc>
+    <lastmod>2016-05-29T20:40:48+02:00</lastmod>
+  </url><url>
+    <loc>/tags/golang/</loc>
+    <lastmod>2016-05-29T20:40:48+02:00</lastmod>
+  </url><url>
+    <loc>/categories/golang/</loc>
+    <lastmod>2016-05-29T20:40:48+02:00</lastmod>
+  </url><url>
+    <loc>/posts/gofer-notification-irc-bot/</loc>
     <lastmod>2016-01-08T21:11:44+01:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/posts/monitor-stand-ikea-hack/</loc>
+  </url><url>
+    <loc>/categories/ergonomics/</loc>
     <lastmod>2015-09-16T22:56:54+02:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/posts/dummy-api-rewrite-in-go/</loc>
+  </url><url>
+    <loc>/tags/hack/</loc>
+    <lastmod>2015-09-16T22:56:54+02:00</lastmod>
+  </url><url>
+    <loc>/tags/ikea/</loc>
+    <lastmod>2015-09-16T22:56:54+02:00</lastmod>
+  </url><url>
+    <loc>/posts/monitor-stand-ikea-hack/</loc>
+    <lastmod>2015-09-16T22:56:54+02:00</lastmod>
+  </url><url>
+    <loc>/tags/api/</loc>
     <lastmod>2015-05-16T19:48:47+02:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/posts/varnish-goes-upstack-with-varnish-modules-and-varnish-configuration-language/</loc>
+  </url><url>
+    <loc>/posts/dummy-api-rewrite-in-go/</loc>
+    <lastmod>2015-05-16T19:48:47+02:00</lastmod>
+  </url><url>
+    <loc>/tags/varnish/</loc>
     <lastmod>2015-05-07T10:55:56+02:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/posts/dummy-api/</loc>
+  </url><url>
+    <loc>/categories/varnish/</loc>
+    <lastmod>2015-05-07T10:55:56+02:00</lastmod>
+  </url><url>
+    <loc>/posts/varnish-goes-upstack-with-varnish-modules-and-varnish-configuration-language/</loc>
+    <lastmod>2015-05-07T10:55:56+02:00</lastmod>
+  </url><url>
+    <loc>/categories/api/</loc>
     <lastmod>2015-05-02T21:42:21+02:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/posts/remote-console-on-hp-proliant-microserver-g7-n54l/</loc>
+  </url><url>
+    <loc>/posts/dummy-api/</loc>
+    <lastmod>2015-05-02T21:42:21+02:00</lastmod>
+  </url><url>
+    <loc>/tags/lua/</loc>
+    <lastmod>2015-05-02T21:42:21+02:00</lastmod>
+  </url><url>
+    <loc>/tags/openresty/</loc>
+    <lastmod>2015-05-02T21:42:21+02:00</lastmod>
+  </url><url>
+    <loc>/categories/mikrotik/</loc>
     <lastmod>2014-08-30T20:48:00+01:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/posts/altibox-tv-and-data-over-the-same-ethernet-cable/</loc>
+  </url><url>
+    <loc>/tags/network/</loc>
+    <lastmod>2014-08-30T20:48:00+01:00</lastmod>
+  </url><url>
+    <loc>/posts/remote-console-on-hp-proliant-microserver-g7-n54l/</loc>
+    <lastmod>2014-08-30T20:48:00+01:00</lastmod>
+  </url><url>
+    <loc>/posts/altibox-tv-and-data-over-the-same-ethernet-cable/</loc>
     <lastmod>2014-05-22T22:41:00+01:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/posts/temperature-trend-monitoring-at-home/</loc>
+  </url><url>
+    <loc>/tags/munin/</loc>
     <lastmod>2014-02-19T23:32:00+01:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs-update2/</loc>
+  </url><url>
+    <loc>/tags/sensors/</loc>
+    <lastmod>2014-02-19T23:32:00+01:00</lastmod>
+  </url><url>
+    <loc>/categories/sensors/</loc>
+    <lastmod>2014-02-19T23:32:00+01:00</lastmod>
+  </url><url>
+    <loc>/tags/temperature/</loc>
+    <lastmod>2014-02-19T23:32:00+01:00</lastmod>
+  </url><url>
+    <loc>/posts/temperature-trend-monitoring-at-home/</loc>
+    <lastmod>2014-02-19T23:32:00+01:00</lastmod>
+  </url><url>
+    <loc>/posts/el6-rootfs-on-tmpfs-update2/</loc>
     <lastmod>2013-06-23T21:44:19+01:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs-update/</loc>
+  </url><url>
+    <loc>/tags/el6/</loc>
+    <lastmod>2013-06-23T21:44:19+01:00</lastmod>
+  </url><url>
+    <loc>/posts/el6-rootfs-on-tmpfs-update/</loc>
     <lastmod>2013-03-21T09:57:00+01:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/posts/memory-ballooning/</loc>
+  </url><url>
+    <loc>/tags/kvm/</loc>
     <lastmod>2012-09-24T16:58:32+01:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/posts/filebin-available/</loc>
+  </url><url>
+    <loc>/posts/memory-ballooning/</loc>
+    <lastmod>2012-09-24T16:58:32+01:00</lastmod>
+  </url><url>
+    <loc>/tags/memory/</loc>
+    <lastmod>2012-09-24T16:58:32+01:00</lastmod>
+  </url><url>
+    <loc>/tags/overhead/</loc>
+    <lastmod>2012-09-24T16:58:32+01:00</lastmod>
+  </url><url>
+    <loc>/categories/sysadm/</loc>
+    <lastmod>2012-09-24T16:58:32+01:00</lastmod>
+  </url><url>
+    <loc>/tags/virtualization/</loc>
+    <lastmod>2012-09-24T16:58:32+01:00</lastmod>
+  </url><url>
+    <loc>/tags/xen/</loc>
+    <lastmod>2012-09-24T16:58:32+01:00</lastmod>
+  </url><url>
+    <loc>/posts/filebin-available/</loc>
     <lastmod>2012-07-27T22:10:29+01:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/posts/el6-rootfs-on-tmpfs/</loc>
+  </url><url>
+    <loc>/posts/el6-rootfs-on-tmpfs/</loc>
     <lastmod>2012-04-30T21:44:19+01:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/posts/kvm-with-ipxe-in-rhel6/</loc>
+  </url><url>
+    <loc>/posts/kvm-with-ipxe-in-rhel6/</loc>
     <lastmod>2011-11-02T22:29:50+01:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/posts/munincollector-ng/</loc>
+  </url><url>
+    <loc>/categories/monitoring/</loc>
+    <lastmod>2010-08-16T20:15:00+01:00</lastmod>
+  </url><url>
+    <loc>/posts/munincollector-ng/</loc>
     <lastmod>2010-08-16T20:15:00+01:00</lastmod>
   </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/tags/api/</loc>
-    <lastmod>2015-05-16T19:48:47+02:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/categories/api/</loc>
-    <lastmod>2015-05-02T21:42:21+02:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/categories/</loc>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/tags/development/</loc>
-    <lastmod>2016-05-29T20:40:48+02:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/categories/development/</loc>
-    <lastmod>2016-05-29T20:40:48+02:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/tags/diskless/</loc>
-    <lastmod>2017-10-24T00:20:20+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/tags/el6/</loc>
-    <lastmod>2013-06-23T21:44:19+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/tags/el7/</loc>
-    <lastmod>2017-10-24T00:20:20+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/categories/ergonomics/</loc>
-    <lastmod>2015-09-16T22:56:54+02:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/</loc>
-    <lastmod>2017-10-24T00:20:20+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/tags/filebin/</loc>
-    <lastmod>2016-05-29T20:40:48+02:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/categories/filebin/</loc>
-    <lastmod>2016-05-29T20:40:48+02:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/tags/golang/</loc>
-    <lastmod>2016-05-29T20:40:48+02:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/categories/golang/</loc>
-    <lastmod>2016-05-29T20:40:48+02:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/tags/hack/</loc>
-    <lastmod>2015-09-16T22:56:54+02:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/tags/ikea/</loc>
-    <lastmod>2015-09-16T22:56:54+02:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/tags/initramfs/</loc>
-    <lastmod>2017-10-24T00:20:20+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/tags/ipxe/</loc>
-    <lastmod>2017-10-24T00:20:20+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/tags/kvm/</loc>
-    <lastmod>2012-09-24T16:58:32+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/tags/linux/</loc>
-    <lastmod>2017-10-24T00:20:20+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/tags/lua/</loc>
-    <lastmod>2015-05-02T21:42:21+02:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/tags/memory/</loc>
-    <lastmod>2012-09-24T16:58:32+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/categories/mikrotik/</loc>
-    <lastmod>2014-08-30T20:48:00+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/categories/monitoring/</loc>
-    <lastmod>2010-08-16T20:15:00+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/tags/munin/</loc>
-    <lastmod>2014-02-19T23:32:00+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/tags/netboot/</loc>
-    <lastmod>2017-10-24T00:20:20+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/categories/netbooting/</loc>
-    <lastmod>2017-10-24T00:20:20+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/tags/network/</loc>
-    <lastmod>2014-08-30T20:48:00+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/tags/openresty/</loc>
-    <lastmod>2015-05-02T21:42:21+02:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/tags/overhead/</loc>
-    <lastmod>2012-09-24T16:58:32+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/tags/packer/</loc>
-    <lastmod>2017-10-24T00:20:20+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/posts/</loc>
-    <lastmod>2017-10-24T00:20:20+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/tags/sensors/</loc>
-    <lastmod>2014-02-19T23:32:00+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/categories/sensors/</loc>
-    <lastmod>2014-02-19T23:32:00+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/categories/sysadm/</loc>
-    <lastmod>2012-09-24T16:58:32+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/tags/</loc>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/tags/temperature/</loc>
-    <lastmod>2014-02-19T23:32:00+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/tags/varnish/</loc>
-    <lastmod>2015-05-07T10:55:56+02:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/categories/varnish/</loc>
-    <lastmod>2015-05-07T10:55:56+02:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/tags/virt-builder/</loc>
-    <lastmod>2017-01-06T21:34:20+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/tags/virtualization/</loc>
-    <lastmod>2012-09-24T16:58:32+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/tags/xen/</loc>
-    <lastmod>2012-09-24T16:58:32+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.espenbraastad.no/tags/zfs/</loc>
-    <lastmod>2017-10-24T00:20:20+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
 </urlset>

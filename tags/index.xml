@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Tags on Espen Braastad</title>
+    <link>/tags/</link>
+    <description>Recent content in Tags on Espen Braastad</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 24 Oct 2017 00:20:20 +0100</lastBuildDate>
+    <atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>diskless</title>
+      <link>/tags/diskless/</link>
+      <pubDate>Tue, 24 Oct 2017 00:20:20 +0100</pubDate>
+      <guid>/tags/diskless/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>el7</title>
+      <link>/tags/el7/</link>
+      <pubDate>Tue, 24 Oct 2017 00:20:20 +0100</pubDate>
+      <guid>/tags/el7/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>initramfs</title>
+      <link>/tags/initramfs/</link>
+      <pubDate>Tue, 24 Oct 2017 00:20:20 +0100</pubDate>
+      <guid>/tags/initramfs/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>ipxe</title>
+      <link>/tags/ipxe/</link>
+      <pubDate>Tue, 24 Oct 2017 00:20:20 +0100</pubDate>
+      <guid>/tags/ipxe/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>linux</title>
+      <link>/tags/linux/</link>
+      <pubDate>Tue, 24 Oct 2017 00:20:20 +0100</pubDate>
+      <guid>/tags/linux/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>netboot</title>
+      <link>/tags/netboot/</link>
+      <pubDate>Tue, 24 Oct 2017 00:20:20 +0100</pubDate>
+      <guid>/tags/netboot/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>packer</title>
+      <link>/tags/packer/</link>
+      <pubDate>Tue, 24 Oct 2017 00:20:20 +0100</pubDate>
+      <guid>/tags/packer/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>zfs</title>
+      <link>/tags/zfs/</link>
+      <pubDate>Tue, 24 Oct 2017 00:20:20 +0100</pubDate>
+      <guid>/tags/zfs/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>virt-builder</title>
+      <link>/tags/virt-builder/</link>
+      <pubDate>Fri, 06 Jan 2017 21:34:20 +0100</pubDate>
+      <guid>/tags/virt-builder/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Development</title>
+      <link>/tags/development/</link>
+      <pubDate>Sun, 29 May 2016 20:40:48 +0200</pubDate>
+      <guid>/tags/development/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>filebin</title>
+      <link>/tags/filebin/</link>
+      <pubDate>Sun, 29 May 2016 20:40:48 +0200</pubDate>
+      <guid>/tags/filebin/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>golang</title>
+      <link>/tags/golang/</link>
+      <pubDate>Sun, 29 May 2016 20:40:48 +0200</pubDate>
+      <guid>/tags/golang/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>hack</title>
+      <link>/tags/hack/</link>
+      <pubDate>Wed, 16 Sep 2015 22:56:54 +0200</pubDate>
+      <guid>/tags/hack/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>IKEA</title>
+      <link>/tags/ikea/</link>
+      <pubDate>Wed, 16 Sep 2015 22:56:54 +0200</pubDate>
+      <guid>/tags/ikea/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>API</title>
+      <link>/tags/api/</link>
+      <pubDate>Sat, 16 May 2015 19:48:47 +0200</pubDate>
+      <guid>/tags/api/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Varnish</title>
+      <link>/tags/varnish/</link>
+      <pubDate>Thu, 07 May 2015 10:55:56 +0200</pubDate>
+      <guid>/tags/varnish/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>lua</title>
+      <link>/tags/lua/</link>
+      <pubDate>Sat, 02 May 2015 21:42:21 +0200</pubDate>
+      <guid>/tags/lua/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>openresty</title>
+      <link>/tags/openresty/</link>
+      <pubDate>Sat, 02 May 2015 21:42:21 +0200</pubDate>
+      <guid>/tags/openresty/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>network</title>
+      <link>/tags/network/</link>
+      <pubDate>Sat, 30 Aug 2014 20:48:00 +0100</pubDate>
+      <guid>/tags/network/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>munin</title>
+      <link>/tags/munin/</link>
+      <pubDate>Wed, 19 Feb 2014 23:32:00 +0100</pubDate>
+      <guid>/tags/munin/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>sensors</title>
+      <link>/tags/sensors/</link>
+      <pubDate>Wed, 19 Feb 2014 23:32:00 +0100</pubDate>
+      <guid>/tags/sensors/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>temperature</title>
+      <link>/tags/temperature/</link>
+      <pubDate>Wed, 19 Feb 2014 23:32:00 +0100</pubDate>
+      <guid>/tags/temperature/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>el6</title>
+      <link>/tags/el6/</link>
+      <pubDate>Sun, 23 Jun 2013 21:44:19 +0100</pubDate>
+      <guid>/tags/el6/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>kvm</title>
+      <link>/tags/kvm/</link>
+      <pubDate>Mon, 24 Sep 2012 16:58:32 +0100</pubDate>
+      <guid>/tags/kvm/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>memory</title>
+      <link>/tags/memory/</link>
+      <pubDate>Mon, 24 Sep 2012 16:58:32 +0100</pubDate>
+      <guid>/tags/memory/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>overhead</title>
+      <link>/tags/overhead/</link>
+      <pubDate>Mon, 24 Sep 2012 16:58:32 +0100</pubDate>
+      <guid>/tags/overhead/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>virtualization</title>
+      <link>/tags/virtualization/</link>
+      <pubDate>Mon, 24 Sep 2012 16:58:32 +0100</pubDate>
+      <guid>/tags/virtualization/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>xen</title>
+      <link>/tags/xen/</link>
+      <pubDate>Mon, 24 Sep 2012 16:58:32 +0100</pubDate>
+      <guid>/tags/xen/</guid>
+      <description></description>
+    </item>
+  </channel>
+</rss>

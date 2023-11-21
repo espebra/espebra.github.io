@@ -10,25 +10,12 @@
 	<title>Altibox, TV- og datatrafikk over samme nettverkskabel</title>
 	
 	
-	<link rel="stylesheet" href="http://www.espenbraastad.no//bootstrap/css/bootstrap.min.css">
-	<link rel="stylesheet" href="http://www.espenbraastad.no//font-awesome/css/font-awesome.min.css">
+	<link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
 	<link rel="stylesheet" href="/custom.css">
 	
 	
 	<link rel="stylesheet" href="/prism/prism.css">
-	
-	
-	<link href="" rel="alternate" type="application/rss+xml" title="Espen Braastad" />
-	
-	<script>
-		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-		
-		ga('create', 'UA-59220530-1', 'auto');
-		ga('send', 'pageview');
-	</script>
 </head>
 <body>
 
@@ -58,31 +45,23 @@
 		
 		<p>
 			<p>Altibox leverer en hjemmesentral hvor man henter ut TV-signal og internettilgang fra to (eller flere) forskjellige RJ45-porter. Som trådløs router har hjemmesentralen kun et minimum av funksjonalitet, og man skal ikke være en veldig avansert bruker før man vil rekonfigurere hjemmesentralen som en bridge og heller ha en egen trådløs router på baksiden. Dette gir også mening dersom boligen har flere etasjer, og hjemmesentralen ikke er kraftig nok til å levere god nok trådløs dekning.</p>
-
 <p>Denne posten viser hvordan TV og datatrafikk kan sendes via èn nettverkskabel til et annet sted i boligen ved hjelp av to stk Mikrotik 951G-2HnD. RB951G-2HnD er en fleksibel trådløs router (2,4 GHz) med 5 stk 1 Gbps-porter beregnet på hjemmebruk. Utstyret kobles som skjemaet under viser.</p>
-
-<p><img src="/img/mikrotik-altibox.png" alt="Diagram" /></p>
-
+<p><img src="/img/mikrotik-altibox.png" alt="Diagram"></p>
 <p>Mikrotik A, konfigurasjon:</p>
-
 <pre><code>/interface vlan add name=vlan-10 vlan-id=10 interface=ether2 disabled=no
 /interface bridge add name=br-vlan10 disabled=no
 /interface bridge port add interface=&quot;vlan-10&quot; bridge=&quot;br-vlan10&quot; disabled=no
 /interface ethernet set numbers=ether5-slave-local master-port=none
 /interface bridge port add interface=&quot;ether5-slave-local&quot; bridge=&quot;br-vlan10&quot; disabled=no
 </code></pre>
-
 <p>Mikrotik A, portoversikt:</p>
-
 <pre><code>Port 1: Internett inn (datakabel fra Altibox hjemmesentral)
 Port 2: Trunk til Mikrotik B
 Port 3: Data
 Port 4: Data
 Port 5: TV inn (TV-kabel fra Altibox hjemmesentral)
 </code></pre>
-
 <p>Mikrotik B, konfigurasjon:</p>
-
 <pre><code>/interface vlan add name=vlan-10 vlan-id=10 interface=ether2 disabled=no
 /interface bridge add name=br-vlan10 disabled=no
 /interface bridge port add interface=&quot;vlan-10&quot; bridge=&quot;br-vlan10&quot; disabled=no
@@ -91,11 +70,8 @@ Port 5: TV inn (TV-kabel fra Altibox hjemmesentral)
 /interface bridge port add interface=&quot;ether4-slave-local&quot; bridge=&quot;br-vlan10&quot; disabled=no
 /interface bridge port add interface=&quot;ether5-slave-local&quot; bridge=&quot;br-vlan10&quot; disabled=no
 </code></pre>
-
 <p>I tillegg må Mikrotik B settes opp som en bridge.</p>
-
 <p>Mikrotik B, portoversikt:</p>
-
 <pre><code>Port 1: Data
 Port 2: Trunk til Mikrotik A
 Port 3: Data
@@ -111,7 +87,7 @@ Port 5: TV ut
 		<div id="disqus_thread"></div>
 <script type="text/javascript">
 	 
-	var disqus_shortname = 'espenbraastad';
+	var disqus_shortname = '';
 	var disqus_identifier = 'Altibox, TV- og datatrafikk over samme nettverkskabel';
 
      
@@ -128,9 +104,9 @@ Port 5: TV ut
 
 </div>
 
-<script id="dsq-count-scr" src="//espenbraastad.disqus.com/count.js" async></script>
-<script src="http://www.espenbraastad.no//prism/prism.js"></script>
-<script src="http://www.espenbraastad.no//jquery.min.js"></script>
+<script id="dsq-count-scr" src="//.disqus.com/count.js" async></script>
+<script src="/prism/prism.js"></script>
+<script src="/jquery.min.js"></script>
 <script>
 	 
 	$(function() { $('table').addClass('table table-responsive'); })

@@ -10,25 +10,12 @@
 	<title>ZFS NAS using CentOS 7 from tmpfs</title>
 	
 	
-	<link rel="stylesheet" href="http://www.espenbraastad.no//bootstrap/css/bootstrap.min.css">
-	<link rel="stylesheet" href="http://www.espenbraastad.no//font-awesome/css/font-awesome.min.css">
+	<link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
 	<link rel="stylesheet" href="/custom.css">
 	
 	
 	<link rel="stylesheet" href="/prism/prism.css">
-	
-	
-	<link href="" rel="alternate" type="application/rss+xml" title="Espen Braastad" />
-	
-	<script>
-		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-		
-		ga('create', 'UA-59220530-1', 'auto');
-		ga('send', 'pageview');
-	</script>
 </head>
 <body>
 
@@ -57,166 +44,106 @@
 		</small>
 		
 		<p>
-			
-
-<p>Following up on the <a href="/posts/centos-7-rootfs-on-tmpfs/">CentOS 7 root filesystem on tmpfs</a> post, here comes a guide on how to run a ZFS enabled CentOS 7 NAS server (with the operating system) from tmpfs.</p>
-
+			<p>Following up on the <a href="/posts/centos-7-rootfs-on-tmpfs/">CentOS 7 root filesystem on tmpfs</a> post, here comes a guide on how to run a ZFS enabled CentOS 7 NAS server (with the operating system) from tmpfs.</p>
 <h2 id="hardware">Hardware</h2>
-
 <ul>
 <li>HP ProLiant MicroServer</li>
 <li>HP ProLiant MicroServer Remote Access Card</li>
-<li>AMD Turion&trade; II Neo N54L Dual-Core Processor</li>
+<li>AMD Turion(tm) II Neo N54L Dual-Core Processor</li>
 <li>2x 8 GB 1333 MHZ ECC memory modules</li>
 <li>4x 4 TB SATA hard drives (HGST, Western Digital and Seagate)</li>
 <li>Built-in Broadcom Limited NetXtreme BCM5723 Gigabit Ethernet adapter</li>
 </ul>
-
 <h2 id="preparing-the-build-environment">Preparing the build environment</h2>
-
 <p>The disk image is built in macOS using <a href="https://www.packer.io">Packer</a> and <a href="https://www.virtualbox.org/">VirtualBox</a>. Virtualbox is installed using the appropriate platform package that is downloaded from <a href="https://www.virtualbox.org/wiki/Downloads">their website</a>, and Packer is installed using brew:</p>
-
-<pre><code class="language-bash">$ brew install packer
-</code></pre>
-
-<h2 id="building-the-disk-image">Building the disk image</h2>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ brew install packer
+</span></span></code></pre></div><h2 id="building-the-disk-image">Building the disk image</h2>
 <p>Three files are needed in order to build the disk image; a Packer template file, an Anaconda kickstart file and a shell script that is used to configure the disk image after installation. The following files can be used as examples:</p>
-
 <ul>
 <li><a href="/files/template.json"><code>template.json</code></a> (Packer template example file)</li>
 <li><a href="/files/ks.cfg"><code>ks.cfg</code></a> (Anaconda kickstart example file)</li>
 <li><a href="/files/provision.sh"><code>provision.sh</code></a> (Provision shell script example file)</li>
 </ul>
-
 <p>Create some directories:</p>
-
-<pre><code class="language-bash">$ mkdir ~work/centos-7-zfs/
-$ mkdir ~work/centos-7-zfs/http/
-$ mkdir ~work/centos-7-zfs/scripts/
-</code></pre>
-
-<p>Copy the files to these directories:</p>
-
-<pre><code class="language-bash">$ cp template.json ~work/centos-7-zfs/
-$ cp ks.cfg ~work/centos-7-zfs/http/
-$ cp provision.sh ~work/centos-7-zfs/scripts/
-</code></pre>
-
-<p>Modify each of the files to fit your environment.</p>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ mkdir ~work/centos-7-zfs/
+</span></span><span style="display:flex;"><span>$ mkdir ~work/centos-7-zfs/http/
+</span></span><span style="display:flex;"><span>$ mkdir ~work/centos-7-zfs/scripts/
+</span></span></code></pre></div><p>Copy the files to these directories:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ cp template.json ~work/centos-7-zfs/
+</span></span><span style="display:flex;"><span>$ cp ks.cfg ~work/centos-7-zfs/http/
+</span></span><span style="display:flex;"><span>$ cp provision.sh ~work/centos-7-zfs/scripts/
+</span></span></code></pre></div><p>Modify each of the files to fit your environment.</p>
 <p>Start the build process using Packer:</p>
-
-<pre><code class="language-bash">$ cd ~work/centos-7-zfs/
-$ packer build template.json
-</code></pre>
-
-<p>This will download the CentOS 7 ISO file, start an HTTP server to serve the kickstart file and start a virtual machine using Virtualbox:</p>
-
-<p><img src="/img/packer-installer.png" alt="Packer installer screenshot" /></p>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ cd ~work/centos-7-zfs/
+</span></span><span style="display:flex;"><span>$ packer build template.json
+</span></span></code></pre></div><p>This will download the CentOS 7 ISO file, start an HTTP server to serve the kickstart file and start a virtual machine using Virtualbox:</p>
+<p><img src="/img/packer-installer.png" alt="Packer installer screenshot"></p>
 <p>The virtual machine will boot into Anaconda and run through the installation process as specified in the kickstart file:</p>
-
-<p><img src="/img/anaconda-installer.png" alt="Anaconda installer screenshot" /></p>
-
+<p><img src="/img/anaconda-installer.png" alt="Anaconda installer screenshot"></p>
 <p>When the installation process is complete, the disk image will be available in the <code>output-virtualbox-iso</code> folder with the <a href="https://en.wikipedia.org/wiki/VMDK"><code>vmdk</code></a> extension.</p>
-
-<p><img src="/img/packer-installer-done.png" alt="Packer done screenshot" /></p>
-
+<p><img src="/img/packer-installer-done.png" alt="Packer done screenshot"></p>
 <p>The disk image is now ready to be put in initramfs.</p>
-
 <h2 id="putting-the-disk-image-in-initramfs">Putting the disk image in initramfs</h2>
-
 <p>This section is quite similar to the previous blog post <a href="/posts/centos-7-rootfs-on-tmpfs/">CentOS 7 root filesystem on tmpfs</a> but with minor differences. For simplicity reasons it is executed on a host running CentOS 7.</p>
-
 <p>Create the build directories:</p>
-
-<pre><code class="language-bash">$ mkdir /work
-$ mkdir /work/newroot
-$ mkdir /work/result
-</code></pre>
-
-<p>Export the files from the disk image to one of the directories we created earlier:</p>
-
-<pre><code class="language-bash">$ export LIBGUESTFS_BACKEND=direct
-$ guestfish --ro -a packer-virtualbox-iso-1508790384-disk001.vmdk -i copy-out / /work/newroot/
-</code></pre>
-
-<p>Modify <code>/etc/fstab</code>:</p>
-
-<pre><code class="language-bash">$ cat &gt; /work/newroot/etc/fstab &lt;&lt; EOF
-tmpfs       /         tmpfs    defaults,noatime 0 0
-none        /dev      devtmpfs defaults         0 0
-devpts      /dev/pts  devpts   gid=5,mode=620   0 0
-tmpfs       /dev/shm  tmpfs    defaults         0 0
-proc        /proc     proc     defaults         0 0
-sysfs       /sys      sysfs    defaults         0 0
-EOF
-</code></pre>
-
-<p>Disable selinux:</p>
-
-<pre><code class="language-bash">echo &quot;SELINUX=disabled&quot; &gt; /work/newroot/etc/selinux/config
-</code></pre>
-
-<p>Disable clearing the screen on login failure to make it possible to read any error messages:</p>
-
-<pre><code class="language-bash">mkdir /work/newroot/etc/systemd/system/getty@.service.d
-cat &gt; /work/newroot/etc/systemd/system/getty@.service.d/noclear.conf &lt;&lt; EOF
-[Service]
-TTYVTDisallocate=no
-EOF
-</code></pre>
-
-<p>Now jump to the <strong>Initramfs</strong> and <strong>Result</strong> sections in the <a href="/posts/centos-7-rootfs-on-tmpfs/">CentOS 7 root filesystem on tmpfs</a> and follow those steps until the end when the result is a <code>vmlinuz</code> and <code>initramfs</code> file.</p>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ mkdir /work
+</span></span><span style="display:flex;"><span>$ mkdir /work/newroot
+</span></span><span style="display:flex;"><span>$ mkdir /work/result
+</span></span></code></pre></div><p>Export the files from the disk image to one of the directories we created earlier:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ export LIBGUESTFS_BACKEND<span style="color:#f92672">=</span>direct
+</span></span><span style="display:flex;"><span>$ guestfish --ro -a packer-virtualbox-iso-1508790384-disk001.vmdk -i copy-out / /work/newroot/
+</span></span></code></pre></div><p>Modify <code>/etc/fstab</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ cat &gt; /work/newroot/etc/fstab <span style="color:#e6db74">&lt;&lt; EOF
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">tmpfs       /         tmpfs    defaults,noatime 0 0
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">none        /dev      devtmpfs defaults         0 0
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">devpts      /dev/pts  devpts   gid=5,mode=620   0 0
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">tmpfs       /dev/shm  tmpfs    defaults         0 0
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">proc        /proc     proc     defaults         0 0
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">sysfs       /sys      sysfs    defaults         0 0
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">EOF</span>
+</span></span></code></pre></div><p>Disable selinux:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>echo <span style="color:#e6db74">&#34;SELINUX=disabled&#34;</span> &gt; /work/newroot/etc/selinux/config
+</span></span></code></pre></div><p>Disable clearing the screen on login failure to make it possible to read any error messages:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>mkdir /work/newroot/etc/systemd/system/getty@.service.d
+</span></span><span style="display:flex;"><span>cat &gt; /work/newroot/etc/systemd/system/getty@.service.d/noclear.conf <span style="color:#e6db74">&lt;&lt; EOF
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">[Service]
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">TTYVTDisallocate=no
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">EOF</span>
+</span></span></code></pre></div><p>Now jump to the <strong>Initramfs</strong> and <strong>Result</strong> sections in the <a href="/posts/centos-7-rootfs-on-tmpfs/">CentOS 7 root filesystem on tmpfs</a> and follow those steps until the end when the result is a <code>vmlinuz</code> and <code>initramfs</code> file.</p>
 <h2 id="zfs-configuration">ZFS configuration</h2>
-
 <p>The first time the NAS server boots on the disk image, the ZFS storage pool and volumes will have to be configured. Refer to the <a href="https://docs.oracle.com/cd/E19253-01/819-5461/gaynr/index.html">ZFS documentation</a> for information on how to do this, and use the following command only as guidelines.</p>
-
 <p>Create the storage pool:</p>
-
-<pre><code class="language-bash">$ sudo zpool create data mirror sda sdb mirror sdc sdd
-</code></pre>
-
-<p>Create the volumes:</p>
-
-<pre><code class="language-bash">$ sudo zfs create data/documents
-$ sudo zfs create data/games
-$ sudo zfs create data/movies
-$ sudo zfs create data/music
-$ sudo zfs create data/pictures
-$ sudo zfs create data/upload
-</code></pre>
-
-<p>Share some volumes using NFS:</p>
-
-<pre><code class="language-bash">zfs set sharenfs=on data/documents
-zfs set sharenfs=on data/games
-zfs set sharenfs=on data/music
-zfs set sharenfs=on data/pictures
-</code></pre>
-
-<p>Print the storage pool status:</p>
-
-<pre><code class="language-bash">$ sudo zpool status
-  pool: data
- state: ONLINE
-  scan: scrub repaired 0B in 20h22m with 0 errors on Sun Oct  1 21:04:14 2017
-config:
-
-	NAME        STATE     READ WRITE CKSUM
-	data        ONLINE       0     0     0
-	  mirror-0  ONLINE       0     0     0
-	    sdd     ONLINE       0     0     0
-	    sdc     ONLINE       0     0     0
-	  mirror-1  ONLINE       0     0     0
-	    sda     ONLINE       0     0     0
-	    sdb     ONLINE       0     0     0
-
-errors: No known data errors
-</code></pre>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ sudo zpool create data mirror sda sdb mirror sdc sdd
+</span></span></code></pre></div><p>Create the volumes:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ sudo zfs create data/documents
+</span></span><span style="display:flex;"><span>$ sudo zfs create data/games
+</span></span><span style="display:flex;"><span>$ sudo zfs create data/movies
+</span></span><span style="display:flex;"><span>$ sudo zfs create data/music
+</span></span><span style="display:flex;"><span>$ sudo zfs create data/pictures
+</span></span><span style="display:flex;"><span>$ sudo zfs create data/upload
+</span></span></code></pre></div><p>Share some volumes using NFS:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>zfs set sharenfs<span style="color:#f92672">=</span>on data/documents
+</span></span><span style="display:flex;"><span>zfs set sharenfs<span style="color:#f92672">=</span>on data/games
+</span></span><span style="display:flex;"><span>zfs set sharenfs<span style="color:#f92672">=</span>on data/music
+</span></span><span style="display:flex;"><span>zfs set sharenfs<span style="color:#f92672">=</span>on data/pictures
+</span></span></code></pre></div><p>Print the storage pool status:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ sudo zpool status
+</span></span><span style="display:flex;"><span>  pool: data
+</span></span><span style="display:flex;"><span> state: ONLINE
+</span></span><span style="display:flex;"><span>  scan: scrub repaired 0B in 20h22m with <span style="color:#ae81ff">0</span> errors on Sun Oct  <span style="color:#ae81ff">1</span> 21:04:14 <span style="color:#ae81ff">2017</span>
+</span></span><span style="display:flex;"><span>config:
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	NAME        STATE     READ WRITE CKSUM
+</span></span><span style="display:flex;"><span>	data        ONLINE       <span style="color:#ae81ff">0</span>     <span style="color:#ae81ff">0</span>     <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>	  mirror-0  ONLINE       <span style="color:#ae81ff">0</span>     <span style="color:#ae81ff">0</span>     <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>	    sdd     ONLINE       <span style="color:#ae81ff">0</span>     <span style="color:#ae81ff">0</span>     <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>	    sdc     ONLINE       <span style="color:#ae81ff">0</span>     <span style="color:#ae81ff">0</span>     <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>	  mirror-1  ONLINE       <span style="color:#ae81ff">0</span>     <span style="color:#ae81ff">0</span>     <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>	    sda     ONLINE       <span style="color:#ae81ff">0</span>     <span style="color:#ae81ff">0</span>     <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>	    sdb     ONLINE       <span style="color:#ae81ff">0</span>     <span style="color:#ae81ff">0</span>     <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>errors: No known data errors
+</span></span></code></pre></div>
 		</p>
         </div>
 
@@ -225,7 +152,7 @@ errors: No known data errors
 		<div id="disqus_thread"></div>
 <script type="text/javascript">
 	 
-	var disqus_shortname = 'espenbraastad';
+	var disqus_shortname = '';
 	var disqus_identifier = 'ZFS NAS using CentOS 7 from tmpfs';
 
      
@@ -242,9 +169,9 @@ errors: No known data errors
 
 </div>
 
-<script id="dsq-count-scr" src="//espenbraastad.disqus.com/count.js" async></script>
-<script src="http://www.espenbraastad.no//prism/prism.js"></script>
-<script src="http://www.espenbraastad.no//jquery.min.js"></script>
+<script id="dsq-count-scr" src="//.disqus.com/count.js" async></script>
+<script src="/prism/prism.js"></script>
+<script src="/jquery.min.js"></script>
 <script>
 	 
 	$(function() { $('table').addClass('table table-responsive'); })
