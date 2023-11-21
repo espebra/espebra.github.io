@@ -6,8 +6,22 @@
     <description>Recent content in Tags on Espen Braastad</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 24 Oct 2017 00:20:20 +0100</lastBuildDate>
+    <lastBuildDate>Tue, 21 Nov 2023 23:00:00 +0100</lastBuildDate>
     <atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>filebin</title>
+      <link>/tags/filebin/</link>
+      <pubDate>Tue, 21 Nov 2023 23:00:00 +0100</pubDate>
+      <guid>/tags/filebin/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>hetzner</title>
+      <link>/tags/hetzner/</link>
+      <pubDate>Tue, 21 Nov 2023 23:00:00 +0100</pubDate>
+      <guid>/tags/hetzner/</guid>
+      <description></description>
+    </item>
     <item>
       <title>diskless</title>
       <link>/tags/diskless/</link>
@@ -76,13 +90,6 @@
       <link>/tags/development/</link>
       <pubDate>Sun, 29 May 2016 20:40:48 +0200</pubDate>
       <guid>/tags/development/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>filebin</title>
-      <link>/tags/filebin/</link>
-      <pubDate>Sun, 29 May 2016 20:40:48 +0200</pubDate>
-      <guid>/tags/filebin/</guid>
       <description></description>
     </item>
     <item>
