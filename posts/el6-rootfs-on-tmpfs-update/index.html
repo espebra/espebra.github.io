@@ -1,50 +1,25 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
 <head>
-	<link href="http://gmpg.org/xfn/11" rel="profile">
 	<meta http-equiv="content-type" content="text/html; charset=utf-8">
-	
-	
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-	
 	<title>CentOS/RHEL/SL 6: root filesystem on tmpfs, UPDATE</title>
-	
-	
-	<link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
-	<link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
-	<link rel="stylesheet" href="/custom.css">
-	
-	
-	<link rel="stylesheet" href="/prism/prism.css">
 </head>
 <body>
 
 
-<div class="container">
-        <div class="row">
-                <div class="col-md-12">
-                        <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="/">Home</a></li>
-                                <li class="breadcrumb-item"><a href="/posts">Posts</a></li>
-                                <li class="breadcrumb-item active">CentOS/RHEL/SL 6: root filesystem on tmpfs, UPDATE</li>
-                        <ol>
-                </div>
-        </div>
-</div>
 
-<div class="container">
-        <div class="row">
-	<div class="col-md-12">
-		<h1>CentOS/RHEL/SL 6: root filesystem on tmpfs, UPDATE</h1>
-		<small class="text-muted">
-			Published Thursday, March 21, 2013 (500 words, 3 minutes to read).
-			<a href="#comments">
-				<span class="disqus-comment-count" data-disqus-identifier="CentOS/RHEL/SL 6: root filesystem on tmpfs, UPDATE"></span>
-			</a>
-		</small>
+<p><i><a href="/">Home</a></i></p>
+
+<h1>CentOS/RHEL/SL 6: root filesystem on tmpfs, UPDATE</h1>
+
+<i>Published Thursday, March 21, 2013 (500 words, 3 minutes to read).</i>
+
+<a href="#comments">
+	<span class="disqus-comment-count" data-disqus-identifier="CentOS/RHEL/SL 6: root filesystem on tmpfs, UPDATE"></span>
+</a>
 		
-		<p>
-			<p><em>Update 2017-06-30: Please see the <a href="/posts/centos-7-rootfs-on-tmpfs/">updated guide</a> which is more generic.</em></p>
+<p>
+	<p><em>Update 2017-06-30: Please see the <a href="/posts/centos-7-rootfs-on-tmpfs/">updated guide</a> which is more generic.</em></p>
 <p>In EL6.4, the file <code>/usr/share/dracut/modules.d/90dmsquash-live/dmsquash-live-root</code> was updated so that the <a href="/post/el6-rootfs-on-tmpfs">previous patch</a> no longer works as it should. I’ve updated the patch, and here it is:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-diff" data-lang="diff"><span style="display:flex;"><span><span style="color:#f92672">--- original    2013-03-20 16:25:23.698846581 +0100
 </span></span></span><span style="display:flex;"><span><span style="color:#f92672"></span><span style="color:#a6e22e">+++ new 2013-03-21 08:58:11.175339694 +0100
@@ -140,15 +115,14 @@
 </span></span><span style="display:flex;"><span> ROOTFLAGS=&#34;$(getarg rootflags)&#34;
 </span></span></code></pre></div><p>It may be easier to download it from <a href="/files/patch.sl64.txt">here</a>.</p>
 
-		</p>
-        </div>
+</p>
 
-	<div class="col-md-12">
-		<a name="comments"></a>
-		<div id="disqus_thread"></div>
+<p>
+	<a name="comments"></a>
+	<div id="disqus_thread"></div>
 <script type="text/javascript">
 	 
-	var disqus_shortname = '';
+	var disqus_shortname = 'espenbraastad';
 	var disqus_identifier = 'CentOS\/RHEL\/SL 6: root filesystem on tmpfs, UPDATE';
 
      
@@ -160,19 +134,10 @@
 </script>
 <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
 
-	</div>
-</div>
+</p>
 
-</div>
 
-<script id="dsq-count-scr" src="//.disqus.com/count.js" async></script>
-<script src="/prism/prism.js"></script>
-<script src="/jquery.min.js"></script>
-<script>
-	 
-	$(function() { $('table').addClass('table table-responsive'); })
-	$(function() { $('img').addClass('img-fluid'); })
-</script>
+<script id="dsq-count-scr" src="//espenbraastad.disqus.com/count.js" async></script>
 </body>
 </html>
 

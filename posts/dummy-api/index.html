@@ -1,50 +1,25 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
 <head>
-	<link href="http://gmpg.org/xfn/11" rel="profile">
 	<meta http-equiv="content-type" content="text/html; charset=utf-8">
-	
-	
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-	
 	<title>Dummy API</title>
-	
-	
-	<link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
-	<link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
-	<link rel="stylesheet" href="/custom.css">
-	
-	
-	<link rel="stylesheet" href="/prism/prism.css">
 </head>
 <body>
 
 
-<div class="container">
-        <div class="row">
-                <div class="col-md-12">
-                        <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="/">Home</a></li>
-                                <li class="breadcrumb-item"><a href="/posts">Posts</a></li>
-                                <li class="breadcrumb-item active">Dummy API</li>
-                        <ol>
-                </div>
-        </div>
-</div>
 
-<div class="container">
-        <div class="row">
-	<div class="col-md-12">
-		<h1>Dummy API</h1>
-		<small class="text-muted">
-			Published Saturday, May 2, 2015 (500 words, 3 minutes to read).
-			<a href="#comments">
-				<span class="disqus-comment-count" data-disqus-identifier="Dummy API"></span>
-			</a>
-		</small>
+<p><i><a href="/">Home</a></i></p>
+
+<h1>Dummy API</h1>
+
+<i>Published Saturday, May 2, 2015 (500 words, 3 minutes to read).</i>
+
+<a href="#comments">
+	<span class="disqus-comment-count" data-disqus-identifier="Dummy API"></span>
+</a>
 		
-		<p>
-			<p><em>Update: Dummy API has been <a href="/posts/dummy-api-rewrite-in-go/">rewritten in Go</a>.</em></p>
+<p>
+	<p><em>Update: Dummy API has been <a href="/posts/dummy-api-rewrite-in-go/">rewritten in Go</a>.</em></p>
 <p>The purpose of Dummy API to act as a performant, simple and flexible HTTP API to use when testing API gateway performance. Put it behing a API gateway and generate responses to it from a set of consumers/clients. The Dummy API will read the request headers and query parameters and generate the responses accordingly. Some examples are custom cache-control header, response status and response delays.</p>
 <p><img src="/img/dummy-api.png" alt="Dummy API"></p>
 <p>The following is a <code>GET</code> request to host <code>dummy-api.varnish-software.com</code> and path <code>/foo</code>, where the response should contain a 10 characters random string, 20 characters predictable random string, response status <code>418</code> and a <code>cache-control</code> header with the value <code>max-age=2, s-maxage=3</code>. The response will be delivered with a 2 seconds delay before the first byte of the body, to mimic a slow web application:</p>
@@ -154,15 +129,14 @@
 </span></span><span style="display:flex;"><span><span style="color:#a6e22e">response-status </span><span style="color:#f92672">=</span><span style="color:#e6db74"> {int}          Set the response status</span>
 </span></span></code></pre></div><p>The Dummy API is written in Lua and is available for download at <a href="https://github.com/espebra/dummy-api">Github</a>. It will run on the <a href="http://openresty.org/">OpenResty</a> web application server.</p>
 
-		</p>
-        </div>
+</p>
 
-	<div class="col-md-12">
-		<a name="comments"></a>
-		<div id="disqus_thread"></div>
+<p>
+	<a name="comments"></a>
+	<div id="disqus_thread"></div>
 <script type="text/javascript">
 	 
-	var disqus_shortname = '';
+	var disqus_shortname = 'espenbraastad';
 	var disqus_identifier = 'Dummy API';
 
      
@@ -174,19 +148,10 @@
 </script>
 <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
 
-	</div>
-</div>
+</p>
 
-</div>
 
-<script id="dsq-count-scr" src="//.disqus.com/count.js" async></script>
-<script src="/prism/prism.js"></script>
-<script src="/jquery.min.js"></script>
-<script>
-	 
-	$(function() { $('table').addClass('table table-responsive'); })
-	$(function() { $('img').addClass('img-fluid'); })
-</script>
+<script id="dsq-count-scr" src="//espenbraastad.disqus.com/count.js" async></script>
 </body>
 </html>
 

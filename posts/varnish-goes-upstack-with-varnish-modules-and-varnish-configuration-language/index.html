@@ -1,50 +1,25 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
 <head>
-	<link href="http://gmpg.org/xfn/11" rel="profile">
 	<meta http-equiv="content-type" content="text/html; charset=utf-8">
-	
-	
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-	
 	<title>Varnish goes upstack with varnish modules and varnish configuration language</title>
-	
-	
-	<link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
-	<link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
-	<link rel="stylesheet" href="/custom.css">
-	
-	
-	<link rel="stylesheet" href="/prism/prism.css">
 </head>
 <body>
 
 
-<div class="container">
-        <div class="row">
-                <div class="col-md-12">
-                        <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="/">Home</a></li>
-                                <li class="breadcrumb-item"><a href="/posts">Posts</a></li>
-                                <li class="breadcrumb-item active">Varnish goes upstack with varnish modules and varnish configuration language</li>
-                        <ol>
-                </div>
-        </div>
-</div>
 
-<div class="container">
-        <div class="row">
-	<div class="col-md-12">
-		<h1>Varnish goes upstack with varnish modules and varnish configuration language</h1>
-		<small class="text-muted">
-			Published Thursday, May 7, 2015 (2100 words, 10 minutes to read).
-			<a href="#comments">
-				<span class="disqus-comment-count" data-disqus-identifier="Varnish goes upstack with varnish modules and varnish configuration language"></span>
-			</a>
-		</small>
+<p><i><a href="/">Home</a></i></p>
+
+<h1>Varnish goes upstack with varnish modules and varnish configuration language</h1>
+
+<i>Published Thursday, May 7, 2015 (2100 words, 10 minutes to read).</i>
+
+<a href="#comments">
+	<span class="disqus-comment-count" data-disqus-identifier="Varnish goes upstack with varnish modules and varnish configuration language"></span>
+</a>
 		
-		<p>
-			<p><em>This post was first published at <a href="http://highscalability.com/blog/2015/5/6/varnish-goes-upstack-with-varnish-modules-and-varnish-config.html">High Scalability</a>.</em></p>
+<p>
+	<p><em>This post was first published at <a href="http://highscalability.com/blog/2015/5/6/varnish-goes-upstack-with-varnish-modules-and-varnish-config.html">High Scalability</a>.</em></p>
 <p>Varnish Software has just released Varnish API Engine, a high performance HTTP API Gateway which handles authentication, authorization and throttling all built on top of Varnish Cache. The Varnish API Engine can easily extend your current set of APIs with a uniform access control layer that has built in caching abilities for high volume read operations, and it provides real-time metrics.</p>
 <p>Varnish API Engine is built using well known components like memcached, SQLite and most importantly Varnish Cache. The management API is written in Python. A core part of the product is written as an application on top of Varnish using VCL (Varnish Configuration Language) and VMODs (Varnish Modules) for extended functionality.</p>
 <p>We would like to use this as an opportunity to show how you can create your own flexible yet still high performance applications in VCL with the help of VMODs.</p>
@@ -243,15 +218,14 @@
 <p>Varnish Plus, the fully supported commercial edition of Varnish Cache, is bundled with a set of high quality, support backed VMODs. For the open source edition, you can download and compile the VMODs you require manually.</p>
 <p>Varnish API Engine is more than VCL and VMODs. It also packs features such as key authentication, a centralized REST API for management, administration interface and real time statistics. For more information about Varnish API Engine, please contact <a href="https://www.varnish-software.com/">Varnish Software</a>.</p>
 
-		</p>
-        </div>
+</p>
 
-	<div class="col-md-12">
-		<a name="comments"></a>
-		<div id="disqus_thread"></div>
+<p>
+	<a name="comments"></a>
+	<div id="disqus_thread"></div>
 <script type="text/javascript">
 	 
-	var disqus_shortname = '';
+	var disqus_shortname = 'espenbraastad';
 	var disqus_identifier = 'Varnish goes upstack with varnish modules and varnish configuration language';
 
      
@@ -263,19 +237,10 @@
 </script>
 <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
 
-	</div>
-</div>
+</p>
 
-</div>
 
-<script id="dsq-count-scr" src="//.disqus.com/count.js" async></script>
-<script src="/prism/prism.js"></script>
-<script src="/jquery.min.js"></script>
-<script>
-	 
-	$(function() { $('table').addClass('table table-responsive'); })
-	$(function() { $('img').addClass('img-fluid'); })
-</script>
+<script id="dsq-count-scr" src="//espenbraastad.disqus.com/count.js" async></script>
 </body>
 </html>
 

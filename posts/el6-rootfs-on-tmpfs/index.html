@@ -1,50 +1,25 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
 <head>
-	<link href="http://gmpg.org/xfn/11" rel="profile">
 	<meta http-equiv="content-type" content="text/html; charset=utf-8">
-	
-	
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-	
 	<title>CentOS/RHEL/SL 6: root filesystem on tmpfs</title>
-	
-	
-	<link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
-	<link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
-	<link rel="stylesheet" href="/custom.css">
-	
-	
-	<link rel="stylesheet" href="/prism/prism.css">
 </head>
 <body>
 
 
-<div class="container">
-        <div class="row">
-                <div class="col-md-12">
-                        <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="/">Home</a></li>
-                                <li class="breadcrumb-item"><a href="/posts">Posts</a></li>
-                                <li class="breadcrumb-item active">CentOS/RHEL/SL 6: root filesystem on tmpfs</li>
-                        <ol>
-                </div>
-        </div>
-</div>
 
-<div class="container">
-        <div class="row">
-	<div class="col-md-12">
-		<h1>CentOS/RHEL/SL 6: root filesystem on tmpfs</h1>
-		<small class="text-muted">
-			Published Monday, April 30, 2012 (600 words, 3 minutes to read).
-			<a href="#comments">
-				<span class="disqus-comment-count" data-disqus-identifier="CentOS/RHEL/SL 6: root filesystem on tmpfs"></span>
-			</a>
-		</small>
+<p><i><a href="/">Home</a></i></p>
+
+<h1>CentOS/RHEL/SL 6: root filesystem on tmpfs</h1>
+
+<i>Published Monday, April 30, 2012 (600 words, 3 minutes to read).</i>
+
+<a href="#comments">
+	<span class="disqus-comment-count" data-disqus-identifier="CentOS/RHEL/SL 6: root filesystem on tmpfs"></span>
+</a>
 		
-		<p>
-			<p><em>Update 2017-06-30: Please see the <a href="/posts/centos-7-rootfs-on-tmpfs/">updated guide</a> which is more generic.</em></p>
+<p>
+	<p><em>Update 2017-06-30: Please see the <a href="/posts/centos-7-rootfs-on-tmpfs/">updated guide</a> which is more generic.</em></p>
 <p><em>UPDATE: The patch below has been updated <a href="/posts/el6-rootfs-on-tmpfs-update">here</a>.</em></p>
 <p>There are several scenarios where conventional hard drives are not really needed. Examples are HPC cluster nodes, virtualization nodes, home theater streaming PCs, silent desktops, internet cafés and embedded systems. Hard drives tend to fail, they are slow, they consume power, they generate heat and noise, and they are quite expensive if you need/want something faster and more reliable than SATA.</p>
 <p>This post will show how to run CentOS 6 directly from tmpfs backed by memory, without using the (standard) 512 MB writable overlay. The procedure should be similar for RHEL and Scientific Linux 6.</p>
@@ -157,15 +132,14 @@
 <img src="/img/centos6-from-tmpfs-details.png" alt="losetup"></p>
 <p>Feature request <a href="http://article.gmane.org/gmane.linux.kernel.initramfs/2588">upstream</a>.</p>
 
-		</p>
-        </div>
+</p>
 
-	<div class="col-md-12">
-		<a name="comments"></a>
-		<div id="disqus_thread"></div>
+<p>
+	<a name="comments"></a>
+	<div id="disqus_thread"></div>
 <script type="text/javascript">
 	 
-	var disqus_shortname = '';
+	var disqus_shortname = 'espenbraastad';
 	var disqus_identifier = 'CentOS\/RHEL\/SL 6: root filesystem on tmpfs';
 
      
@@ -177,19 +151,10 @@
 </script>
 <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
 
-	</div>
-</div>
+</p>
 
-</div>
 
-<script id="dsq-count-scr" src="//.disqus.com/count.js" async></script>
-<script src="/prism/prism.js"></script>
-<script src="/jquery.min.js"></script>
-<script>
-	 
-	$(function() { $('table').addClass('table table-responsive'); })
-	$(function() { $('img').addClass('img-fluid'); })
-</script>
+<script id="dsq-count-scr" src="//espenbraastad.disqus.com/count.js" async></script>
 </body>
 </html>
 

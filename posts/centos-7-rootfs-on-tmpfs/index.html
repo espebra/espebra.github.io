@@ -1,50 +1,25 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
 <head>
-	<link href="http://gmpg.org/xfn/11" rel="profile">
 	<meta http-equiv="content-type" content="text/html; charset=utf-8">
-	
-	
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-	
 	<title>CentOS 7 root filesystem on tmpfs</title>
-	
-	
-	<link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
-	<link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
-	<link rel="stylesheet" href="/custom.css">
-	
-	
-	<link rel="stylesheet" href="/prism/prism.css">
 </head>
 <body>
 
 
-<div class="container">
-        <div class="row">
-                <div class="col-md-12">
-                        <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="/">Home</a></li>
-                                <li class="breadcrumb-item"><a href="/posts">Posts</a></li>
-                                <li class="breadcrumb-item active">CentOS 7 root filesystem on tmpfs</li>
-                        <ol>
-                </div>
-        </div>
-</div>
 
-<div class="container">
-        <div class="row">
-	<div class="col-md-12">
-		<h1>CentOS 7 root filesystem on tmpfs</h1>
-		<small class="text-muted">
-			Published Friday, January 6, 2017 (700 words, 4 minutes to read).
-			<a href="#comments">
-				<span class="disqus-comment-count" data-disqus-identifier="CentOS 7 root filesystem on tmpfs"></span>
-			</a>
-		</small>
+<p><i><a href="/">Home</a></i></p>
+
+<h1>CentOS 7 root filesystem on tmpfs</h1>
+
+<i>Published Friday, January 6, 2017 (700 words, 4 minutes to read).</i>
+
+<a href="#comments">
+	<span class="disqus-comment-count" data-disqus-identifier="CentOS 7 root filesystem on tmpfs"></span>
+</a>
 		
-		<p>
-			<p>Several years ago I wrote a <a href="/posts/el6-rootfs-on-tmpfs/">series</a> <a href="/posts/el6-rootfs-on-tmpfs-update/">of</a> <a href="/posts/el6-rootfs-on-tmpfs-update2/">posts</a> on how to run EL6 with its root filesystem on tmpfs. This post is a continuation of that series, and explains step by step how to run CentOS 7 with its root filesystem in memory. It should apply to RHEL, Ubuntu, Debian and other Linux distributions as well. The post is a bit terse to focus on the concept, and several of the steps have potential for improvements.</p>
+<p>
+	<p>Several years ago I wrote a <a href="/posts/el6-rootfs-on-tmpfs/">series</a> <a href="/posts/el6-rootfs-on-tmpfs-update/">of</a> <a href="/posts/el6-rootfs-on-tmpfs-update2/">posts</a> on how to run EL6 with its root filesystem on tmpfs. This post is a continuation of that series, and explains step by step how to run CentOS 7 with its root filesystem in memory. It should apply to RHEL, Ubuntu, Debian and other Linux distributions as well. The post is a bit terse to focus on the concept, and several of the steps have potential for improvements.</p>
 <p>The following is a screen recording from a host running CentOS 7 in tmpfs:</p>
 <p><img src="/img/centos7-in-tmpfs.gif" alt="Sensor"></p>
 <h2 id="build-environment">Build environment</h2>
@@ -149,15 +124,14 @@
 </span></span><span style="display:flex;"><span>initrd http://example.com/initramfs.gz
 </span></span><span style="display:flex;"><span>boot
 </span></span></code></pre></div>
-		</p>
-        </div>
+</p>
 
-	<div class="col-md-12">
-		<a name="comments"></a>
-		<div id="disqus_thread"></div>
+<p>
+	<a name="comments"></a>
+	<div id="disqus_thread"></div>
 <script type="text/javascript">
 	 
-	var disqus_shortname = '';
+	var disqus_shortname = 'espenbraastad';
 	var disqus_identifier = 'CentOS 7 root filesystem on tmpfs';
 
      
@@ -169,19 +143,10 @@
 </script>
 <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
 
-	</div>
-</div>
+</p>
 
-</div>
 
-<script id="dsq-count-scr" src="//.disqus.com/count.js" async></script>
-<script src="/prism/prism.js"></script>
-<script src="/jquery.min.js"></script>
-<script>
-	 
-	$(function() { $('table').addClass('table table-responsive'); })
-	$(function() { $('img').addClass('img-fluid'); })
-</script>
+<script id="dsq-count-scr" src="//espenbraastad.disqus.com/count.js" async></script>
 </body>
 </html>
 

@@ -1,50 +1,25 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
 <head>
-	<link href="http://gmpg.org/xfn/11" rel="profile">
 	<meta http-equiv="content-type" content="text/html; charset=utf-8">
-	
-	
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-	
 	<title>KVM with iPXE in RHEL6</title>
-	
-	
-	<link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
-	<link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
-	<link rel="stylesheet" href="/custom.css">
-	
-	
-	<link rel="stylesheet" href="/prism/prism.css">
 </head>
 <body>
 
 
-<div class="container">
-        <div class="row">
-                <div class="col-md-12">
-                        <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="/">Home</a></li>
-                                <li class="breadcrumb-item"><a href="/posts">Posts</a></li>
-                                <li class="breadcrumb-item active">KVM with iPXE in RHEL6</li>
-                        <ol>
-                </div>
-        </div>
-</div>
 
-<div class="container">
-        <div class="row">
-	<div class="col-md-12">
-		<h1>KVM with iPXE in RHEL6</h1>
-		<small class="text-muted">
-			Published Wednesday, November 2, 2011 (500 words, 3 minutes to read).
-			<a href="#comments">
-				<span class="disqus-comment-count" data-disqus-identifier="KVM with iPXE in RHEL6"></span>
-			</a>
-		</small>
+<p><i><a href="/">Home</a></i></p>
+
+<h1>KVM with iPXE in RHEL6</h1>
+
+<i>Published Wednesday, November 2, 2011 (500 words, 3 minutes to read).</i>
+
+<a href="#comments">
+	<span class="disqus-comment-count" data-disqus-identifier="KVM with iPXE in RHEL6"></span>
+</a>
 		
-		<p>
-			<p>A while ago I discovered the amazing <a href="http://ipxe.org">iPXE</a> project. It is a complete PXE implementation with lots of nifty features, based on the <a href="http://etherboot.org/">gPXE</a> project. Redhat ships the gPXE firmware for qemu and KVM, and you might want to use iPXE instead as the iPXE project currently seems to be more active. The major features (copied from <a href="http://ipxe.org">ipxe.org</a>):</p>
+<p>
+	<p>A while ago I discovered the amazing <a href="http://ipxe.org">iPXE</a> project. It is a complete PXE implementation with lots of nifty features, based on the <a href="http://etherboot.org/">gPXE</a> project. Redhat ships the gPXE firmware for qemu and KVM, and you might want to use iPXE instead as the iPXE project currently seems to be more active. The major features (copied from <a href="http://ipxe.org">ipxe.org</a>):</p>
 <ul>
 <li>boot from a web server via HTTP</li>
 <li>boot from an iSCSI SAN</li>
@@ -108,15 +83,14 @@
 </span></span><span style="display:flex;"><span>[...]
 </span></span></code></pre></div><p>Your virtual machines will now be booted using the iPXE boot firmware. Have a look at the <a href="http://ipxe.org/scripting">iPXE scripting documentation</a> for more inspiration!</p>
 
-		</p>
-        </div>
+</p>
 
-	<div class="col-md-12">
-		<a name="comments"></a>
-		<div id="disqus_thread"></div>
+<p>
+	<a name="comments"></a>
+	<div id="disqus_thread"></div>
 <script type="text/javascript">
 	 
-	var disqus_shortname = '';
+	var disqus_shortname = 'espenbraastad';
 	var disqus_identifier = 'KVM with iPXE in RHEL6';
 
      
@@ -128,19 +102,10 @@
 </script>
 <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
 
-	</div>
-</div>
+</p>
 
-</div>
 
-<script id="dsq-count-scr" src="//.disqus.com/count.js" async></script>
-<script src="/prism/prism.js"></script>
-<script src="/jquery.min.js"></script>
-<script>
-	 
-	$(function() { $('table').addClass('table table-responsive'); })
-	$(function() { $('img').addClass('img-fluid'); })
-</script>
+<script id="dsq-count-scr" src="//espenbraastad.disqus.com/count.js" async></script>
 </body>
 </html>
 

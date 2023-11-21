@@ -1,50 +1,25 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
 <head>
-	<link href="http://gmpg.org/xfn/11" rel="profile">
 	<meta http-equiv="content-type" content="text/html; charset=utf-8">
-	
-	
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-	
 	<title>KVM/Xen and libvirt: currentMemory, memory and ballooning. Where did my memory go?</title>
-	
-	
-	<link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
-	<link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
-	<link rel="stylesheet" href="/custom.css">
-	
-	
-	<link rel="stylesheet" href="/prism/prism.css">
 </head>
 <body>
 
 
-<div class="container">
-        <div class="row">
-                <div class="col-md-12">
-                        <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="/">Home</a></li>
-                                <li class="breadcrumb-item"><a href="/posts">Posts</a></li>
-                                <li class="breadcrumb-item active">KVM/Xen and libvirt: currentMemory, memory and ballooning. Where did my memory go?</li>
-                        <ol>
-                </div>
-        </div>
-</div>
 
-<div class="container">
-        <div class="row">
-	<div class="col-md-12">
-		<h1>KVM/Xen and libvirt: currentMemory, memory and ballooning. Where did my memory go?</h1>
-		<small class="text-muted">
-			Published Monday, September 24, 2012 (500 words, 2 minutes to read).
-			<a href="#comments">
-				<span class="disqus-comment-count" data-disqus-identifier="KVM/Xen and libvirt: currentMemory, memory and ballooning. Where did my memory go?"></span>
-			</a>
-		</small>
+<p><i><a href="/">Home</a></i></p>
+
+<h1>KVM/Xen and libvirt: currentMemory, memory and ballooning. Where did my memory go?</h1>
+
+<i>Published Monday, September 24, 2012 (500 words, 2 minutes to read).</i>
+
+<a href="#comments">
+	<span class="disqus-comment-count" data-disqus-identifier="KVM/Xen and libvirt: currentMemory, memory and ballooning. Where did my memory go?"></span>
+</a>
 		
-		<p>
-			<p>KVM and Xen provide a method to change the amount of memory in use by guests at runtime. The method is called memory ballooning [<a href="http://www.linux-kvm.org/page/FAQ#Is_dynamic_memory_management_for_guests_supported.3F">1</a>, <a href="http://rwmj.wordpress.com/2010/07/17/virtio-balloon">2</a>], and it must be supported by the guest operating system to work.</p>
+<p>
+	<p>KVM and Xen provide a method to change the amount of memory in use by guests at runtime. The method is called memory ballooning [<a href="http://www.linux-kvm.org/page/FAQ#Is_dynamic_memory_management_for_guests_supported.3F">1</a>, <a href="http://rwmj.wordpress.com/2010/07/17/virtio-balloon">2</a>], and it must be supported by the guest operating system to work.</p>
 <p>In libvirt, memory allocation (and hence the ballooning capability) for a guest can be configured using the <code>memory</code>, <code>currentMemory</code> and <code>memballoon</code> tags:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-xml" data-lang="xml"><span style="display:flex;"><span><span style="color:#f92672">&lt;domain</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;kvm&#39;</span><span style="color:#f92672">&gt;</span>
 </span></span><span style="display:flex;"><span>  [...]
@@ -78,15 +53,14 @@
 <p><img src="/img/xen-precise-1024.png" alt="Xen, Ubuntu Precise, 1024 MB ram"></p>
 <p>The graphs with KVM do not have values for 32G memory because the guests went ballistic and OOM-ed.</p>
 
-		</p>
-        </div>
+</p>
 
-	<div class="col-md-12">
-		<a name="comments"></a>
-		<div id="disqus_thread"></div>
+<p>
+	<a name="comments"></a>
+	<div id="disqus_thread"></div>
 <script type="text/javascript">
 	 
-	var disqus_shortname = '';
+	var disqus_shortname = 'espenbraastad';
 	var disqus_identifier = 'KVM\/Xen and libvirt: currentMemory, memory and ballooning. Where did my memory go?';
 
      
@@ -98,19 +72,10 @@
 </script>
 <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
 
-	</div>
-</div>
+</p>
 
-</div>
 
-<script id="dsq-count-scr" src="//.disqus.com/count.js" async></script>
-<script src="/prism/prism.js"></script>
-<script src="/jquery.min.js"></script>
-<script>
-	 
-	$(function() { $('table').addClass('table table-responsive'); })
-	$(function() { $('img').addClass('img-fluid'); })
-</script>
+<script id="dsq-count-scr" src="//espenbraastad.disqus.com/count.js" async></script>
 </body>
 </html>
 
